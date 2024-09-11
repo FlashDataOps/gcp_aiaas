@@ -12,10 +12,11 @@ pipeline {
       }
     }
     stage('Terraform Stage') {
-      agent { 
-        docker { 
-          image 'hashicorp/terraform:latest' // Terraform Docker image
-        } 
+      agent {
+        docker {
+            image 'hashicorp/terraform:light'
+            args '-i --entrypoint='
+        }
       }
       steps {
         sh "terraform --version" // Run Terraform commands
