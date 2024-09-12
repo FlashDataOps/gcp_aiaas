@@ -11,6 +11,16 @@ pipeline {
         sh "python --version" // Run Python commands
       }
     }
+    stage {
+      agent {
+        docker {
+          image 'google/cloud-sdk:latest'
+        }
+      }
+      steps {
+        sh "gcloud version"
+      }
+    }
     stage('Terraform Stage') {
       agent {
         docker {
