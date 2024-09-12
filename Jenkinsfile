@@ -19,6 +19,7 @@ pipeline {
       }
       steps {
         sh "gcloud version"
+        sh "gcloud compute zones list"
       }
     }
     stage('Terraform Stage') {
