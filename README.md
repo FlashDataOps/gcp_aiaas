@@ -8,3 +8,9 @@ This repository provides a "Hello World" template for:
 - **Infrastructure as Code with Terraform**: Define and provision cloud infrastructure using Terraform.
 - **Docker Image Creation**: Build Docker images for your code artifacts to enable containerized deployment.
 - **Google Cloud Deployment**: Deploy both infrastructure and code artifacts to Google Cloud, leveraging services such as Google Cloud Run.
+
+![Architecture Diagram](./images/HelloWorldArchitecture.png)
+
+![Architecture Diagram](./images/HelloWorldJenkins.png)
+
+![Architecture Diagram](./images/HelloWorldJenkins2.png)
