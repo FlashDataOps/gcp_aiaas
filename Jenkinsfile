@@ -11,7 +11,7 @@ pipeline {
         sh "python --version" // Run Python commands
       }
     }
-    stage {
+    stage('GCloud Stage') {
       agent {
         docker {
           image 'google/cloud-sdk:latest'
