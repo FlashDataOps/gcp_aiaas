@@ -16,6 +16,7 @@ pipeline {
     agent {
       docker {
         image 'google/cloud-sdk:latest'
+        // run sudo chmod 666 /var/run/docker.sock in host to allow accessing container's host Docker server
         args '-v /var/run/docker.sock:/var/run/docker.sock --user root'
       }
     }
@@ -34,8 +35,9 @@ pipeline {
             # Create Docker config directory
             mkdir -p $DOCKER_CONFIG
             gcloud auth configure-docker --quiet
-            # Build the Docker image
+            # Build and push the Docker image to cloud registry
             docker build -t gcr.io/$CLOUDSDK_CORE_PROJECT/hello-world:latest .
+            docker push gcr.io/$CLOUDSDK_CORE_PROJECT/hello-world:latest
           '''
       }
     }
