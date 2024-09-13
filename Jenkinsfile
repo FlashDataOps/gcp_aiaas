@@ -29,6 +29,8 @@ pipeline {
             gcloud version
             gcloud auth activate-service-account --key-file="$GCLOUD_CREDS"
             gcloud config set project $CLOUDSDK_CORE_PROJECT
+            # Create Docker config directory
+            mkdir -p $DOCKER_CONFIG
             gcloud auth configure-docker --quiet
           '''
       }
