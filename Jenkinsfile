@@ -13,12 +13,12 @@ pipeline {
       }
     }
     stage('GCloud Stage') {
-      agent {
-        docker {
-          image 'google/cloud-sdk:latest'
-          args '-v /var/run/docker.sock:/var/run/docker.sock'
-        }
+    agent {
+      docker {
+        image 'google/cloud-sdk:latest'
+        args '-v /var/run/docker.sock:/var/run/docker.sock --user root'
       }
+    }
       environment {
           CLOUDSDK_CONFIG = "${env.WORKSPACE}/gcloud-config"  // Set a writable directory for gcloud
           CLOUDSDK_CORE_PROJECT='single-cirrus-435319-f1'
