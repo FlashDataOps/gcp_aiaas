@@ -23,6 +23,7 @@ pipeline {
           CLOUDSDK_CORE_PROJECT='single-cirrus-435319-f1'
           GCLOUD_CREDS=credentials('gcloud-creds')
           CLOUDSDK_PYTHON_LOG_FILE = "${env.WORKSPACE}/gcloud-config/logs" // Set writable log path
+          DOCKER_CONFIG = "${env.WORKSPACE}/docker-config" // Explicitly define DOCKER_CONFIG
       }
       steps {
           sh '''
