@@ -19,6 +19,7 @@ pipeline {
       }
       environment {
           CLOUDSDK_CONFIG = "${env.WORKSPACE}/gcloud-config"  // Set a writable directory for gcloud
+          CLOUDSDK_CORE_PROJECT='single-cirrus-435319-f1'
           CLOUDSDK_PYTHON_LOG_FILE = "${env.WORKSPACE}/gcloud-config/logs" // Set writable log path
       }
       steps {
