@@ -2,6 +2,7 @@ pipeline {
   agent none // No default agent; each stage will define its own
   environment {
     CLOUDSDK_CORE_PROJECT='single-cirrus-435319-f1'
+    GCLOUD_CREDS=credentials('gcloud-creds')
   }
   stages {
     stage('Python Stage') {
@@ -21,13 +22,11 @@ pipeline {
         }
       }
       steps {
-        withCredentials([file(credentialsId: 'gcloud-creds', variable: 'GCLOUD_CREDS')]) {
           sh '''
             gcloud version
             gcloud auth activate-service-account --key-file="$GCLOUD_CREDS"
             gcloud compute zones list
           '''
-        }
       }
     }
     stage('Terraform Stage') {
