@@ -33,6 +33,8 @@ pipeline {
             # Create Docker config directory
             mkdir -p $DOCKER_CONFIG
             gcloud auth configure-docker --quiet
+            # Build the Docker image
+            docker build -t gcr.io/$CLOUDSDK_CORE_PROJECT/hello-world:latest .
           '''
       }
     }
