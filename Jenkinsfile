@@ -1,20 +1,17 @@
 pipeline {
-  agent none
+  agent none // No default agent; each stage will define its own
   environment {
     CLOUDSDK_CORE_PROJECT='single-cirrus-435319-f1'
-    GCLOUD_CREDS=credentials('gcloud-creds')
   }
   stages {
     stage('Python Stage') {
       agent { 
         docker { 
-          image 'python:latest'
+          image 'python:latest' // Python Docker image
         } 
       }
       steps {
-        node {
-          sh "python --version"
-        }
+        sh "python --version" // Run Python commands
       }
     }
     stage('GCloud Stage') {
@@ -24,7 +21,7 @@ pipeline {
         }
       }
       steps {
-        node {
+        withCredentials([file(credentialsId: 'gcloud-creds', variable: 'GCLOUD_CREDS')]) {
           sh '''
             gcloud version
             gcloud auth activate-service-account --key-file="$GCLOUD_CREDS"
@@ -41,9 +38,7 @@ pipeline {
         }
       }
       steps {
-        node {
-          sh "terraform --version"
-        }
+        sh "terraform --version" // Run Terraform commands
       }
     }
   }
