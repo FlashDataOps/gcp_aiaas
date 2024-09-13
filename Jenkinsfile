@@ -1,5 +1,8 @@
 pipeline {
   agent none // No default agent; each stage will define its own
+  environment {
+    CLOUDSDK_CORE_PROJECT='single-cirrus-435319-f1'
+  }
   stages {
     stage('Python Stage') {
       agent { 
