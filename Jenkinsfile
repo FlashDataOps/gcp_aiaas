@@ -1,8 +1,5 @@
 pipeline {
   agent none // No default agent; each stage will define its own
-  environment {
-    CLOUDSDK_CORE_PROJECT='single-cirrus-435319-f1'
-  }
   stages {
     stage('Python Stage') {
       agent { 
@@ -19,6 +16,10 @@ pipeline {
         docker {
           image 'google/cloud-sdk:latest'
         }
+      }
+      environment {
+          CLOUDSDK_CONFIG = "${env.WORKSPACE}/gcloud-config"  // Set a writable directory for gcloud
+          CLOUDSDK_PYTHON_LOG_FILE = "${env.WORKSPACE}/gcloud-config/logs" // Set writable log path
       }
       steps {
         withCredentials([file(credentialsId: 'gcloud-creds', variable: 'GCLOUD_CREDS')]) {
