@@ -1,4 +1,5 @@
 provider "google" {
+  credentials = file(var.GCLOUD_CREDENTIALS)
   project = var.project_id
   region  = var.region
 }

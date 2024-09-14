@@ -8,3 +8,8 @@ variable "region" {
   type        = string
   default     = "us-central1"
 }
+
+variable "GCLOUD_CREDENTIALS" {
+  description = "The path to the Google Cloud credentials file or the credentials JSON content"
+  type        = string
+}
