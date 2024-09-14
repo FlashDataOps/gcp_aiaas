@@ -31,7 +31,7 @@ resource "google_cloud_run_service" "default" {
 resource "google_project_iam_member" "run_invoker" {
   project = var.project_id
   role    = "roles/run.invoker"
-  member  = "user:allUsers"
+  member  = "allUsers"
 }
 
 output "cloud_run_url" {
