@@ -51,7 +51,7 @@ pipeline {
       environment {
         TF_VAR_project_id = 'single-cirrus-435319-f1'
         TF_VAR_region = 'us-central1'
-        TF_VAR_gcloud_creds='dinend'
+        TF_VAR_gcloud_creds=credentials('gcloud-creds')
       }
       steps {
         sh '''
