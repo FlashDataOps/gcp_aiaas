@@ -41,11 +41,11 @@ resource "google_cloud_run_v2_job" "default" {
   }
 }
 
-resource "google_project_iam_member" "run_invoker" {
-  project = var.project_id
-  role    = "roles/run.invoker"
-  member  = "user:allAuthenticatedUsers"
-}
+# resource "google_project_iam_member" "run_invoker" {
+#   project = var.project_id
+#   role    = "roles/run.invoker"
+#   member  = "user:allAuthenticatedUsers"
+# }
 
 output "cloud_run_job_name" {
   value = google_cloud_run_v2_job.default.name
