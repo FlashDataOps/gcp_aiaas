@@ -48,8 +48,15 @@ pipeline {
             args '-i --entrypoint='
         }
       }
+      environment {
+        TF_VAR_project_id = 'single-cirrus-435319-f1'
+        TF_VAR_region = 'us-central1'
+      }
       steps {
-        sh "terraform --version" // Run Terraform commands
+        sh '''
+          terraform init
+          terraform apply -auto-approve
+        '''
       }
     }
   }
