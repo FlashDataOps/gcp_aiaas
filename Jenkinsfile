@@ -36,7 +36,7 @@ pipeline {
             mkdir -p $DOCKER_CONFIG
             gcloud auth configure-docker --quiet
             # Build and push the Docker image to cloud registry
-            docker build -t gcr.io/$CLOUDSDK_CORE_PROJECT/hello-world:latest .
+            docker build --platform linux/amd64 -t gcr.io/$CLOUDSDK_CORE_PROJECT/hello-world:latest .
             docker push gcr.io/$CLOUDSDK_CORE_PROJECT/hello-world:latest
           '''
       }
