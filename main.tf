@@ -1,11 +1,11 @@
 provider "google" {
   credentials = file(var.gcloud_creds)
-  project = var.project_id
-  region  = var.region
+  project     = var.project_id
+  region      = var.region
 }
 
-resource "google_cloud_run_service" "default" {
-  name     = "hello-world"
+resource "google_cloud_run_job" "default" {
+  name     = "hello-world-job"
   location = var.region
 
   template {
@@ -18,14 +18,13 @@ resource "google_cloud_run_service" "default" {
             cpu    = "1"
           }
         }
+        # command = ["python"]
+        # args    = ["HelloWorld.py"]
       }
     }
   }
 
-  traffic {
-    percent         = 100
-    latest_revision = true
-  }
+  # Optionally, configure retry settings and other job parameters here
 }
 
 resource "google_project_iam_member" "run_invoker" {
@@ -34,6 +33,6 @@ resource "google_project_iam_member" "run_invoker" {
   member  = "allUsers"
 }
 
-output "cloud_run_url" {
-  value = google_cloud_run_service.default.status[0].url
+output "cloud_run_job_name" {
+  value = google_cloud_run_job.default.name
 }
