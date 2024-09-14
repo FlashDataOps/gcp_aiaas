@@ -9,7 +9,7 @@ variable "region" {
   default     = "us-central1"
 }
 
-variable "GCLOUD_CREDENTIALS" {
+variable "gcloud_creds" {
   description = "The path to the Google Cloud credentials file or the credentials JSON content"
   type        = string
 }
