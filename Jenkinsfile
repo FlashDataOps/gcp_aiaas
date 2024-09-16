@@ -9,7 +9,6 @@ pipeline {
       }
       steps {
         sh "python --version" // Run Python commands
-        sh "python HelloWorld.py"
       }
     }
     stage('GCloud Stage') {
