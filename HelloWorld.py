@@ -55,6 +55,10 @@ def main():
     result = qa({"query": query})
     print(result['result'])
 
+    query = "What is the balance in at the end of the year 2022?"
+    result = qa({"query": query})
+    print(result['result'])
+
 if __name__ == '__main__':
 
     print(f"LangChain version: {langchain.__version__}")
