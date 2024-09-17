@@ -1,11 +1,6 @@
-google-cloud-aiplatform
 vertexai
 langchain
-langchain-core
 langchain-text-splitters
 langchain-google-vertexai
 langchain-community
-faiss-cpu
 langchain-chroma
-pypdf
-protobuf==3.20.2
