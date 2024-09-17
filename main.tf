@@ -4,6 +4,7 @@ provider "google" {
   region      = var.region
 }
 
+# Cloud storage bucket
 resource "google_cloud_run_v2_job" "default" {
   name     = "hello-world-job"
   location = var.region
@@ -16,6 +17,12 @@ resource "google_cloud_run_v2_job" "default" {
       }
     }
   }
+}
+
+# Cloud Storage Bucket
+resource "google_storage_bucket" "bucket" {
+  name     = "${var.project_id}-bucket"
+  location = var.region
 }
 
 output "cloud_run_job_name" {
