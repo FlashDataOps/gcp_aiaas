@@ -4,3 +4,4 @@ langchain-text-splitters
 langchain-google-vertexai
 langchain-community
 langchain-chroma
+pypdf
