@@ -1,5 +1,7 @@
 import langchain
 import vertexai
+import requests
+from google.cloud import storage
 
 from langchain.chains import (
     RetrievalQA,
@@ -10,11 +12,32 @@ from langchain_community.document_loaders import PyPDFLoader
 from langchain_google_vertexai import VertexAI, VertexAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+storage_client = storage.Client()
+
 def main():
 
     # Load GOOG's 10K annual report (92 pages).
     url = "https://abc.xyz/assets/investor/static/pdf/20230203_alphabet_10K.pdf"
-    loader = PyPDFLoader(url)
+    # Set up your GCS bucket name and destination file path
+    bucket_name = 'single-cirrus-435319-f1-bucket'
+    destination_blob_name = 'test_data/20230203_alphabet_10K.pdf'
+
+    # Download the PDF
+    response = requests.get(url)
+    response.raise_for_status()  # Ensure the request was successful
+
+    # Create a temporary file to store the downloaded PDF
+    temp_file_path = '/tmp/temp_pdf.pdf'
+    with open(temp_file_path, 'wb') as temp_file:
+        temp_file.write(response.content)
+
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(destination_blob_name)
+
+    blob.upload_from_filename(temp_file_path)
+    print(f"File {temp_file_path} uploaded to {destination_blob_name}.")
+    
+    loader = PyPDFLoader(temp_file_path)
     documents = loader.load()
 
     # split the documents into chunks

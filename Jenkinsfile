@@ -1,7 +1,7 @@
 pipeline {
   agent none // No default agent; each stage will define its own
   stages {
-    stage('Python Stage') {
+    stage('Code Test Stage') {
       agent { 
         docker { 
           image 'python:latest' // Python Docker image
@@ -11,7 +11,7 @@ pipeline {
         sh "python --version" // Run Python commands
       }
     }
-    stage('GCloud Stage') {
+    stage('Docker Build Stage') {
     agent {
       docker {
         image 'google/cloud-sdk:latest'
@@ -40,7 +40,7 @@ pipeline {
           '''
       }
     }
-    stage('Terraform Stage') {
+    stage('Terraform Deployment Stage') {
       agent {
         docker {
             image 'hashicorp/terraform:light'
