@@ -41,12 +41,12 @@ resource "google_cloud_run_service" "default" {
   }
 }
 
-# # IAM permission to allow public access to the service
-# resource "google_project_iam_member" "all_users" {
-#   project = var.project_id
-#   role    = "roles/run.invoker"
-#   member  = "allUsers"
-# }
+# IAM permission to allow public access to the service
+resource "google_project_iam_member" "all_users" {
+  project = var.project_id
+  role    = "roles/run.invoker"
+  member  = "allUsers"
+}
 
 # Cloud Storage Bucket
 resource "google_storage_bucket" "bucket" {
