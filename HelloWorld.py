@@ -14,7 +14,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 storage_client = storage.Client()
 
-def main():
+def main(query: str)->str:
 
     # Load GOOG's 10K annual report (92 pages).
     url = "https://abc.xyz/assets/investor/static/pdf/20230203_alphabet_10K.pdf"
@@ -35,7 +35,6 @@ def main():
     blob = bucket.blob(destination_blob_name)
 
     blob.upload_from_filename(temp_file_path)
-    print(f"File {temp_file_path} uploaded to {destination_blob_name}.")
     
     loader = PyPDFLoader(temp_file_path)
     documents = loader.load()
@@ -70,21 +69,15 @@ def main():
         llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=True
     )
 
-    query = "What is the State or other jurisdiction of incorporation or organization of Alphabet Inc.?"
+    
     result = qa({"query": query})
-    print(result['result'])
-
-    query = "What is the I.R.S. Employer Identification Number of Alphabet?"
-    result = qa({"query": query})
-    print(result['result'])
-
-    query = "What is the balance in at the end of the year 2022?"
-    result = qa({"query": query})
-    print(result['result'])
+    return result['result']
 
 if __name__ == '__main__':
-
+    import warnings
+    warnings.filterwarnings("ignore")
     print(f"LangChain version: {langchain.__version__}")
     print(f"vertexai version: {vertexai.__version__}")
-
-    main()
+    query = "What is the State or other jurisdiction of incorporation or organization of Alphabet Inc.?"
+    response = main(query)
+    print(response)

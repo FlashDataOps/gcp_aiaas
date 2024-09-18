@@ -1,3 +1,4 @@
+streamlit
 vertexai
 langchain
 langchain-text-splitters
