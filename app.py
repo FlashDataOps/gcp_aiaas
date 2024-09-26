@@ -11,7 +11,7 @@ def get_chatbot_response(user_input):
         return "Please enter a valid input."
 
 # Streamlit App Layout
-st.title("MontyBot Cloud Edition")
+st.title("MontyBot Cloud")
 
 st.write("Type something to chat with Monty:")
 
