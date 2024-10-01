@@ -78,7 +78,7 @@ def main(query: str)->str:
     result = qa({"query": query})
     return result['result']
 
-def main_vision(query: str, uploaded_file: io.BytesIO)->str:
+def main_vision(query: str, uploaded_file: io.BytesIO):
 
     vertexai.init(project="single-cirrus-435319-f1")
 
