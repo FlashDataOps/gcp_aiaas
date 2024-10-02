@@ -13,3 +13,8 @@ variable "gcloud_creds" {
   description = "The path to the Google Cloud credentials file or the credentials JSON content"
   type        = string
 }
+
+variable "image_tag" {
+  description = "The docker image tag"
+  type        = string
+}

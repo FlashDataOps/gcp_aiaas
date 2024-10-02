@@ -25,6 +25,7 @@ pipeline {
           GCLOUD_CREDS=credentials('gcloud-creds')
           CLOUDSDK_PYTHON_LOG_FILE = "${env.WORKSPACE}/gcloud-config/logs" // Set writable log path
           DOCKER_CONFIG = "${env.WORKSPACE}/docker-config" // Explicitly define DOCKER_CONFIG
+          IMAGE_TAG = "${env.BUILD_NUMBER}"
       }
       steps {
           sh '''
@@ -35,8 +36,8 @@ pipeline {
             mkdir -p $DOCKER_CONFIG
             gcloud auth configure-docker --quiet
             # Build and push the Docker image to cloud registry
-            docker build --platform linux/amd64 -t gcr.io/$CLOUDSDK_CORE_PROJECT/hello-world:latest .
-            docker push gcr.io/$CLOUDSDK_CORE_PROJECT/hello-world:latest
+            docker build --platform linux/amd64 -t gcr.io/$CLOUDSDK_CORE_PROJECT/hello-world:$IMAGE_TAG .
+            docker push gcr.io/$CLOUDSDK_CORE_PROJECT/hello-world:$IMAGE_TAG
           '''
       }
     }
@@ -51,6 +52,7 @@ pipeline {
         TF_VAR_project_id = 'single-cirrus-435319-f1'
         TF_VAR_region = 'us-central1'
         TF_VAR_gcloud_creds=credentials('gcloud-creds')
+        TF_VAR_image_tag = "${env.BUILD_NUMBER}"
       }
       steps {
         sh '''

@@ -13,7 +13,7 @@ resource "google_cloud_run_v2_job" "default" {
   template {
     template {
       containers {
-        image = "gcr.io/${var.project_id}/hello-world:latest"
+        image = "gcr.io/${var.project_id}/hello-world:${var.image_tag}"
       }
     }
   }
@@ -27,7 +27,7 @@ resource "google_cloud_run_service" "default" {
   template {
     spec {
       containers {
-        image = "gcr.io/${var.project_id}/hello-world:latest" # Update this with your Streamlit container image
+        image = "gcr.io/${var.project_id}/hello-world:${var.image_tag}" # Update this with your Streamlit container image
         ports {
           container_port = 8080
         }
