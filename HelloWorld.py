@@ -126,7 +126,7 @@ def main_vision(query: str, uploaded_file: io.BytesIO):
             (
                 "system",
                 """Eres un asistente virtual y tu especialidad es utilizar tus capacidades de visión para responder a las preguntas del usuario.
-                Tus respuestas deben ser precisas y deben estar basadas únicamente en lo que puedas observar en el documento enviado por el usuario
+                Tus respuestas deben ser precisas y deben estar basadas únicamente en lo que puedas observar en el documento enviado por el usuario.
                 """,
             ),
             
