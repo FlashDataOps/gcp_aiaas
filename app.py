@@ -1,33 +1,25 @@
 import streamlit as st
-from HelloWorld import main, main_vision
 
-# Define a function to process the user input
-def get_chatbot_response(user_input):
-    # For demonstration purposes, we return a simple response
-    # You can replace this with actual chatbot logic or a call to a machine learning model
-    if user_input:
-        for file in uploaded_files:
-            return main_vision(query=user_input,uploaded_file=file)
-    else:
-        return "Please enter a valid input."
+welcome = st.Page("./app_pages/welcome.py", title="Bienvenido", icon="👋")
+doc = st.Page("./app_pages/doc.py", title="Documentación", icon="📚")
 
-# Streamlit App Layout
-st.title("MontyBot Cloud")
+nlp2sql = st.Page("./app_pages/nlp2sql.py", title="NLP2SQL", icon="🤖")
+rag = st.Page("./app_pages/rag.py", title="RAG", icon="📄")
+ppt = st.Page("./app_pages/ppt_gen.py", title="PPT Generator", icon="📊")
 
-st.write("Type something to chat with Monty:")
+bd = st.Page("./app_pages/bd.py", title="Añadir base de datos", icon="🔧")
+index = st.Page("./app_pages/index.py", title="Gestionar índices", icon="🔍")
+pg = st.navigation(
+    {
+       "Información": [welcome, doc],
+       "Bots": [nlp2sql, rag, ppt],
+       "Ajustes": [bd, index] 
+    }
+    )
 
-# Text input box for user input
-user_input = st.text_input("You:", "")
+st.set_page_config(
+    page_title="MontyBot",
+    page_icon="🤖",
+)
 
-# File uploader to allow users to attach files or images
-uploaded_files = st.file_uploader("Attach files or images (optional):", accept_multiple_files=True)
-
-# Display chatbot response when input is provided
-if st.button("Send"):
-    if user_input:
-        response = get_chatbot_response(user_input)
-        st.write_stream(response)
-    else:
-        st.write("You haven't typed anything!")
-
-# You can add more features or chatbot logic in the `get_chatbot_response` function
+pg.run()
