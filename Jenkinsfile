@@ -1,5 +1,5 @@
 pipeline {
-  agent none // No default agent; each stage will define its own
+  agent any // No default agent; each stage will define its own
   stages {
     stage('Code Test Stage') {
       agent { 
