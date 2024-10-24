@@ -5,6 +5,7 @@ pipeline {
       agent { 
         docker { 
           image 'python:latest' // Python Docker image
+          args '-v /var/run/docker.sock:/var/run/docker.sock --user root'
         } 
       }
       steps {
@@ -46,6 +47,7 @@ pipeline {
         docker {
             image 'hashicorp/terraform:light'
             args '-i --entrypoint='
+            args '-v /var/run/docker.sock:/var/run/docker.sock --user root'
         }
       }
       environment {
