@@ -47,7 +47,6 @@ pipeline {
         docker {
             image 'hashicorp/terraform:light'
             args '-i --entrypoint='
-            args '-v /var/run/docker.sock:/var/run/docker.sock --user root'
         }
       }
       environment {
