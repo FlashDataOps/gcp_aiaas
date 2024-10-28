@@ -27,8 +27,6 @@ import pandas as pd
 
 load_dotenv()
 
-INDEX_PATH = os.getenv("INDEX_PATH")
-
 def get_schema(_):
     db = af.db_connection.get_db()
     schema = db.get_table_info()
@@ -64,19 +62,6 @@ def get_model(model_name, temperature, max_tokens):
         "gemini-1.5-pro-002":ChatVertexAI(model_name="gemini-1.5-pro-002",project="single-cirrus-435319-f1",verbose=True),
     }
     return llm[model_name]
-
-'''
-embeddings = FastEmbedEmbeddings()
-vectorstore = Chroma(
-    persist_directory=INDEX_PATH,
-    embedding_function=embeddings
-    )
-retriever = vectorstore.as_retriever(
-    search_kwargs={
-        "k": 3
-        }
-    )
-'''
 
 # First we need a prompt that we can pass into an LLM to generate this search query
 prompt_create_sql = ChatPromptTemplate.from_messages(
@@ -150,36 +135,6 @@ prompt_custom_chart = ChatPromptTemplate.from_messages(
     ]
 )
 
-prompt_response_sql = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            """Debes utilizar los siguientes datos para responder a la pregunta del usuario:
-            - Query SQL: {query}
-            - Respuesta: {result}
-            
-            En tu respuesta debes indicar la query SQL que se ha generado para la pregunta del usuario. Escribela de forma que sea fácil de leer. Evita que sea una única línea e indenta bien cada linea de la query.
-            
-            Siempre muestralo de una forma bonita y ordenada, utilizando tablas o bullets points con saltos de línea a ser posible.
-            UTILIZA FORMATO MARKDOWN
-            RESPONDE EN ESPAÑOL DE FORMA DETALLADA
-            """,
-        ),
-        ("placeholder", "{chat_history}"),
-        ("user", "{input}"),
-    ]
-)
-
-prompt_analysis = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            "Tu trabajo es responder la pregunta del usuario utilizando únicamente la siguientes filas de un csv: {context}",
-        ),
-        ("placeholder", "{chat_history}"),
-        ("user", "{input}"),
-    ]
-)
 
 prompt_ml = ChatPromptTemplate.from_messages(
     [
@@ -194,6 +149,60 @@ prompt_ml = ChatPromptTemplate.from_messages(
         ),
         ("placeholder", "{chat_history}"),
         ("user", "{input}"),
+    ]
+)
+
+prompt_intent = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """Tu tarea es decidir cuál es la intención del usuario a partir del mensaje del usuario. Las posibilidades son:
+            - ML: Si el usuario quiere realizar una llamada de inferencia a un modelo de machine learning. 
+            - Consulta: Si el usuario realiza una consulta sobre un dataset con el siguiente schema: {schema}
+            - Explicabilidad: Si el usuario necesita detalles sobre la explicabildiad del modelo de forma general o de un dato concreto.
+            - Otro: Cualquier cosa que no tenga nada que ver con las otras tres
+            
+            Responde únicamente con las palabras [ML, Consulta, Explicabilidad, Otro]. En caso de no saber a que se refiere responde Otro
+            """,
+        ),
+        ("user", "{input}"),
+    ]
+)
+prompt_explicabilidad = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """Eres un asistente virtual y tu especialidad es utilizar tus capacidades de visión para responder a las preguntas del usuario.
+            Tus respuestas deben ser precisas y deben estar basadas únicamente en lo que puedas observar en el documento enviado por el usuario.
+            """,
+        ),
+        ("placeholder", "{chat_history}"),
+        ("human", "{input}"),
+        (
+            "human",
+            [
+                {
+                    "type": "image_url",
+                    "image_url": {"url": "{image_data}"},
+                }
+            ],
+        ),
+        
+    ]
+)
+
+prompt_general = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """Eres un bot desarrollado por el Equipo 5 y participas en el concurso del Tongations. Tu tarea es ayudar al usuario a realizar cualquiera de tus tres funcionalidades:
+            - ML: Si el usuario quiere realizar una llamada de inferencia a un modelo de machine learning. 
+            - Consulta: Si el usuario realiza una consulta sobre un dataset.
+            - Explicabilidad: Si el usuario necesita detalles sobre la explicabildiad del modelo de forma general o de un dato concreto.
+            """,
+        ),
+        ("placeholder", "{chat_history}"),
+        ("human", "{input}")        
     ]
 )
 
@@ -222,19 +231,8 @@ def get_custom_chain(model_name, temperature, max_tokens, params, type=None, db=
             chain = create_sql_query_chain(model, db)
         else:
             chain = (
-                prompt_response_sql | model | StrOutputParser()
+                prompt_create_sql_response | model | StrOutputParser()
             )
-            '''
-            chain = (
-            {
-                "context":retriever | af.format_docs, 
-                "input": RunnablePassthrough()
-            } 
-            | prompt_analysis 
-            | model 
-            | StrOutputParser()
-            )
-            '''
 
     return chain
 
@@ -274,8 +272,8 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
 
     """
     db = af.db_connection.get_db()
-    chain = get_custom_chain(model_name, temperature, max_tokens, json_params, db)
-    
+    #chain = get_custom_chain(model_name, temperature, max_tokens, json_params, db)
+    llm = get_model(model_name, temperature, max_tokens)
     history = create_history(messages)
     sql_history = create_history(sql_messages)
     aux = {}
@@ -286,12 +284,27 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         "input": question, 
         "chat_history": history.messages, 
     }
-    if json_params is not None:
-        ml_result = af.simulate_model_prediction(json_params)
+    
+    intent_chain = (
+        RunnablePassthrough.assign(schema=get_schema)
+        | prompt_intent
+        | llm
+        | StrOutputParser()
+    )
+    res_intent = intent_chain.invoke({"input": question}).strip().lower()
+    print(f"La intención del usuario es -> {res_intent}")
+    
+    
+    if res_intent == "ml":
+        chain = prompt_ml | llm | StrOutputParser()
+        #ml_result = af.simulate_model_prediction(json_params)
+        ml_result = "fraude"
         config["params"] = json_params    
         config["result"] = ml_result
-    else:
-        llm = get_model(model_name, temperature, max_tokens)
+    elif res_intent == "explicabilidad":
+        config["image_data"] = "gs://single-cirrus-435319-f1-bucket/foundations/shap.png"
+        chain = prompt_explicabilidad | llm | StrOutputParser()
+    elif res_intent == "consulta":
         sql_chain = (
             RunnablePassthrough.assign(schema=get_schema)
             | prompt_create_sql
@@ -316,17 +329,13 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         }
         query = sql_chain.invoke(config)
         query = clean_query(query)
-        print("Query ->", query)
         sql_history.add_user_message(question)
         #sql_history.add_ai_message(query)
-        try:
-            print(db.get_table_info())
-        except:
-            traceback.print_exc()
-            
         
-        result = db.run(query)
-        print(result)
+        try:   
+            result = db.run(query)
+        except:
+            result = f"No se ha podido ejecutar la consulta. Indica al usuario que existe un problema a la hora de realizar la consulta SQL {query} en la base de datos. Responde de forma breve"
         
         config = {
         "input": question, 
@@ -335,18 +344,8 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         "response": result,
         "schema": get_schema
         }
-        
-        '''
-        chain_pandas_code = get_custom_chain(model_name, temperature, max_tokens, json_params, "pandas_code", db)
-        query = chain_pandas_code.invoke({"question": question})
-        query = query.split("SQLQuery:")[-1].strip()
-        result = db.run(query)
-        chain = get_custom_chain(model_name, temperature, max_tokens, json_params, db)
-        
-        config["query"] = query    
-        config["result"] = result
-        '''
-        
+    else:
+        chain = prompt_general | llm | StrOutputParser()
         
     for chunk in chain.stream(config):
         response+=chunk
@@ -355,15 +354,17 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
     
     history.add_user_message(question)
     history.add_ai_message(response)
-    list_result = eval(result)
-    if len(list_result) > 1:
-        del config["schema"]
-        plot_code = plot_chain.invoke(config)
-        
+    
+    if res_intent == "consulta":
         try:
-            plot_code = plot_code.replace("```python", "").replace("```", "").replace("fig.show()", "")
-            exec(plot_code)
-            aux["figure"] = eval("[fig]")
+            list_result = eval(result)
+            if len(list_result) > 1:
+                del config["schema"]
+                plot_code = plot_chain.invoke(config)
+                
+                plot_code = plot_code.replace("```python", "").replace("```", "").replace("fig.show()", "")
+                exec(plot_code)
+                aux["figure"] = eval("[fig]")
         except Exception as e:
             print(f"Error al generar el gráfico {e}")
     
