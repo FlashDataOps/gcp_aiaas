@@ -1,10 +1,11 @@
 pipeline {
-  agent any // No default agent; each stage will define its own
+  agent none // No default agent; each stage will define its own
   stages {
     stage('Code Test Stage') {
       agent { 
         docker { 
-          image 'python:latest' // Python Docker image
+          image 'python:3.11' // Python Docker image
+          args '-v /var/run/docker.sock:/var/run/docker.sock --user root'
         } 
       }
       steps {
