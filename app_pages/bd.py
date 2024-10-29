@@ -12,14 +12,20 @@ st.title("Interacción con la Base de Datos")
 st.write("Puedes subir ficheros para interactuar con la base de datos. Usa el área de abajo para arrastrar y soltar tu archivo.")
 
 # Área de arrastrar y soltar para subir el archivo
-uploaded_file = st.file_uploader("Arrastra y suelta tu archivo aquí o selecciona un archivo", type=["csv", "xlsx", "txt"])
+uploaded_file = st.file_uploader("Arrastra y suelta tu archivo aquí o selecciona un archivo", type=["csv", "xlsx"])
 
 # Crear dos columnas
 col1, col2 = st.columns(2)
 
 # Campo en la primera columna (Dropdown para seleccionar el separador)
 with col1:
-    separador = st.selectbox("Separador", [";", ","])
+    if not uploaded_file:
+        separador = st.selectbox("Separador", [";", ","])
+    elif ".csv" in uploaded_file.name:
+        separador = st.selectbox("Separador", [";", ","])
+    else:
+        sheets = pd.ExcelFile(uploaded_file).sheet_names
+        separador = st.selectbox("Sheet", sheets)
 
 # Campo en la segunda columna (Dropdown para seleccionar el encoding)
 with col2:

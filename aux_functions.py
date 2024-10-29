@@ -51,7 +51,10 @@ class DB_Connection:
     
     def upload_db_from_settings(self, file, table_name, sep, encoding):
         conn = sqlite3.connect(fr'db/{table_name}.db')
-        df = pd.read_csv(file, sep=sep, encoding=encoding)
+        if "csv" in file.name:
+            df = pd.read_csv(file, sep=sep, encoding=encoding)
+        else:
+            df = pd.read_excel(file, sheet_name=sep)
         df.to_sql(table_name, conn, if_exists='replace', index=False)
         # Cierra la conexión
         conn.close()

@@ -156,3 +156,5 @@ plotly
 langchain_google_vertexai
 langchainhub
 langgraph
+openpyxl
+streamlit_pdf_viewer
