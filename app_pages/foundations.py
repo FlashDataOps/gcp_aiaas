@@ -1,5 +1,5 @@
 import streamlit as st
-import langchain_utils as lu
+import langchain_foundations as lu
 import pandas as pd
 import json
 from streamlit_navigation_bar import st_navbar
@@ -16,11 +16,11 @@ def render_or_update_model_info(model_name):
     Returns:
         None
     """
-    with open("./design/nlp2sql/styles.css") as f:
+    with open("./design/foundations/styles.css") as f:
         css = f.read()
     st.markdown('<style>{}</style>'.format(css), unsafe_allow_html=True)
 
-    with open("./design/nlp2sql/content.html") as f:
+    with open("./design/foundations/content.html") as f:
         html = f.read().format(model_name)
     st.markdown(html, unsafe_allow_html=True)
 
@@ -56,20 +56,6 @@ if "messages" not in st.session_state:
 with st.sidebar:
     st.title("Configuración de modelo")
 
-    # Listar los archivos en la carpeta db
-    carpeta_db = 'db' 
-    try:
-        dbs = os.listdir(carpeta_db)
-        # Filtrar para mostrar solo archivos, no carpetas
-        archivos_db = [f for f in dbs if os.path.isfile(os.path.join(carpeta_db, f))]
-    except FileNotFoundError:
-        archivos_db = []
-        st.error(f"La carpeta '{carpeta_db}' no existe.")
-    
-    if archivos_db:
-        archivo_db_seleccionado = st.selectbox("Selecciona una base de datos:", archivos_db)
-        af.db_connection.db_name = archivo_db_seleccionado
-        
     # Select model
     st.session_state.model = st.selectbox(
         "Elige un modelo:",
@@ -91,17 +77,6 @@ with st.sidebar:
         reset_chat_history()
         
     uploaded_file = st.file_uploader("Subir parámetros de modelo")
-    
-    json_params = None
-    if uploaded_file is not None:
-        # Leer el archivo Excel
-        df = pd.read_excel(uploaded_file)
-        
-        # Convertir cada fila del DataFrame en un diccionario
-        json_data = df.to_dict(orient='records')[0]
-
-        # Convertir el diccionario a formato JSON
-        json_params = json.dumps(json_data, ensure_ascii=False, indent=4)
     
 # Render or update model information
 render_or_update_model_info(st.session_state.model)
@@ -131,8 +106,6 @@ if prompt:
             model_name=model_options[model_options.index(st.session_state.model)],
             temperature=st.session_state.temperature,
             max_tokens=st.session_state.max_tokens,
-            json_params=json_params,
-            db_name = archivo_db_seleccionado
         )
         st.write_stream(response)
         if "figure" in lu.invoke_chain.aux.keys() and len(lu.invoke_chain.aux["figure"]) > 0:
