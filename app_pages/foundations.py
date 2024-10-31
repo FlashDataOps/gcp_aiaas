@@ -75,8 +75,6 @@ with st.sidebar:
     # Reset chat history button
     if st.button("Vaciar Chat"):
         reset_chat_history()
-        
-    uploaded_file = st.file_uploader("Subir parámetros de modelo")
     
 # Render or update model information
 render_or_update_model_info(st.session_state.model)
