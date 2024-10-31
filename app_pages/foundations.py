@@ -6,6 +6,7 @@ from streamlit_navigation_bar import st_navbar
 import time
 import os
 import aux_functions as af
+from streamlit_pills import pills
 def render_or_update_model_info(model_name):
     """
     Renders or updates the model information on the webpage.
@@ -30,7 +31,7 @@ def reset_chat_history():
     Resets the chat history by clearing the 'messages' list in the session state.
     """
     if "messages" in st.session_state:
-        st.session_state.messages = []
+        st.session_state.messages_foundations = []
 
 model_options = ["llama3-70b-8192"]
 max_tokens = {
@@ -49,10 +50,11 @@ if "model" not in st.session_state:
     st.session_state.max_tokens = 8192
 
 # Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+if "messages_foundations" not in st.session_state:
+    st.session_state.messages_foundations = []
     st.session_state.sql_messages = []
-
+    st.session_state.prompt = None
+    
 with st.sidebar:
     st.title("Configuración de modelo")
 
@@ -80,7 +82,7 @@ with st.sidebar:
 render_or_update_model_info(st.session_state.model)
 
 # Display chat messages from history on app rerun
-for message in st.session_state.messages:
+for message in st.session_state.messages_foundations:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
         if "figure" in message["aux"].keys() and len(message["aux"]["figure"]) > 0:
@@ -88,18 +90,20 @@ for message in st.session_state.messages:
         st.text("")
 
 # Accept user input
-prompt = st.chat_input("¿En qué puedo ayudarte?")
+st.session_state.prompt = st.chat_input("¿En qué puedo ayudarte?")
 
-if prompt:
+
+if st.session_state.prompt:
+    
     # Display user message in chat message container
     with st.chat_message("user"):
-        st.markdown(prompt)
+        st.markdown(st.session_state.prompt)
 
     with st.chat_message("assistant"):
 
         response = lu.invoke_chain(
-            question=prompt,
-            messages=st.session_state.messages,
+            question=st.session_state.prompt,
+            messages=st.session_state.messages_foundations,
             sql_messages = st.session_state.sql_messages,
             model_name=model_options[model_options.index(st.session_state.model)],
             temperature=st.session_state.temperature,
@@ -113,5 +117,6 @@ if prompt:
                 st.button(recurso)
 
     # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt, "aux": {}})
-    st.session_state.messages.append({"role": "assistant", "content": lu.invoke_chain.response, "aux": lu.invoke_chain.aux})
+    st.session_state.messages_foundations.append({"role": "user", "content": st.session_state.prompt, "aux": {}})
+    st.session_state.messages_foundations.append({"role": "assistant", "content": lu.invoke_chain.response, "aux": lu.invoke_chain.aux})
+    

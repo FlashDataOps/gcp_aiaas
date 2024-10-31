@@ -30,7 +30,8 @@ def reset_chat_history():
     Resets the chat history by clearing the 'messages' list in the session state.
     """
     if "messages" in st.session_state:
-        st.session_state.messages = []
+        st.session_state.messages_nlp2sql = []
+        st.session_state.sql_messages = []
 
 model_options = ["llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768", "gemma-7b-it", "gemini-1.5-flash-002", "gemini-1.5-pro-002"]
 max_tokens = {
@@ -49,8 +50,8 @@ if "model" not in st.session_state:
     st.session_state.max_tokens = 8192
 
 # Initialize chat history
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+if "messages_nlp2sql" not in st.session_state:
+    st.session_state.messages_nlp2sql = []
     st.session_state.sql_messages = []
 
 with st.sidebar:
@@ -107,7 +108,7 @@ with st.sidebar:
 render_or_update_model_info(st.session_state.model)
 
 # Display chat messages from history on app rerun
-for message in st.session_state.messages:
+for message in st.session_state.messages_nlp2sql:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
         if "figure" in message["aux"].keys() and len(message["aux"]["figure"]) > 0:
@@ -126,7 +127,7 @@ if prompt:
 
         response = lu.invoke_chain(
             question=prompt,
-            messages=st.session_state.messages,
+            messages=st.session_state.messages_nlp2sql,
             sql_messages = st.session_state.sql_messages,
             model_name=model_options[model_options.index(st.session_state.model)],
             temperature=st.session_state.temperature,
@@ -142,5 +143,5 @@ if prompt:
                 st.button(recurso)
 
     # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt, "aux": {}})
-    st.session_state.messages.append({"role": "assistant", "content": lu.invoke_chain.response, "aux": lu.invoke_chain.aux})
+    st.session_state.messages_nlp2sql.append({"role": "user", "content": prompt, "aux": {}})
+    st.session_state.messages_nlp2sql.append({"role": "assistant", "content": lu.invoke_chain.response, "aux": lu.invoke_chain.aux})

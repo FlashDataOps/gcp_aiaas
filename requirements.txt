@@ -158,3 +158,4 @@ langchainhub
 langgraph
 openpyxl
 streamlit_pdf_viewer
+streamlit_pills
