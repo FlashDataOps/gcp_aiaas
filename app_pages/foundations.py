@@ -30,16 +30,16 @@ def reset_chat_history():
     """
     Resets the chat history by clearing the 'messages' list in the session state.
     """
-    if "messages" in st.session_state:
+    if "messages_foundations" in st.session_state:
         st.session_state.messages_foundations = []
 
-model_options = ["llama3-70b-8192"]
+model_options = ["gemini-1.5-flash-002"]
 max_tokens = {
-    "llama3-70b-8192": 8192,
+#   "llama3-70b-8192": 8192,
 #    "llama3-8b-8192": 8192,
 #    "mixtral-8x7b-32768": 32768,
 #   "gemma-7b-it": 8192,
-#    "gemini-1.5-flash-002": 128000,
+    "gemini-1.5-flash-002": 128000,
 #    "gemini-1.5-pro-002": 128000
 }
 
@@ -52,7 +52,6 @@ if "model" not in st.session_state:
 # Initialize chat history
 if "messages_foundations" not in st.session_state:
     st.session_state.messages_foundations = []
-    st.session_state.sql_messages = []
     st.session_state.prompt = None
     
 with st.sidebar:

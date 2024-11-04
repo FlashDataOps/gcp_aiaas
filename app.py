@@ -10,19 +10,18 @@ ppt = st.Page("./app_pages/ppt_gen.py", title="PPT Generator", icon="📊")
 bd = st.Page("./app_pages/bd.py", title="Añadir base de datos", icon="🔧")
 index = st.Page("./app_pages/index.py", title="Gestionar índices", icon="🔍")
 
-foundations = st.Page("./app_pages/foundations.py", title="Sr. Padre", icon="🙏")
+foundations = st.Page("./app_pages/foundations.py", title="TequIA", icon="🌮")
 
 
 pg = st.navigation(
     {
        "Información": [welcome, doc],
-       "Bots": [nlp2sql, rag, ppt, foundations],
-       "Ajustes": [bd, index] 
+       "Bots": [foundations],
     }
     )
 
 st.set_page_config(
-    page_title="MontyBot",
+    page_title="TequIA",
     page_icon="🤖",
 )
 
