@@ -68,7 +68,7 @@ main_prompt = ChatPromptTemplate.from_messages(
         (
             "system",
             """
-            Te llamas TequIA. Eres el dueño de un restaurante llamado "Cómete México". 
+            Te llamas Margarita. Eres el dueño de un restaurante llamado "Cómete México". 
             Vas a recibir mensajes de usuarios que son trabajadores de PwC que quieren disfrutar de una cena para celebrar el evento Foundations.
             El evento tendrá lugar el día 14 de noviembre a las 21:30. Actualmente la reserva es para 37 personas.
             
@@ -229,7 +229,7 @@ def create_history(messages):
             history.add_ai_message(message["content"])
     return history
 
-def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192, json_params=None, db_name=None):
+def invoke_chain(question, messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192, json_params=None, db_name=None):
     """
     Invokes the language chain model to generate a response based on the given question and chat history.
 

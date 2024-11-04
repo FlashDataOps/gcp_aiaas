@@ -10,7 +10,7 @@ ppt = st.Page("./app_pages/ppt_gen.py", title="PPT Generator", icon="📊")
 bd = st.Page("./app_pages/bd.py", title="Añadir base de datos", icon="🔧")
 index = st.Page("./app_pages/index.py", title="Gestionar índices", icon="🔍")
 
-foundations = st.Page("./app_pages/foundations.py", title="TequIA", icon="🌮")
+foundations = st.Page("./app_pages/foundations.py", title="Margarita", icon="🍹")
 
 
 pg = st.navigation(
@@ -21,7 +21,7 @@ pg = st.navigation(
     )
 
 st.set_page_config(
-    page_title="TequIA",
+    page_title="Margarita",
     page_icon="🤖",
 )
 

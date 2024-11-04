@@ -103,7 +103,6 @@ if st.session_state.prompt:
         response = lu.invoke_chain(
             question=st.session_state.prompt,
             messages=st.session_state.messages_foundations,
-            sql_messages = st.session_state.sql_messages,
             model_name=model_options[model_options.index(st.session_state.model)],
             temperature=st.session_state.temperature,
             max_tokens=st.session_state.max_tokens,
