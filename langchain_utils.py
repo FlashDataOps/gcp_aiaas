@@ -68,9 +68,74 @@ prompt_create_sql = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            """Basándote en la tabla esquema de abajo, escribe una consulta SQl que pueda responder a la pregunta del usuario:
+            """Basándote en la tabla esquema de abajo, escribe una consulta SQL para SQLLite que pueda responder a la pregunta del usuario:
             {schema}
-
+            
+            A continuación te paso una descripción general de los datos que te vas a encontrar:
+            
+            Cada día se ejecuta un proceso que calcula diferentes datos para los Hoteles NH. Este día
+            se conoce como Business Date (fecha actual). En PowerBI se puede seleccionar el
+            Business Date de “hoy” o el del miércoles de la semana anterior por temas internos de NH.
+            El PowerBI del que disponemos es el del 02 de Octubre de 2024. La fecha Stay Date hace
+            referencia a la fecha de la que se muestran los datos (reservas para dicho día, ocupaciones
+            etc).
+            Si tomamos el día de hoy como Bussines Date, On-The-Books (OTB) serán las reservas
+            activas a día de hoy para los diferentes Stay Dates, Actuals serán las ocupaciones activas
+            hoy para cada Stay Date y Pick Up son las ocupaciones necesarias para alcanzar el
+            Forecast.
+            Los datos que hemos descargado se corresponden con aquellos de la tabla Rev-for-pre-
+            outputs-rev desde el 01-09-2024 hasta el 30-09-2024, de todos los segmentos salvo Others
+            y TNCD (Transient Restricted). Además, se han tomado los datos del maestro de hoteles,
+            maestro de segmentos y maestro de métricas.
+            
+            A continuación te facilito un resumen de las columnas más importantes en el dataset:
+            Campos y variables.
+            - Segment -> es el tipo de clientes a los que se hace referencia.
+            - Metric -> tipo de servicio al que se hace referencia.
+            - Actuals -> ocupaciones activas (en euros).
+            - OTB -> Reservas activas (en euros).
+            - Forecast -> Previsión (en euros).
+            - Local currency -> Moneda local.
+            - Exchange rate to euro -> relación de la moneda local con EUR.
+            - Hotel_ID -> Identificador del hotel.
+            - Business date -> día en el que se observa la situación (actualidad).
+            - Stay date -> Día al que hacen referencia los datos.
+            - Pick-Up -> Forecast – (Actuals + OTB). Lo que falta para llegar al forecast.
+            - Pts -> Period to stay (diferencia entre stay date y business date).
+            - Hotel Type -> Hotel / Restaurante.
+            - Hotel Name -> nombre del hotel.
+            - Hotel Status -> Open / Signed.
+            - Hotel BU -> Business Unit: BU America / BU Northern Europe / BU Southern Europe.
+            - Hotel SubBU -> Sub Business Unit, agrupación de países.
+            - Hotel Rooms -> nº de habitaciones del hotel.
+            - Hotel Cluster -> Agrupación de hoteles.
+            - Hotel Consolidate -> indica si el hotel se considera maduro (lleva años abierto).
+            - RRM -> Revenue Manager.
+            
+            A continuación te doy unas columnas y sus posibles valores para ayudarte a filtrar:
+            Segment:
+                - BUGR -> Business groups
+                - COMP -> Complementary
+                - CORP -> Corporative
+                - CREW -> para hoteles cerca de aeropuertos, tripulación
+                - LEGR -> Grupos de ocio (Leisure Groups)
+                - MECO -> Meetings & Conferences
+                - OTHE -> Others
+            Metric:
+                - FPB -> BKF + F&B
+                - BKF -> Breakfast
+                - EVENTS -> Eventos
+                - RN -> Room Nights
+                - RP -> Room Revenue RREV
+                - F&B -> Food & beverage
+                
+            Aquí te muestro algunas métricas calculadas
+            - Actuals_business_date -> df[df ['Stay_date']&lt;df ['Business_date']]['Actuals'].sum()
+            - OTB_business_date -> df['OTB'].sum()
+            - Forecast_business_date -> df['Forecast'].sum()
+            - Total_business_date -> Actuals_business_date + OTB_business_date + Forecast_business_date
+            - Perc_expected_revenue -> (actuals_business_date + OTB_business_date) / total_business_date
+            
             Utiliza el historial para adaptar la consulta SQL. No añadas respuestas en lenguaje natural.
             
             IMPORTANTE: Si tu consulta selecciona todas las filas, limita los resultados obtenidos a 20. Por ejemplo: SELECT * from TABLE LIMIT 20
@@ -136,22 +201,6 @@ prompt_custom_chart = ChatPromptTemplate.from_messages(
 )
 
 
-prompt_ml = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            """Eres un asistente virtual que es capaz de llamar a un modelo de machine learning de clasificación y ofrecer el resultado al usuario.
-            - Parámetros de llamada: {params}
-            - Resultado de la llamada {result}
-            
-            Debes dar una respuesta que incluya los parámetros utilizados para llamar al modelo en forma de tabla y de forma clara y sencilla pero que se note que es la parte importante del mensaje el resultado obtenido.
-            """,
-        ),
-        ("placeholder", "{chat_history}"),
-        ("user", "{input}"),
-    ]
-)
-
 prompt_intent = ChatPromptTemplate.from_messages(
     [
         (
@@ -164,28 +213,6 @@ prompt_intent = ChatPromptTemplate.from_messages(
             """,
         ),
         ("user", "{input}"),
-    ]
-)
-prompt_explicabilidad = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            """Eres un asistente virtual y tu especialidad es utilizar tus capacidades de visión para responder a las preguntas del usuario.
-            Tus respuestas deben ser precisas y deben estar basadas únicamente en lo que puedas observar en el documento enviado por el usuario.
-            """,
-        ),
-        ("placeholder", "{chat_history}"),
-        ("human", "{input}"),
-        (
-            "human",
-            [
-                {
-                    "type": "image_url",
-                    "image_url": {"url": "{image_data}"},
-                }
-            ],
-        ),
-        
     ]
 )
 
