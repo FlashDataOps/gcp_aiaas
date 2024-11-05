@@ -15,7 +15,7 @@ foundations = st.Page("./app_pages/foundations.py", title="Margarita", icon="�
 
 pg = st.navigation(
     {
-       "Información": [welcome, doc],
+       #"Información": [welcome, doc],
        "Bots": [foundations],
     }
     )
