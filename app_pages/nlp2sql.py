@@ -1,3 +1,4 @@
+import asyncio
 import streamlit as st
 import langchain_utils as lu
 import pandas as pd
@@ -6,6 +7,81 @@ from streamlit_navigation_bar import st_navbar
 import time
 import os
 import aux_functions as af
+import speech_recognition as sr
+import azure.cognitiveservices.speech as speechsdk
+from io import BytesIO
+from dotenv import load_dotenv
+load_dotenv()
+import traceback
+from gtts import gTTS
+import base64
+
+try:
+    print("Buscando input audio...")
+    list_input_audio = [input for input in enumerate(sr.Microphone.list_microphone_names())]
+except:
+    traceback.print_exc()
+    list_input_audio = [(0, "No Mic Detected")]
+
+def update_chat_input(new_input):
+    js = f"""
+    <script>
+        function insertText(dummy_var_to_force_repeat_execution) {{
+            var chatInput = parent.document.querySelector('textarea[data-testid="stChatInputTextArea"]');
+            var nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+            nativeInputValueSetter.call(chatInput, "{new_input}");
+            var event = new Event('input', {{ bubbles: true}});
+            chatInput.dispatchEvent(event);
+        }}
+        insertText({len(st.session_state.messages)});
+    </script>
+    """
+    st.components.v1.html(js)
+
+# Función para reconocimiento de voz a texto
+async def speech_to_text():
+    recognizer = sr.Recognizer()
+    print(list_input_audio)
+    list_input_audio_names = [input[1] for input in list_input_audio]
+    with sr.Microphone(device_index=list_input_audio_names.index(st.session_state.input_audio)) as source:
+        audio = recognizer.listen(source)
+        
+        try:
+            text = recognizer.recognize_google(audio, language='es-ES')
+            update_chat_input(text)
+            #st.success(f"Texto reconocido: {text}")
+            st.session_state.user_input = text  # Actualizar el valor del input con el texto transcrito
+        except sr.UnknownValueError:
+            traceback.print_exc()
+            #st.error("No se pudo entender el audio.")
+        except sr.RequestError:
+            traceback.print_exc()
+            #st.error("Error al intentar usar el servicio de Google Speech Recognition.")
+
+def text_to_speech(input_text):
+    try:
+        tts = gTTS(input_text, lang='es')
+        mp3_fp = BytesIO()
+        tts.write_to_fp(mp3_fp)
+        mp3_fp.seek(0)  # Reiniciar el puntero al inicio del archivo para reproducirlo
+        
+        #return mp3_fp
+        # Reproducir solo si el archivo se generó exitosamente
+        st.audio(mp3_fp, format='audio/mp3', autoplay=True)
+        return mp3_fp
+    except Exception as e:
+        st.error(f"Error al generar el audio: {e}")
+
+def autoplay_audio(file_path: str):
+    with open(file_path, "rb") as f:
+        data = f.read()
+    b64 = base64.b64encode(data).decode("utf-8")
+    md = f"""
+    <audio autoplay>
+    <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+    </audio>
+    """
+    st.markdown(md, unsafe_allow_html=True)
 def render_or_update_model_info(model_name):
     """
     Renders or updates the model information on the webpage.
@@ -47,15 +123,24 @@ if "model" not in st.session_state:
     st.session_state.model = model_options[0]
     st.session_state.temperature = 0
     st.session_state.max_tokens = 8192
+    st.session_state.input_audio = 1
 
 # Initialize chat history
 if "messages" not in st.session_state:
     st.session_state.messages = []
     st.session_state.sql_messages = []
+    st.session_state.show_success_audio = False
 
 with st.sidebar:
     st.title("Configuración de modelo")
-
+    
+    # Select mic input
+    st.session_state.input_audio = st.selectbox(
+        "Elige una entrada de audio:",
+        [elem[1] for elem in list_input_audio],
+        index=1,
+    )
+    
     # Listar los archivos en la carpeta db
     carpeta_db = 'db' 
     try:
@@ -70,6 +155,7 @@ with st.sidebar:
         archivo_db_seleccionado = st.selectbox("Selecciona una base de datos:", archivos_db)
         af.db_connection.db_name = archivo_db_seleccionado
         
+    
     # Select model
     st.session_state.model = st.selectbox(
         "Elige un modelo:",
@@ -85,24 +171,18 @@ with st.sidebar:
         max_value = max_tokens[st.session_state.model]
 
     st.session_state.max_tokens = st.number_input('Seleccione un máximo de tokens:', min_value=1, max_value=max_tokens[st.session_state.model], value=max_tokens[st.session_state.model], step=100)
-
+    
+    clear_chat_column, record_audio_column= st.columns([1, 1])
     # Reset chat history button
-    if st.button("Vaciar Chat"):
-        reset_chat_history()
-        
-    uploaded_file = st.file_uploader("Subir parámetros de modelo")
-    
-    json_params = None
-    if uploaded_file is not None:
-        # Leer el archivo Excel
-        df = pd.read_excel(uploaded_file)
-        
-        # Convertir cada fila del DataFrame en un diccionario
-        json_data = df.to_dict(orient='records')[0]
 
-        # Convertir el diccionario a formato JSON
-        json_params = json.dumps(json_data, ensure_ascii=False, indent=4)
-    
+    if st.button(":broom: Limpiar chat", use_container_width=True):
+        reset_chat_history()
+
+    if st.button("🎙️ Grabar", use_container_width=True):
+        st.session_state.show_success_audio =True
+        with st.spinner("Escuchando... 👂"):
+            result = asyncio.run(speech_to_text())
+  
 # Render or update model information
 render_or_update_model_info(st.session_state.model)
 
@@ -112,7 +192,9 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
         if "figure" in message["aux"].keys() and len(message["aux"]["figure"]) > 0:
             st.plotly_chart(message["aux"]["figure"][0])
-        st.text("")
+        elif "audio" in message["aux"].keys():
+            st.audio(message["aux"]["audio"], format='audio/mp3', autoplay=False)
+        #st.text("")
 
 # Accept user input
 prompt = st.chat_input("¿En qué puedo ayudarte?")
@@ -130,16 +212,20 @@ if prompt:
             sql_messages = st.session_state.sql_messages,
             model_name=model_options[model_options.index(st.session_state.model)],
             temperature=st.session_state.temperature,
-            max_tokens=st.session_state.max_tokens,
-            json_params=json_params,
-            db_name = archivo_db_seleccionado
+            max_tokens=st.session_state.max_tokens
         )
         st.write_stream(response)
         if "figure" in lu.invoke_chain.aux.keys() and len(lu.invoke_chain.aux["figure"]) > 0:
-            st.plotly_chart(lu.invoke_chain.aux["figure"][0])
+            with st.spinner("Generando gráfico..."):
+                st.plotly_chart(lu.invoke_chain.aux["figure"][0])
         if hasattr(lu.invoke_chain, 'recursos'):
             for recurso in lu.invoke_chain.recursos:
                 st.button(recurso)
+                
+        aux_v2 = lu.invoke_chain.aux
+        with st.spinner("Generando audio..."):
+            mp3_file = text_to_speech(lu.invoke_chain.response)
+            aux_v2["audio"] = mp3_file
 
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt, "aux": {}})

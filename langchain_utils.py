@@ -157,12 +157,10 @@ prompt_intent = ChatPromptTemplate.from_messages(
         (
             "system",
             """Tu tarea es decidir cuál es la intención del usuario a partir del mensaje del usuario. Las posibilidades son:
-            - ML: Si el usuario quiere realizar una llamada de inferencia a un modelo de machine learning. 
             - Consulta: Si el usuario realiza una consulta sobre un dataset con el siguiente schema: {schema}
-            - Explicabilidad: Si el usuario necesita detalles sobre la explicabildiad del modelo de forma general o de un dato concreto.
             - Otro: Cualquier cosa que no tenga nada que ver con las otras tres
             
-            Responde únicamente con las palabras [ML, Consulta, Explicabilidad, Otro]. En caso de no saber a que se refiere responde Otro
+            Responde únicamente con las palabras [Consulta, Otro]. En caso de no saber a que se refiere responde Otro
             """,
         ),
         ("user", "{input}"),
@@ -256,7 +254,7 @@ def create_history(messages):
             history.add_ai_message(message["content"])
     return history
 
-def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192, json_params=None, db_name=None):
+def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192):
     """
     Invokes the language chain model to generate a response based on the given question and chat history.
 
@@ -294,17 +292,7 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
     res_intent = intent_chain.invoke({"input": question}).strip().lower()
     print(f"La intención del usuario es -> {res_intent}")
     
-    
-    if res_intent == "ml":
-        chain = prompt_ml | llm | StrOutputParser()
-        #ml_result = af.simulate_model_prediction(json_params)
-        ml_result = "fraude"
-        config["params"] = json_params    
-        config["result"] = ml_result
-    elif res_intent == "explicabilidad":
-        config["image_data"] = "gs://single-cirrus-435319-f1-bucket/foundations/shap.png"
-        chain = prompt_explicabilidad | llm | StrOutputParser()
-    elif res_intent == "consulta":
+    if res_intent == "consulta":
         sql_chain = (
             RunnablePassthrough.assign(schema=get_schema)
             | prompt_create_sql
