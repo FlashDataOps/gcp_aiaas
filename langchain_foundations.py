@@ -212,7 +212,7 @@ main_prompt = ChatPromptTemplate.from_messages(
             
             
             Intenta dar respuestas estructuradas en varios párrafos de forma breve, utilizando negritas, cursivas, bullet points, tablas...
-            Si el usuario te pregunta con cualquier cosa que no esté relacionada con el evento del Foundations o información sobre el restaurante, o las bromas graciosas de la última sección dile que no se pase de listillo, que tu creado ya ha contemplado que el usuario se vaya por las ramas
+            El usuario solo puede preguntarte por cosas relacionadas con lo que te he comentado más arriba o cosas de México
             UTILIZA ÚNICAMENTE LA INFORMACIÓN DE LA CARTA PARA RESPONDER A LOS USUARIOS.
             DEBES RESPONDES DE FORMA BREVE Y CONCISA AL USUARIO
             
