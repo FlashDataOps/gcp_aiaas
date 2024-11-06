@@ -15,6 +15,11 @@ load_dotenv()
 import traceback
 from gtts import gTTS
 import base64
+from scipy.io import wavfile
+from pydub import AudioSegment
+from pydub.playback import play
+import streamlit.components.v1 as components
+
 
 try:
     print("Buscando input audio...")
@@ -39,38 +44,34 @@ def update_chat_input(new_input):
     st.components.v1.html(js)
 
 # Función para reconocimiento de voz a texto
-async def speech_to_text():
-    recognizer = sr.Recognizer()
-    print(list_input_audio)
-    list_input_audio_names = [input[1] for input in list_input_audio]
-    with sr.Microphone(device_index=list_input_audio_names.index(st.session_state.input_audio)) as source:
-        audio = recognizer.listen(source)
-        
-        try:
-            text = recognizer.recognize_google(audio, language='es-ES')
-            update_chat_input(text)
-            #st.success(f"Texto reconocido: {text}")
-            st.session_state.user_input = text  # Actualizar el valor del input con el texto transcrito
-        except sr.UnknownValueError:
-            traceback.print_exc()
-            #st.error("No se pudo entender el audio.")
-        except sr.RequestError:
-            traceback.print_exc()
-            #st.error("Error al intentar usar el servicio de Google Speech Recognition.")
-
 def text_to_speech(input_text):
     try:
+        # Generar el audio con gTTS y guardarlo en un objeto BytesIO
         tts = gTTS(input_text, lang='es')
         mp3_fp = BytesIO()
         tts.write_to_fp(mp3_fp)
-        mp3_fp.seek(0)  # Reiniciar el puntero al inicio del archivo para reproducirlo
+        mp3_fp.seek(0)
+
+        # Leer el audio y codificarlo en base64
+        audio_data = mp3_fp.read()
+        b64_audio = base64.b64encode(audio_data).decode("utf-8")
+
+        # Crear HTML con JavaScript para ajustar la velocidad
+        html_code = f"""
+        <audio id="audio" controls autoplay>
+            <source src="data:audio/mp3;base64,{b64_audio}" type="audio/mp3">
+        </audio>
+        <script>
+            document.getElementById("audio").playbackRate = 1.3;
+        </script>
+        """
         
-        #return mp3_fp
-        # Reproducir solo si el archivo se generó exitosamente
-        st.audio(mp3_fp, format='audio/mp3', autoplay=True)
+        # Usar el componente HTML de Streamlit para incrustar el reproductor
+        components.html(html_code, height=80)
         return mp3_fp
     except Exception as e:
         st.error(f"Error al generar el audio: {e}")
+
 
 def autoplay_audio(file_path: str):
     with open(file_path, "rb") as f:
@@ -82,6 +83,7 @@ def autoplay_audio(file_path: str):
     </audio>
     """
     st.markdown(md, unsafe_allow_html=True)
+    
 def render_or_update_model_info(model_name):
     """
     Renders or updates the model information on the webpage.
