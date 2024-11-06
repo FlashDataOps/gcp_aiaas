@@ -100,7 +100,7 @@ prompt_create_sql = ChatPromptTemplate.from_messages(
             - Hotel_ID -> Identificador del hotel.
             - Business date -> día en el que se observa la situación (actualidad).
             - Stay date -> Día al que hacen referencia los datos.
-            - Pick-Up -> Forecast – (Actuals + OTB). Lo que falta para llegar al forecast.
+            - Pick-Up -> Forecast - (Actuals + OTB). Lo que falta para llegar al forecast.
             - Pts -> Period to stay (diferencia entre stay date y business date).
             - Hotel Type -> Hotel / Restaurante.
             - Hotel Name -> nombre del hotel.
@@ -130,7 +130,7 @@ prompt_create_sql = ChatPromptTemplate.from_messages(
                 - F&B -> Food & beverage
                 
             Aquí te muestro algunas métricas calculadas
-            - Actuals_business_date -> df[df ['Stay_date']&lt;df ['Business_date']]['Actuals'].sum()
+            - Actuals_business_date -> df[df ['Stay_date'] < df ['Business_date']]['Actuals'].sum()
             - OTB_business_date -> df['OTB'].sum()
             - Forecast_business_date -> df['Forecast'].sum()
             - Total_business_date -> Actuals_business_date + OTB_business_date + Forecast_business_date
@@ -138,7 +138,7 @@ prompt_create_sql = ChatPromptTemplate.from_messages(
             
             Utiliza el historial para adaptar la consulta SQL. No añadas respuestas en lenguaje natural.
             
-            IMPORTANTE: Si tu consulta selecciona todas las filas, limita los resultados obtenidos a 20. Por ejemplo: SELECT * from TABLE LIMIT 20
+            IMPORTANTE: Si el usuario te pregunta por información sobre un número indeterminado de elementos del dataset, debes dar la información completa únicamente de los 60 primeros elementos ordenados. Por ejemplo, si te pregunta, dame la información sobre los hoteles de europa, debes ofrecer únicamente la información sobre 60 hoteles en europa.
             RESPONDE ÚNICAMENTE CON CÓDIGO SQL. NO AÑADAS PALABRAS EN LENGUAJE NATURAL.
             LA CONSULTA DEBE ESTAR PREPARADA PARA SER EJECUTADA EN LA BASE DE DATOS
             
@@ -165,12 +165,12 @@ prompt_create_sql_response = ChatPromptTemplate.from_messages(
             - Query SQL: {query}
             - Respuesta: {response}
             
-            En tu respuesta debes indicar la query SQL que se ha generado para la pregunta del usuario. Escribela de forma que sea fácil de leer. Evita que sea una única línea e indenta bien cada linea de la query.
             
-            No utilices el formato que te he dado anteriormente para responder a la pregunta, muestra la información en uno o dos párrafos
+            La respuesta debe tener dos seccions. Por un lado, de forma breve y concisa una frase con la respuesta a la pregunta del usuario. Por otro lado, si es posible, debes incluir un parrafo con un insight que se pueda extraer del resultado de la base de datos. No incluyas cabeceras para cada sección, directamente las información.
+            No hagas referencia a la base de datos en ningún momento, ni a la consulta realizada ni a los resultados extraidos en bruto.
             Siempre muestralo de una forma bonita y ordenada, utilizando tablas o bullets points con saltos de línea a ser posible.
             UTILIZA FORMATO MARKDOWN
-            RESPONDE EN ESPAÑOL DE FORMA DETALLADA
+            RESPONDE EN ESPAÑOL DE BREVE A LA PREGUNTA DEL USUARIO
             """,
         ),
         ("placeholder", "{chat_history}"),
@@ -206,12 +206,13 @@ prompt_intent = ChatPromptTemplate.from_messages(
         (
             "system",
             """Tu tarea es decidir cuál es la intención del usuario a partir del mensaje del usuario. Las posibilidades son:
-            - Consulta: Si el usuario realiza una consulta sobre un dataset con el siguiente schema: {schema}
-            - Otro: Cualquier cosa que no tenga nada que ver con las otras tres
+            - Consulta: Si el usuario realiza una consulta sobre un dataset de hoteles con el siguiente schema: {schema}
+            - Otro: Cualquier cosa que no tenga nada que ver con realizar una consulta a los datos de NH
             
             Responde únicamente con las palabras [Consulta, Otro]. En caso de no saber a que se refiere responde Otro
             """,
         ),
+        ("placeholder", "{chat_history}"),
         ("user", "{input}"),
     ]
 )
@@ -220,47 +221,15 @@ prompt_general = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            """Eres un bot desarrollado por el Equipo 5 y participas en el concurso del Tongations. Tu tarea es ayudar al usuario a realizar cualquiera de tus tres funcionalidades:
-            - ML: Si el usuario quiere realizar una llamada de inferencia a un modelo de machine learning. 
-            - Consulta: Si el usuario realiza una consulta sobre un dataset.
-            - Explicabilidad: Si el usuario necesita detalles sobre la explicabildiad del modelo de forma general o de un dato concreto.
+            """Eres un asistente que trabaja en NH Hoteles. Tu tarea es ayudar al usuario a entender la información del modelo de datos de NH.
+            Puedes realizar la siguiente tarea:
+            - Consulta: Si el usuario realiza una consulta sobre un dataset, se puede generar un gráfico y una respuesta en formato de audio para poder escucharla. El esquema del dataset es el siguiente {schema}
             """,
         ),
         ("placeholder", "{chat_history}"),
         ("human", "{input}")        
     ]
 )
-
-@lru_cache(maxsize=None)
-def get_custom_chain(model_name, temperature, max_tokens, params, type=None, db=None):
-    """
-    Create and return a retrieval-augmented generation (RAG) chain.
-
-    Args:
-        model_name (str): The name of the model to use.
-        temperature (float): The temperature parameter for generation.
-        max_tokens (int): The maximum number of tokens to generate.
-
-    Returns:
-        rag_chain: The retrieval-augmented generation chain.
-
-    """
-    model = get_model(model_name, temperature, max_tokens)
-    
-    if params is not None:
-        chain = prompt_ml | model | StrOutputParser()
-    else:
-        
-        #chain = create_pandas_dataframe_agent(model, df, agent_type="openai-tools", verbose=True)
-        if type == "pandas_code":
-            chain = create_sql_query_chain(model, db)
-        else:
-            chain = (
-                prompt_create_sql_response | model | StrOutputParser()
-            )
-
-    return chain
-
 
 def create_history(messages):
     """
@@ -316,10 +285,10 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         | llm
         | StrOutputParser()
     )
-    res_intent = intent_chain.invoke({"input": question}).strip().lower()
+    res_intent = intent_chain.invoke(config).strip().lower()
     print(f"La intención del usuario es -> {res_intent}")
     
-    if res_intent == "consulta":
+    if "consulta" in res_intent:
         sql_chain = (
             RunnablePassthrough.assign(schema=get_schema)
             | prompt_create_sql
@@ -344,14 +313,19 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         }
         query = sql_chain.invoke(config)
         query = clean_query(query)
+        print(query)
         sql_history.add_user_message(question)
         #sql_history.add_ai_message(query)
-        
+        print("Ejecutando consulta...")
+        flag_correct_query = False
         try:   
             result = db.run(query)
+            flag_correct_query = True
+            print("Consulta ejecutada correctamente")
         except:
             result = f"No se ha podido ejecutar la consulta. Indica al usuario que existe un problema a la hora de realizar la consulta SQL {query} en la base de datos. Responde de forma breve"
-        
+            traceback.print_exc()
+            
         config = {
         "input": question, 
         "chat_history": history.messages, 
@@ -360,6 +334,7 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         "schema": get_schema
         }
     else:
+        config["schema"] = get_schema
         chain = prompt_general | llm | StrOutputParser()
         
     for chunk in chain.stream(config):
@@ -370,7 +345,7 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
     history.add_user_message(question)
     history.add_ai_message(response)
     
-    if res_intent == "consulta":
+    if res_intent == "consulta" and flag_correct_query == True:
         try:
             list_result = eval(result)
             if len(list_result) > 1:

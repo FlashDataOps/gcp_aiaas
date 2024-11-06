@@ -17,7 +17,6 @@ from gtts import gTTS
 import base64
 
 try:
-    print("Buscando input audio...")
     list_input_audio = [input for input in enumerate(sr.Microphone.list_microphone_names())]
 except:
     traceback.print_exc()
@@ -67,11 +66,23 @@ def text_to_speech(input_text):
         
         #return mp3_fp
         # Reproducir solo si el archivo se generó exitosamente
-        st.audio(mp3_fp, format='audio/mp3', autoplay=True)
+        #st.audio(mp3_fp, format='audio/mp3', autoplay=True)
         return mp3_fp
     except Exception as e:
         st.error(f"Error al generar el audio: {e}")
 
+def update_playback_rate(mp3_file, rate):
+    audio_data = mp3_file.read()
+    b64_audio = base64.b64encode(audio_data).decode("utf-8")
+    # Crear HTML para el reproductor con JavaScript para la velocidad
+    html_code = f""" <div data-stale="false" width: 100% class="element-container st-emotion-cache-a1dagx e1f1d6gn4" data-test="element-container"> 
+    <audio id="audio" controls autoplay style="width: 100%;"> 
+    <source src="data:audio/mp3;base64,{b64_audio}" type="audio/mp3">
+    </audio> 
+    <script> document.getElementById("audio").playbackRate = {rate}; </script> </div> """
+
+    # Incrustar el reproductor y el botón de descarga
+    st.components.v1.html(html_code, height=100)
 def autoplay_audio(file_path: str):
     with open(file_path, "rb") as f:
         data = f.read()
@@ -133,6 +144,8 @@ if "messages" not in st.session_state:
 
 with st.sidebar:
     st.title("Configuración de modelo")
+    
+    audio_toggle = st.toggle("Respuestas con audio")
     
     # Select mic input
     st.session_state.input_audio = st.selectbox(
@@ -205,7 +218,6 @@ if prompt:
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-
         response = lu.invoke_chain(
             question=prompt,
             messages=st.session_state.messages,
@@ -221,12 +233,14 @@ if prompt:
         if hasattr(lu.invoke_chain, 'recursos'):
             for recurso in lu.invoke_chain.recursos:
                 st.button(recurso)
-                
+           
         aux_v2 = lu.invoke_chain.aux
-        with st.spinner("Generando audio..."):
-            mp3_file = text_to_speech(lu.invoke_chain.response)
-            aux_v2["audio"] = mp3_file
+        if audio_toggle:
+            with st.spinner("Generando audio..."):
+                mp3_file = text_to_speech(lu.invoke_chain.response)
+                update_playback_rate(mp3_file=mp3_file, rate=1.25)
+                aux_v2["audio"] = mp3_file
 
     # Add user message to chat history
     st.session_state.messages.append({"role": "user", "content": prompt, "aux": {}})
-    st.session_state.messages.append({"role": "assistant", "content": lu.invoke_chain.response, "aux": lu.invoke_chain.aux})
+    st.session_state.messages.append({"role": "assistant", "content": lu.invoke_chain.response, "aux": aux_v2})
