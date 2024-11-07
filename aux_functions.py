@@ -2,9 +2,12 @@ import json
 from langchain_community.utilities import SQLDatabase
 import pandas as pd
 import sqlite3
+import re
+import numpy as np
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
+
 
 def simulate_model_prediction(input_json):
     """
@@ -39,6 +42,57 @@ def get_db_from_uri(uri):
     db = SQLDatabase.from_uri(f"sqlite:///db/{uri}")
     return db
 
+def dividir_en_bloques_por_grupo(resultados_sql, max_filas):
+    datos = np.array(resultados_sql, dtype=object)  # Aseguramos un array 2D
+    filas_actuales = 0
+    filas_omitidas = False
+    resultado_final = []
+    
+    grupos_unicos, indices = np.unique(datos[:, 0], return_index=True)
+    
+    for i in range(len(grupos_unicos)):
+        inicio = indices[i]
+        fin = indices[i + 1] if i + 1 < len(indices) else len(datos)
+        
+        grupo_filas = datos[inicio:fin]
+        num_filas_grupo = len(grupo_filas)
+
+        if filas_actuales + num_filas_grupo > max_filas:
+            filas_omitidas = True
+            break
+        
+        resultado_final.extend([tuple(fila) for fila in grupo_filas])
+        filas_actuales += num_filas_grupo
+
+    return resultado_final, filas_omitidas
+
+def create_few_shots(df = pd.read_excel(f"./few_shots/preguntas_respuestas_NH.xlsx")):
+    lista_tuplas = []
+    for _, row in df.iterrows():
+        if row['Resultado'] != '':
+            lista_tuplas.append(("user", row['Pregunta']))
+            lista_tuplas.append(("assistant", row['Código SQL']))
+    print(lista_tuplas)
+    return lista_tuplas
+
+def format_text_for_audio(texto):
+    texto = re.sub(r'[^a-zA-Z0-9áéíóúüñÁÉÍÓÚÜÑ,.?!:\n ]+', '', texto)
+    
+    # Formatear títulos para que tengan doble salto de línea al final
+    texto = re.sub(r'(\n)([^\s]+.*?):\n', r'\1\2:\n\n', texto)
+    
+    # Añadir viñetas con tabulación para cada línea de lista detectada y espacio adicional entre apartados
+    texto = re.sub(r'(\n)([^\n]+)(\n|$)', r'\1    - \2.\n', texto)
+    texto = re.sub(r'\n\n\s*- ', '\n\n\n- ', texto)  # Triple salto de línea entre apartados
+    
+    # Limpiar puntos y espacios redundantes
+    texto = re.sub(r'\.{2,}', '.', texto)
+    texto = re.sub(r'\s+', ' ', texto).strip()
+    
+    if texto and texto[-1] not in '.!?':
+        texto += '.'
+    
+    return texto
 class DB_Connection:
 
     def __init__(self):
@@ -61,4 +115,6 @@ class DB_Connection:
         return df
 
 db_connection = DB_Connection()
+
+
 

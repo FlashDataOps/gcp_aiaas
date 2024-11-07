@@ -23,7 +23,6 @@ import aux_functions as af
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 import traceback
-import pandas as pd
 
 load_dotenv()
 
@@ -58,8 +57,9 @@ def get_model(model_name, temperature, max_tokens):
         "llama3-8b-8192": ChatGroq(temperature=temperature,model_name="llama3-8b-8192", max_tokens=max_tokens),
         "mixtral-8x7b-32768": ChatGroq(temperature=temperature,model_name="mixtral-8x7b-32768", max_tokens=max_tokens),
         "gemma-7b-it": ChatGroq(temperature=temperature,model_name="mixtral-8x7b-32768", max_tokens=max_tokens),
-        "gemini-1.5-flash-002":ChatVertexAI(model_name="gemini-1.5-flash-002",project="single-cirrus-435319-f1",verbose=True),
-        "gemini-1.5-pro-002":ChatVertexAI(model_name="gemini-1.5-pro-002",project="single-cirrus-435319-f1",verbose=True),
+        "gemini-1.5-flash-002":ChatVertexAI(model_name="gemini-1.5-flash-002",project="single-cirrus-435319-f1",verbose=True, temperature=temperature),
+        "gemini-1.5-pro-002":ChatVertexAI(model_name="gemini-1.5-pro-002",project="single-cirrus-435319-f1",verbose=True, temperature=temperature),
+        "llama-3.1-70b-versatile": ChatGroq(temperature=temperature,model_name="llama-3.1-70b-versatile", max_tokens=max_tokens),
     }
     return llm[model_name]
 
@@ -73,81 +73,86 @@ prompt_create_sql = ChatPromptTemplate.from_messages(
             
             A continuación te paso una descripción general de los datos que te vas a encontrar:
             
-            Cada día se ejecuta un proceso que calcula diferentes datos para los Hoteles NH. Este día
-            se conoce como Business Date (fecha actual). En PowerBI se puede seleccionar el
-            Business Date de “hoy” o el del miércoles de la semana anterior por temas internos de NH.
-            El PowerBI del que disponemos es el del 02 de Octubre de 2024. La fecha Stay Date hace
-            referencia a la fecha de la que se muestran los datos (reservas para dicho día, ocupaciones
-            etc).
-            Si tomamos el día de hoy como Bussines Date, On-The-Books (OTB) serán las reservas
-            activas a día de hoy para los diferentes Stay Dates, Actuals serán las ocupaciones activas
-            hoy para cada Stay Date y Pick Up son las ocupaciones necesarias para alcanzar el
-            Forecast.
-            Los datos que hemos descargado se corresponden con aquellos de la tabla Rev-for-pre-
-            outputs-rev desde el 01-09-2024 hasta el 30-09-2024, de todos los segmentos salvo Others
-            y TNCD (Transient Restricted). Además, se han tomado los datos del maestro de hoteles,
-            maestro de segmentos y maestro de métricas.
+            Cada día se ejecuta un proceso que calcula diferentes datos para los Hoteles NH. Este día se conoce como Business Date (fecha actual). En PowerBI se puede seleccionar el Business Date de “hoy” o el del miércoles de la semana anterior por temas internos de NH. El PowerBI del que disponemos es el del 02 de Octubre de 2024. La fecha Stay Date hace referencia a la fecha de la que se muestran los datos (reservas para dicho día, ocupaciones etc).
+            Si tomamos el día de hoy como Bussines Date, On-The-Books (OTB) serán las reservas activas a día de hoy para los diferentes Stay Dates, Actuals serán las ocupaciones activas hoy para cada Stay Date y Pick Up son las ocupaciones necesarias para alcanzar el Forecast.
+            Los datos que hemos descargado se corresponden con aquellos de la tabla Rev-for-pre-outputs-rev desde el 01-09-2024 hasta el 30-09-2024, de todos los segmentos salvo Others y TNCD (Transient Restricted). Además, se han tomado los datos del maestro de hoteles, maestro de segmentos y maestro de métricas.
+
             
             A continuación te facilito un resumen de las columnas más importantes en el dataset:
             Campos y variables.
-            - Segment -> es el tipo de clientes a los que se hace referencia.
-            - Metric -> tipo de servicio al que se hace referencia.
-            - Actuals -> ocupaciones activas (en euros).
-            - OTB -> Reservas activas (en euros).
-            - Forecast -> Previsión (en euros).
-            - Local currency -> Moneda local.
-            - Exchange rate to euro -> relación de la moneda local con EUR.
-            - Hotel_ID -> Identificador del hotel.
-            - Business date -> día en el que se observa la situación (actualidad).
-            - Stay date -> Día al que hacen referencia los datos.
-            - Pick-Up -> Forecast - (Actuals + OTB). Lo que falta para llegar al forecast.
-            - Pts -> Period to stay (diferencia entre stay date y business date).
-            - Hotel Type -> Hotel / Restaurante.
-            - Hotel Name -> nombre del hotel.
-            - Hotel Status -> Open / Signed.
-            - Hotel BU -> Business Unit: BU America / BU Northern Europe / BU Southern Europe.
-            - Hotel SubBU -> Sub Business Unit, agrupación de países.
-            - Hotel Rooms -> nº de habitaciones del hotel.
-            - Hotel Cluster -> Agrupación de hoteles.
-            - Hotel Consolidate -> indica si el hotel se considera maduro (lleva años abierto).
-            - RRM -> Revenue Manager.
+            •	Segment -> es el tipo de clientes a los que se hace referencia.
+            •	Metric -> tipo de servicio al que se hace referencia.
+            •	Actuals -> ocupaciones activas (en euros).
+            •	OTB -> Reservas activas (en euros).
+            •	Forecast -> Previsión (en euros), ingresos esperados.
+            •	Local_Currency -> Moneda local.
+            •	Exchange_rate_to_euro -> relación de la moneda local con EUR.
+            •	Hotel_ID -> Identificador del hotel.
+            •	Business_date -> día en el que se observa la situación (actualidad).
+            •	Stay_date -> Día al que hacen referencia los datos.
+            •	Pick_Up -> Forecast - (Actuals + OTB). Lo que falta para llegar al forecast.
+            •	Pts -> Period to stay (diferencia entre stay date y business date).
+            •	Hotel_Type -> Hotel / Restaurante.
+            •	Hotel_Name -> nombre del hotel.
+            •	Hotel_Status -> OPEN / SIGNED.
+            •	Hotel_BU -> Business Unit: BU America / BU Northern Europe / BU Southern Europe.
+            •	Hotel_SubBU -> Sub Business Unit, agrupación de países.
+            •	Hotel_Rooms -> nº de habitaciones del hotel.
+            •	Hotel_Cluster -> Agrupación de hoteles.
+            •	Hotel_Consolidate -> indica si el hotel se considera maduro (lleva años abierto).
+            •	RRM -> Revenue Manager.
+
+            Algunas métricas útiles son:
+            •	Actuals_business_date -> df[df ['Stay_date']<df ['Business_date']]['Actuals'].sum(). La suma de los € de ocupaciones activas a día de hoy (Business Date).
+            •	OTB_business_date  -> df['OTB'].sum(). Suma de reservas totales en €.
+            •	Forecast_business_date -> df['Forecast'].sum(). Suma de predicciones en €.
+            •	Total_business_date -> Actuals_business_date + OTB_business_date  + Forecast_business_date. Suma de ocupaciones activas, reservas y previsiones.
+            •	Perc_expected_revenue -> (actuals_business_date + OTB_business_date) / total_business_date. Porcentaje de € sobre el total.
+
             
             A continuación te doy unas columnas y sus posibles valores para ayudarte a filtrar:
-            Segment:
-                - BUGR -> Business groups
-                - COMP -> Complementary
-                - CORP -> Corporative
-                - CREW -> para hoteles cerca de aeropuertos, tripulación
-                - LEGR -> Grupos de ocio (Leisure Groups)
-                - MECO -> Meetings & Conferences
-                - OTHE -> Others
-            Metric:
-                - FPB -> BKF + F&B
-                - BKF -> Breakfast
-                - EVENTS -> Eventos
-                - RN -> Room Nights
-                - RP -> Room Revenue RREV
-                - F&B -> Food & beverage
+            •	Segment: 
+                •	BUGR -> Business groups (grupos de negocio)
+                •	COMP -> Complementary (complementarios)
+                •	CORP -> Corporative (corporativos)
+                •	CREW -> para hoteles cerca de aeropuertos, tripulación 
+                •	LEGR -> Grupos de ocio (Leisure Groups)
+                •	MECO -> Meetings & Conferences (reuniones y conferencias)
+                •	OTHE -> Others (otros)
+            •	Metric:
+                •	FPB -> BKF + F&B 
+                •	BKF -> Breakfast (desayuno)
+                •	EVENTS -> Eventos
+                •	RN -> Room Nights  
+                •	RP -> Room Revenue RREV (dinero generado con las habitaciones)
+                •	F&B -> Food & beverage
+            
+            Otras siglas y sus significados:
+                •	ADR -> precio medio de la habitación
+                •	TREV -> Total Revenue (dinero total generado)
+                •	OREV -> Other Revenue (dinero no generado por las habitaciones)
+                •	TREV -> RREV + OREV
+                •	OTB -> On-the-books / Reservas
+
                 
-            Aquí te muestro algunas métricas calculadas
-            - Actuals_business_date -> df[df ['Stay_date'] < df ['Business_date']]['Actuals'].sum()
-            - OTB_business_date -> df['OTB'].sum()
-            - Forecast_business_date -> df['Forecast'].sum()
-            - Total_business_date -> Actuals_business_date + OTB_business_date + Forecast_business_date
-            - Perc_expected_revenue -> (actuals_business_date + OTB_business_date) / total_business_date
+            Aquí te muestro algunas métricas calculadas de utilidad.
+            •	Actuals_business_date -> df[df ['Stay_date']<df ['Business_date']]['Actuals'].sum(). La suma de los € de ocupaciones activas a día de hoy (Business Date).
+            •	OTB_business_date  -> df['OTB'].sum(). Suma de reservas totales en €.
+            •	Forecast_business_date -> df['Forecast'].sum(). Suma de predicciones en €.
+            •	Total_business_date -> Actuals_business_date + OTB_business_date  + Forecast_business_date. Suma de ocupaciones activas, reservas y previsiones.
+            •	Perc_expected_revenue -> (actuals_business_date + OTB_business_date) / total_business_date. Porcentaje de € sobre el total.
             
             Utiliza el historial para adaptar la consulta SQL. No añadas respuestas en lenguaje natural.
             
-            IMPORTANTE: Si el usuario te pregunta por información sobre un número indeterminado de elementos del dataset, debes dar la información completa únicamente de los 60 primeros elementos ordenados. Por ejemplo, si te pregunta, dame la información sobre los hoteles de europa, debes ofrecer únicamente la información sobre 60 hoteles en europa.
             RESPONDE ÚNICAMENTE CON CÓDIGO SQL. NO AÑADAS PALABRAS EN LENGUAJE NATURAL.
             LA CONSULTA DEBE ESTAR PREPARADA PARA SER EJECUTADA EN LA BASE DE DATOS
             
             No incluyas introducción, ni introduzcas en una lista la resupuesta
             
-            - Pregunta: {input}
-            - Query SQL:
             """,
         ),
+        
+        ("placeholder", "{few_shots}"),
         ("placeholder", "{chat_history}"),
         ("user", "{input}"),
     ]
@@ -266,7 +271,6 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
 
     """
     db = af.db_connection.get_db()
-    #chain = get_custom_chain(model_name, temperature, max_tokens, json_params, db)
     llm = get_model(model_name, temperature, max_tokens)
     history = create_history(messages)
     sql_history = create_history(sql_messages)
@@ -292,7 +296,7 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         sql_chain = (
             RunnablePassthrough.assign(schema=get_schema)
             | prompt_create_sql
-            | llm.bind(stop=["\nSQLResult:"])
+            | llm.bind(stop=["\nSQl:"])
             | StrOutputParser()
         )
         
@@ -309,17 +313,20 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         )
         config = {
         "input": question, 
-        "chat_history": sql_history.messages, 
+        "chat_history": sql_history.messages,
+        "few_shots": af.create_few_shots() 
         }
         query = sql_chain.invoke(config)
         query = clean_query(query)
-        print(query)
+        #print(query)
         sql_history.add_user_message(question)
         #sql_history.add_ai_message(query)
         print("Ejecutando consulta...")
         flag_correct_query = False
         try:   
             result = db.run(query)
+            #print("RESULTADO ANTES", result)
+            result, _ = af.dividir_en_bloques_por_grupo(resultados_sql=eval(result), max_filas=50)
             flag_correct_query = True
             print("Consulta ejecutada correctamente")
         except:
@@ -345,15 +352,16 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
     history.add_user_message(question)
     history.add_ai_message(response)
     
-    if res_intent == "consulta" and flag_correct_query == True:
+    if "consulta" in res_intent and flag_correct_query == True:
         try:
-            list_result = eval(result)
+            list_result = result
             if len(list_result) > 1:
                 del config["schema"]
                 plot_code = plot_chain.invoke(config)
-                
+                #print(plot_code)
                 plot_code = plot_code.replace("```python", "").replace("```", "").replace("fig.show()", "")
                 exec(plot_code)
+                
                 aux["figure"] = eval("[fig]")
         except Exception as e:
             print(f"Error al generar el gráfico {e}")

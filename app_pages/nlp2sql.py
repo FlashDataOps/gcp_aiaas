@@ -22,6 +22,13 @@ except:
     traceback.print_exc()
     list_input_audio = [(0, "No Mic Detected")]
 
+default_mic_name = "Microphone Array (IntelÂ® Smart "
+default_mic_index = next((index for index, name in list_input_audio if default_mic_name in name), 0)
+default_mic_name_selected = list_input_audio[default_mic_index][1]
+
+if "input_audio" not in st.session_state:
+    st.session_state.input_audio = default_mic_name_selected
+
 def update_chat_input(new_input):
     js = f"""
     <script>
@@ -40,9 +47,13 @@ def update_chat_input(new_input):
 # Función para reconocimiento de voz a texto
 async def speech_to_text():
     recognizer = sr.Recognizer()
-    print(list_input_audio)
-    list_input_audio_names = [input[1] for input in list_input_audio]
-    with sr.Microphone(device_index=list_input_audio_names.index(st.session_state.input_audio)) as source:
+    list_input_audio_names = [name for _, name in list_input_audio]
+    
+    try:
+        device_index = list_input_audio_names.index(st.session_state.input_audio)
+    except ValueError:
+        device_index = 0 # por defecto si no se ecuentra el micro de PwC
+    with sr.Microphone(device_index=device_index) as source:
         audio = recognizer.listen(source)
         
         try:
@@ -59,6 +70,7 @@ async def speech_to_text():
 
 def text_to_speech(input_text):
     try:
+        input_text = af.format_text_for_audio(input_text)
         tts = gTTS(input_text, lang='es')
         mp3_fp = BytesIO()
         tts.write_to_fp(mp3_fp)
@@ -119,21 +131,22 @@ def reset_chat_history():
     if "messages" in st.session_state:
         st.session_state.messages = []
 
-model_options = ["llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768", "gemma-7b-it", "gemini-1.5-flash-002", "gemini-1.5-pro-002"]
+model_options = ["llama-3.1-70b-versatile","llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768", "gemma-7b-it", "gemini-1.5-flash-002", "gemini-1.5-pro-002"]
 max_tokens = {
     "llama3-70b-8192": 8192,
     "llama3-8b-8192": 8192,
     "mixtral-8x7b-32768": 32768,
     "gemma-7b-it": 8192,
     "gemini-1.5-flash-002": 128000,
-    "gemini-1.5-pro-002": 128000
+    "gemini-1.5-pro-002": 128000,
+    "llama-3.1-70b-versatile":8_000
 }
 
 # Initialize model
 if "model" not in st.session_state:
     st.session_state.model = model_options[0]
     st.session_state.temperature = 0
-    st.session_state.max_tokens = 8192
+    st.session_state.max_tokens = max_tokens[st.session_state.model]
     st.session_state.input_audio = 1
 
 # Initialize chat history
@@ -151,7 +164,7 @@ with st.sidebar:
     st.session_state.input_audio = st.selectbox(
         "Elige una entrada de audio:",
         [elem[1] for elem in list_input_audio],
-        index=1,
+        index=default_mic_index,
     )
     
     # Listar los archivos en la carpeta db
