@@ -295,7 +295,8 @@ prompt_ml = ChatPromptTemplate.from_messages(
             - Parámetros de llamada: {params}
             - Resultado de la llamada {result}
             
-            Debes dar una respuesta que incluya los parámetros utilizados para llamar al modelo en forma de tabla y de forma clara y sencilla pero que se note que es la parte importante del mensaje el resultado obtenido.
+            Debes dar una respuesta que incluya 5 parámetros más importantes para identificar la transacción (en español, sin utilizar los nombres de las columnas) utilizados para llamar al modelo en forma de tabla y de forma clara y sencilla pero que se note que es la parte importante del mensaje el resultado obtenido.
+            Si el resultado obtenido es False, siginifica que la transacción no ha sido identificada como alerta, si el resultado es True, significa que estamos ante una alerta que se debería revisar manualmente. En tu respuesta, no digas el valor en bruto obtenido.
             """,
         ),
         ("placeholder", "{chat_history}"),
@@ -386,7 +387,65 @@ prompt_general = ChatPromptTemplate.from_messages(
             """,
         ),
         ("placeholder", "{chat_history}"),
-        ("human", "{input}")        
+        ("user", "{input}"),   
+    ]
+)
+
+prompt_local_shap = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """Eres un asistente virtual y tu especialidad es utilizar tus capacidades de visión para responder a las preguntas del usuario.
+            Tus respuestas deben ser precisas y deben estar basadas únicamente en lo que puedas observar en el documento enviado por el usuario.
+            
+             A continuación te facilito un resumen de las columnas más importantes en el dataset sobre transacciones, su significado detallado y cualquier otra información relevante de cada columna.
+
+                - Timestamp -> Fecha y hora en que se realizó la transacción (formato: dd/mm/yyyy hh).
+                - From Bank -> Código numérico del banco emisor. Identifica la institución financiera que origina la transacción.
+                - Account -> Identificador único de la cuenta desde donde se envían los fondos.
+                - To Bank -> Código numérico del banco receptor. Identifica la institución financiera que recibe los fondos.
+                - Account.1 -> Identificador único de la cuenta donde se reciben los fondos.
+                - Amount Received -> Monto recibido en la cuenta destino. La unidad depende de la moneda especificada en "Receiving Currency".
+                - Receiving Currency -> Moneda en la que se recibe el monto.
+                - Amount Paid -> Monto pagado en la cuenta de origen. La unidad depende de la moneda especificada en "Payment Currency".
+                - Payment Currency -> Moneda en la que se paga el monto.
+                - Payment Format -> Método de pago utilizado para realizar la transacción.
+                - Target -> Indicador de si la transacción está marcada como sospechosa o regular.
+                - Country from -> Código del país desde donde se origina la transacción.
+                - Country to -> Código del país destino de la transacción.
+                - Merchant Type -> Tipo de comercio asociado a la transacción.
+                - Device Used -> Dispositivo utilizado para realizar la transacción.
+                - Transaction Type -> Tipo de transacción realizada.
+                - IP Address -> Dirección IP del dispositivo desde el cual se realizó la transacción.
+                - Distance -> Distancia aproximada entre el origen y el destino de la transacción, medida en metros.
+                - Previous Transactions -> Número de transacciones previas realizadas desde la misma cuenta de origen.
+                - Time Since Last Transaction -> Tiempo transcurrido desde la última transacción, medido en segundos.
+                - ID -> Identificador único de la transacción.
+
+            Te paso además la información sobre la transacción asociada al diagrama de la iamgen:
+            
+            {transaction}
+            
+            Tu respuesta debe explicar de forma clara una interpretación del significado de la imagen. 
+            No debes hacer referencia a los valores que se observan en la imagen.
+            No debes hacer referencia a la imagen que ves. Debes ofrecer una explicación al usuario como si fueras tu mismo el que conoce la información.
+            Tu interpretación debe estar dirigida a una persona de negocio.
+            
+            Respecto al formato de la respuesta, debes estructurar tus diferentes ideas en párrafos, utilizar bullet points y remarcar en negrita las palabras más relevantes.
+            Usa formato markdown.
+            """,
+        ),
+        ("placeholder", "{chat_history}"),
+        ("user", "{input}"),
+        (
+            "user",
+            [
+                {
+                    "type": "image_url",
+                    "image_url": {"url": "{image_data}"},
+                }
+            ],
+        ),     
     ]
 )
 
@@ -440,6 +499,26 @@ def create_history(messages):
             history.add_ai_message(message["content"])
     return history
 
+def invoke_chain_shap(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192, json_params=None, db_name=None, model_params = None, id_transaction = None):
+    llm = get_model(model_name, temperature, max_tokens)
+    history = create_history(messages)
+    path_file = f"gs://single-cirrus-435319-f1-bucket/foundations/shap_local_{id_transaction}.png"
+    config = {
+        "input": question, 
+        "chat_history": history.messages,
+        "transaction": model_params,
+        "image_data": path_file
+    }
+    
+    shap_vision_local_chain = (
+        prompt_local_shap
+        | llm
+        | StrOutputParser()
+    )
+
+    for chunk in shap_vision_local_chain.stream(config):
+        yield chunk
+
 def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192, json_params=None, db_name=None, model_params = None):
     """
     Invokes the language chain model to generate a response based on the given question and chat history.
@@ -477,20 +556,20 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
     )
     res_intent = intent_chain.invoke(config).strip().lower()
     print(f"La intención del usuario es -> {res_intent}")
-    
+    invoke_chain.intent = res_intent
     
     if "ml" in res_intent:
         chain = prompt_ml | llm | StrOutputParser()
         ml_result = af.simulate_model_prediction(model_params)
+        #exit_status_local_shap, id_transaction, fig = af.generate_and_upload_shap_local(model_params)
+        #aux["shap"] = [fig]
+        #print(exit_status_local_shap, id_transaction, fig)
         config["params"] = model_params    
         config["result"] = ml_result
     elif "explicabilidad" in res_intent:
-        if model_params is None:
             config["image_data"] = "gs://single-cirrus-435319-f1-bucket/foundations/shap_global.png"
             chain = prompt_explicabilidad | llm | StrOutputParser()
-        else:
-            print(model_params)
-            print("cositas locales")
+
     elif "consulta" in res_intent:
         sql_chain = (
             RunnablePassthrough.assign(schema=get_schema)

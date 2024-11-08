@@ -21,6 +21,13 @@ except:
     traceback.print_exc()
     list_input_audio = [(0, "No Mic Detected")]
 
+default_mic_name = "Microphone Array (IntelÂ® Smart "
+default_mic_index = next((index for index, name in list_input_audio if default_mic_name in name), 0)
+default_mic_name_selected = list_input_audio[default_mic_index][1]
+
+if "input_audio" not in st.session_state:
+    st.session_state.input_audio = default_mic_name_selected
+
 def update_chat_input(new_input):
     js = f"""
     <script>
@@ -39,8 +46,12 @@ def update_chat_input(new_input):
 # Función para reconocimiento de voz a texto
 async def speech_to_text():
     recognizer = sr.Recognizer()
-    print(list_input_audio)
-    list_input_audio_names = [input[1] for input in list_input_audio]
+    list_input_audio_names = [name for _, name in list_input_audio]
+    
+    try:
+        device_index = list_input_audio_names.index(st.session_state.input_audio)
+    except ValueError:
+        device_index = 0 # por defecto si no se ecuentra el micro de PwC
     with sr.Microphone(device_index=list_input_audio_names.index(st.session_state.input_audio)) as source:
         audio = recognizer.listen(source)
         
@@ -151,7 +162,7 @@ with st.sidebar:
     st.session_state.input_audio = st.selectbox(
         "Elige una entrada de audio:",
         [elem[1] for elem in list_input_audio],
-        index=1,
+        index=default_mic_index,
     )
     
     # Listar los archivos en la carpeta db
@@ -218,6 +229,8 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
         if "figure" in message["aux"].keys() and len(message["aux"]["figure"]) > 0:
             st.plotly_chart(message["aux"]["figure"][0])
+        elif "shap" in message["aux"].keys() and len(message["aux"]["shap"]) > 0:
+            st.pyplot(message["aux"]["shap"][0])
         elif "audio" in message["aux"].keys():
             st.audio(message["aux"]["audio"], format='audio/mp3', autoplay=False)
         #st.text("")
@@ -241,6 +254,22 @@ if prompt:
             model_params = st.session_state.model_params
         )
         st.write_stream(response)
+        if "ml" in lu.invoke_chain.intent:
+            with st.spinner("Generando SHAP values..."):
+                exit_status_local_shap, id_transaction, fig_shap = af.generate_and_upload_shap_local(st.session_state.model_params)
+                st.pyplot(fig_shap)
+                
+            response_shap = lu.invoke_chain_shap(
+                question=prompt,
+                messages=st.session_state.messages,
+                sql_messages = st.session_state.sql_messages,
+                model_name=model_options[model_options.index(st.session_state.model)],
+                temperature=st.session_state.temperature,
+                max_tokens=st.session_state.max_tokens,
+                model_params = st.session_state.model_params,
+                id_transaction= id_transaction
+            )
+            st.write_stream(response_shap)
         if "figure" in lu.invoke_chain.aux.keys() and len(lu.invoke_chain.aux["figure"]) > 0:
             with st.spinner("Generando gráfico..."):
                 st.plotly_chart(lu.invoke_chain.aux["figure"][0])

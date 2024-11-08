@@ -91,7 +91,7 @@ opentelemetry-util-http==0.46b0
 orjson==3.10.5
 overrides==7.7.0
 packaging==24.1
-pandas==2.2.2
+pandas<2.0.0
 pillow==10.4.0
 posthog==3.5.0
 protobuf==4.25.3
@@ -164,3 +164,7 @@ SpeechRecognition
 PyAudio
 gtts
 scikit-learn
+dill
+category-encoders
+shap
+matplotlib
