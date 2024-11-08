@@ -2,11 +2,12 @@ import json
 from langchain_community.utilities import SQLDatabase
 import pandas as pd
 import sqlite3
+import pickle
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
-def simulate_model_prediction(input_json):
+def simulate_model_prediction(df):
     """
     Simula la llamada a un modelo de ML ya entrenado para devolver un resultado de clasificación.
     
@@ -17,23 +18,13 @@ def simulate_model_prediction(input_json):
         dict: Resultado simulado de la clasificación.
     """
     
-    # Convertir el string JSON a un diccionario de Python
-    input_data = json.loads(input_json)
-
-    # Verificar que el JSON tiene exactamente 10 parámetros
-    if len(input_data) != 10:
-        raise ValueError("El JSON de entrada debe contener exactamente 10 parámetros.")
     
-    # Simular el proceso de predicción
-    # Aquí podrías realizar cualquier procesamiento necesario
-    # Por ahora, devolveremos una clasificación simulada
-    simulated_prediction = {
-        "predicción": "Clase A",  # Simula una predicción de clase
-        "probabilidad": 0.85      # Simula una probabilidad asociada a la predicción
-    }
+    with open('./model/best_model.pkl', 'rb') as file:
+        model = pickle.load(file)
     
+    predictions = model.predict(df)
     # Devolver el resultado de la simulación
-    return simulated_prediction
+    return predictions
 
 def get_db_from_uri(uri):
     db = SQLDatabase.from_uri(f"sqlite:///db/{uri}")

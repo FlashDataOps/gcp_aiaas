@@ -71,6 +71,157 @@ prompt_create_sql = ChatPromptTemplate.from_messages(
             """Basándote en la tabla esquema de abajo, escribe una consulta SQl que pueda responder a la pregunta del usuario:
             {schema}
 
+            Este dataset contiene registros de transacciones financieras individuales de un banco. Cada fila representa una transacción en la que se detalla información sobre el origen y destino de los fondos, incluyendo la cantidad transferida, la moneda utilizada, el tipo de transacción, el dispositivo desde el cual se realizó, y otros aspectos relevantes. Este conjunto de datos es útil para analizar patrones de transacciones, realizar estudios de comportamiento financiero y detectar actividades inusuales o fraudulentas. Sobre este dataset se realizarán consultas SQL para evaluar el comportamiento transaccional de las cuentas.
+
+            A continuación te facilito un resumen de las columnas más importantes en el dataset, su significado detallado y cualquier otra información relevante de cada columna.
+
+                - Timestamp -> Fecha y hora en que se realizó la transacción (formato: dd/mm/yyyy hh).
+                - From Bank -> Código numérico del banco emisor. Identifica la institución financiera que origina la transacción.
+                - Account -> Identificador único de la cuenta desde donde se envían los fondos.
+                - To Bank -> Código numérico del banco receptor. Identifica la institución financiera que recibe los fondos.
+                - Account.1 -> Identificador único de la cuenta donde se reciben los fondos.
+                - Amount Received -> Monto recibido en la cuenta destino. La unidad depende de la moneda especificada en "Receiving Currency".
+                - Receiving Currency -> Moneda en la que se recibe el monto.
+                - Amount Paid -> Monto pagado en la cuenta de origen. La unidad depende de la moneda especificada en "Payment Currency".
+                - Payment Currency -> Moneda en la que se paga el monto.
+                - Payment Format -> Método de pago utilizado para realizar la transacción.
+                - Target -> Indicador de si la transacción está marcada como sospechosa o regular.
+                - Country from -> Código del país desde donde se origina la transacción.
+                - Country to -> Código del país destino de la transacción.
+                - Merchant Type -> Tipo de comercio asociado a la transacción.
+                - Device Used -> Dispositivo utilizado para realizar la transacción.
+                - Transaction Type -> Tipo de transacción realizada.
+                - IP Address -> Dirección IP del dispositivo desde el cual se realizó la transacción.
+                - Distance -> Distancia aproximada entre el origen y el destino de la transacción, medida en metros.
+                - Previous Transactions -> Número de transacciones previas realizadas desde la misma cuenta de origen.
+                - Time Since Last Transaction -> Tiempo transcurrido desde la última transacción, medido en segundos.
+                - ID -> Identificador único de la transacción.
+
+            A continuación te doy el nombre de columnas y sus posibles valores para ayudarte a realizar filtros a la hora de hacer consultas:
+                Receiving Currency:
+                    - Australian Dollar -> Dólar australiano (A$)
+                    - Bitcoin -> Criptomoneda Bitcoin (₿)
+                    - Brazil Real -> Real brasileño (R$)
+                    - Canadian Dollar -> Dólar canadiense (C$)
+                    - Euro -> Euro (€)
+                    - Mexican Peso -> Peso mexicano (MXN)
+                    - Ruble -> Rublo ruso (₽)
+                    - Rupee -> Rupia india (₹)
+                    - Saudi Riyal -> Riyal saudí (SAR)
+                    - Shekel -> Nuevo shekel israelí (₪)
+                    - Swiss Franc -> Franco suizo (CHF)
+                    - UK Pound -> Libra esterlina (£)
+                    - US Dollar -> Dólar estadounidense ($)
+                    - Yen -> Yen japonés (¥)
+                    - Yuan -> Yuan chino (CNY)
+
+
+                Payment Currency:
+                    - Australian Dollar -> Dólar australiano (A$)
+                    - Bitcoin -> Criptomoneda Bitcoin (₿)
+                    - Brazil Real -> Real brasileño (R$)
+                    - Canadian Dollar -> Dólar canadiense (C$)
+                    - Euro -> Euro (€)
+                    - Mexican Peso -> Peso mexicano (MXN)
+                    - Ruble -> Rublo ruso (₽)
+                    - Rupee -> Rupia india (₹)
+                    - Saudi Riyal -> Riyal saudí (SAR)
+                    - Shekel -> Nuevo shekel israelí (₪)
+                    - Swiss Franc -> Franco suizo (CHF)
+                    - UK Pound -> Libra esterlina (£)
+                    - US Dollar -> Dólar estadounidense ($)
+                    - Yen -> Yen japonés (¥)
+                    - Yuan -> Yuan chino (CNY)
+
+
+                Payment Format:
+                    - ACH -> Transacción automatizada entre bancos.
+                    - Bitcoin -> Pago realizado mediante criptomoneda Bitcoin.
+                    - Cash -> Pago realizado en efectivo.
+                    - Cheque -> Pago realizado mediante cheque.
+                    - Credit Card -> Pago con tarjeta de crédito.
+                    - Reinvestment -> Transacción de reinversión de fondos.
+                    - Wire -> Transferencia bancaria electrónica.
+
+                Target:
+                    - TRUE -> Transacción marcada como sospechosa o potencialmente fraudulenta.
+                    - FALSE -> Transacción regular.
+
+                Country from:
+                    - AD -> Andorra
+                    - AL -> Albania
+                    - AR -> Argentina
+                    - BE -> Bélgica
+                    - BR -> Brasil
+                    - CA -> Canadá
+                    - CN -> China
+                    - CR -> Costa Rica
+                    - CU -> Cuba
+                    - DE -> Alemania
+                    - ES -> España
+                    - FR -> Francia
+                    - GB -> Reino Unido
+                    - GI -> Gibraltar
+                    - GN -> Guinea
+                    - IL -> Israel
+                    - IQ -> Irak
+                    - IR -> Irán
+                    - IT -> Italia
+                    - JP -> Japón
+                    - KE -> Kenia
+                    - KR -> Corea del Sur
+                    - LU -> Luxemburgo
+                    - MA -> Marruecos
+                    - ME -> Montenegro
+                    - US -> Estados Unidos
+
+                Country to:
+                    - AD -> Andorra
+                    - AL -> Albania
+                    - AR -> Argentina
+                    - BE -> Bélgica
+                    - BR -> Brasil
+                    - CA -> Canadá
+                    - CN -> China
+                    - CR -> Costa Rica
+                    - CU -> Cuba
+                    - DE -> Alemania
+                    - ES -> España
+                    - FR -> Francia
+                    - GB -> Reino Unido
+                    - GI -> Gibraltar
+                    - GN -> Guinea
+                    - IL -> Israel
+                    - IQ -> Irak
+                    - IR -> Irán
+                    - IT -> Italia
+                    - JP -> Japón
+                    - KE -> Kenia
+                    - KR -> Corea del Sur
+                    - LU -> Luxemburgo
+                    - MA -> Marruecos
+                    - ME -> Montenegro
+                    - US -> Estados Unidos
+
+                Merchant Type:
+                    - Entertainment -> Comercio de entretenimiento.
+                    - Grocery -> Tienda de comestibles.
+                    - Luxury Goods -> Bienes de lujo.
+                    - Retail -> Comercio minorista.
+
+                Device Used:
+                    - ATM -> Cajero automático.
+                    - Desktop -> Ordenador de mesa / computadora de escritorio.
+                    - Mobile -> Teléfono móvil.
+                    - POS Terminal -> Terminal de punto de venta.
+
+                Transaction Type:
+                    - ATM Withdrawal -> Retiro en cajero automático.
+                    - In-Person Payment -> Pago en persona.
+                    - Online Purchase -> Compra en línea.
+                    - Wire Transfer -> Transferencia entre cuentas.
+                            
+            
             Utiliza el historial para adaptar la consulta SQL. No añadas respuestas en lenguaje natural.
             
             IMPORTANTE: Si tu consulta selecciona todas las filas, limita los resultados obtenidos a 20. Por ejemplo: SELECT * from TABLE LIMIT 20
@@ -165,6 +316,7 @@ prompt_intent = ChatPromptTemplate.from_messages(
             Responde únicamente con las palabras [ML, Consulta, Explicabilidad, Otro]. En caso de no saber a que se refiere responde Otro
             """,
         ),
+        ("placeholder", "{chat_history}"),
         ("user", "{input}"),
     ]
 )
@@ -174,12 +326,44 @@ prompt_explicabilidad = ChatPromptTemplate.from_messages(
             "system",
             """Eres un asistente virtual y tu especialidad es utilizar tus capacidades de visión para responder a las preguntas del usuario.
             Tus respuestas deben ser precisas y deben estar basadas únicamente en lo que puedas observar en el documento enviado por el usuario.
+            
+             A continuación te facilito un resumen de las columnas más importantes en el dataset, su significado detallado y cualquier otra información relevante de cada columna.
+
+                - Timestamp -> Fecha y hora en que se realizó la transacción (formato: dd/mm/yyyy hh).
+                - From Bank -> Código numérico del banco emisor. Identifica la institución financiera que origina la transacción.
+                - Account -> Identificador único de la cuenta desde donde se envían los fondos.
+                - To Bank -> Código numérico del banco receptor. Identifica la institución financiera que recibe los fondos.
+                - Account.1 -> Identificador único de la cuenta donde se reciben los fondos.
+                - Amount Received -> Monto recibido en la cuenta destino. La unidad depende de la moneda especificada en "Receiving Currency".
+                - Receiving Currency -> Moneda en la que se recibe el monto.
+                - Amount Paid -> Monto pagado en la cuenta de origen. La unidad depende de la moneda especificada en "Payment Currency".
+                - Payment Currency -> Moneda en la que se paga el monto.
+                - Payment Format -> Método de pago utilizado para realizar la transacción.
+                - Target -> Indicador de si la transacción está marcada como sospechosa o regular.
+                - Country from -> Código del país desde donde se origina la transacción.
+                - Country to -> Código del país destino de la transacción.
+                - Merchant Type -> Tipo de comercio asociado a la transacción.
+                - Device Used -> Dispositivo utilizado para realizar la transacción.
+                - Transaction Type -> Tipo de transacción realizada.
+                - IP Address -> Dirección IP del dispositivo desde el cual se realizó la transacción.
+                - Distance -> Distancia aproximada entre el origen y el destino de la transacción, medida en metros.
+                - Previous Transactions -> Número de transacciones previas realizadas desde la misma cuenta de origen.
+                - Time Since Last Transaction -> Tiempo transcurrido desde la última transacción, medido en segundos.
+                - ID -> Identificador único de la transacción.
+                
+            Tu respuesta debe explicar de forma clara una interpretación del significado de la imagen. 
+            No debes hacer referencia a los valores que se observan en la imagen.
+            No debes hacer referencia a la imagen que ves. Debes ofrecer una explicación al usuario como si fueras tu mismo el que conoce la información.
+            Tu interpretación debe estar dirigida a una persona de negocio.
+            
+            Respecto al formato de la respuesta, debes estructurar tus diferentes ideas en párrafos, utilizar bullet points y remarcar en negrita las palabras más relevantes.
+            Usa formato markdown.
             """,
         ),
         ("placeholder", "{chat_history}"),
-        ("human", "{input}"),
+        ("user", "{input}"),
         (
-            "human",
+            "user",
             [
                 {
                     "type": "image_url",
@@ -256,7 +440,7 @@ def create_history(messages):
             history.add_ai_message(message["content"])
     return history
 
-def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192, json_params=None, db_name=None):
+def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192, json_params=None, db_name=None, model_params = None):
     """
     Invokes the language chain model to generate a response based on the given question and chat history.
 
@@ -291,20 +475,23 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         | llm
         | StrOutputParser()
     )
-    res_intent = intent_chain.invoke({"input": question}).strip().lower()
+    res_intent = intent_chain.invoke(config).strip().lower()
     print(f"La intención del usuario es -> {res_intent}")
     
     
-    if res_intent == "ml":
+    if "ml" in res_intent:
         chain = prompt_ml | llm | StrOutputParser()
-        #ml_result = af.simulate_model_prediction(json_params)
-        ml_result = "fraude"
-        config["params"] = json_params    
+        ml_result = af.simulate_model_prediction(model_params)
+        config["params"] = model_params    
         config["result"] = ml_result
-    elif res_intent == "explicabilidad":
-        config["image_data"] = "gs://single-cirrus-435319-f1-bucket/foundations/shap.png"
-        chain = prompt_explicabilidad | llm | StrOutputParser()
-    elif res_intent == "consulta":
+    elif "explicabilidad" in res_intent:
+        if model_params is None:
+            config["image_data"] = "gs://single-cirrus-435319-f1-bucket/foundations/shap_global.png"
+            chain = prompt_explicabilidad | llm | StrOutputParser()
+        else:
+            print(model_params)
+            print("cositas locales")
+    elif "consulta" in res_intent:
         sql_chain = (
             RunnablePassthrough.assign(schema=get_schema)
             | prompt_create_sql
