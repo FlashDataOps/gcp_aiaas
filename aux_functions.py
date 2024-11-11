@@ -31,7 +31,7 @@ def generate_and_upload_shap_local(transaccion):
         explainer = shap.TreeExplainer(modelo.model)
         
         # Transformar la transacción según el modelo
-        transaccion = modelo.target_encode(modelo.drop_columns(transaccion))
+        transaccion = modelo.target_encode(modelo.modify_columns(transaccion))
         
         # Obtener los valores de SHAP para la transacción
         shap_values = explainer.shap_values(transaccion)
