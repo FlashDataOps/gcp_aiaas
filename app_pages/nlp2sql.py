@@ -199,6 +199,24 @@ with st.sidebar:
     clear_chat_column, record_audio_column= st.columns([1, 1])
     # Reset chat history button
 
+    
+    uploaded_model = st.file_uploader("Subir un nuevo modelo", type="pkl")
+    if st.button("📤 Actualizar modelo", use_container_width=True):
+        if uploaded_model is None:
+        
+            with st.spinner("Actualizando modelo..."):
+                af.download_blob("single-cirrus-435319-f1-bucket", "foundations/model/model.pkl", fr"./model/Model_GCP.pkl")
+                st.success("Modelo actualizado correctamente")
+        else:
+            with st.spinner("Subiendo modelo a GCP..."):
+                file_to_upload = BytesIO(uploaded_model.getvalue())
+                print(file_to_upload)
+                af.upload_blob("single-cirrus-435319-f1-bucket", file_to_upload, "foundations/model/model.pkl")
+            
+            with st.spinner("Actualizando modelo..."):
+                af.download_blob("single-cirrus-435319-f1-bucket", "foundations/model/model.pkl", fr"./model/Model_GCP.plk")
+                st.success("Modelo actualizado correctamente")
+    
     uploaded_file = st.file_uploader("Subir parámetros de modelo")
     
     st.session_state.model_params = None

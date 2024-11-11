@@ -295,11 +295,10 @@ prompt_ml = ChatPromptTemplate.from_messages(
             - Parámetros de llamada: {params}
             - Resultado de la llamada {result}
             
-            Debes dar una respuesta que incluya 5 parámetros más importantes para identificar la transacción (en español, sin utilizar los nombres de las columnas) utilizados para llamar al modelo en forma de tabla y de forma clara y sencilla pero que se note que es la parte importante del mensaje el resultado obtenido.
+            Debes dar una respuesta que incluya 5 parámetros más importantes para identificar la transacción (en español, sin utilizar los nombres de las columnas) utilizados para llamar al modelo en forma de tabla y de forma clara y sencilla pero que se note que es la parte importante del mensaje el resultado obtenido. Debes dar el valor exacto que se indica en los parámetros de llamada.
             Si el resultado obtenido es False, siginifica que la transacción no ha sido identificada como alerta, si el resultado es True, significa que estamos ante una alerta que se debería revisar manualmente. En tu respuesta, no digas el valor en bruto obtenido.
             """,
         ),
-        ("placeholder", "{chat_history}"),
         ("user", "{input}"),
     ]
 )
@@ -449,37 +448,6 @@ prompt_local_shap = ChatPromptTemplate.from_messages(
     ]
 )
 
-@lru_cache(maxsize=None)
-def get_custom_chain(model_name, temperature, max_tokens, params, type=None, db=None):
-    """
-    Create and return a retrieval-augmented generation (RAG) chain.
-
-    Args:
-        model_name (str): The name of the model to use.
-        temperature (float): The temperature parameter for generation.
-        max_tokens (int): The maximum number of tokens to generate.
-
-    Returns:
-        rag_chain: The retrieval-augmented generation chain.
-
-    """
-    model = get_model(model_name, temperature, max_tokens)
-    
-    if params is not None:
-        chain = prompt_ml | model | StrOutputParser()
-    else:
-        
-        #chain = create_pandas_dataframe_agent(model, df, agent_type="openai-tools", verbose=True)
-        if type == "pandas_code":
-            chain = create_sql_query_chain(model, db)
-        else:
-            chain = (
-                prompt_create_sql_response | model | StrOutputParser()
-            )
-
-    return chain
-
-
 def create_history(messages):
     """
     Creates a ChatMessageHistory object based on the given list of messages.
@@ -502,7 +470,7 @@ def create_history(messages):
 def invoke_chain_shap(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192, json_params=None, db_name=None, model_params = None, id_transaction = None):
     llm = get_model(model_name, temperature, max_tokens)
     history = create_history(messages)
-    path_file = f"gs://single-cirrus-435319-f1-bucket/foundations/shap_local_{id_transaction}.png"
+    path_file = f"gs://single-cirrus-435319-f1-bucket/foundations/plots_shap/shap_local_{id_transaction}.png"
     config = {
         "input": question, 
         "chat_history": history.messages,
@@ -566,6 +534,7 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         #print(exit_status_local_shap, id_transaction, fig)
         config["params"] = model_params    
         config["result"] = ml_result
+        print(config)
     elif "explicabilidad" in res_intent:
             config["image_data"] = "gs://single-cirrus-435319-f1-bucket/foundations/shap_global.png"
             chain = prompt_explicabilidad | llm | StrOutputParser()
