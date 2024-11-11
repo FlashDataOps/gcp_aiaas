@@ -1,8 +1,11 @@
-# Use the official Python image from the Docker Hub
-FROM python:3.11
+# Use the official Python image with Debian-based distribution
+FROM python:3.11-slim-bullseye
 
 # Set the working directory
 WORKDIR /app
+
+# Update and install additional system dependencies
+RUN apt-get update && apt-get install -y build-essential portaudio19-dev
 
 # Copy the requirements.txt file to the working directory
 COPY requirements.txt .
