@@ -21,9 +21,13 @@ except:
     traceback.print_exc()
     list_input_audio = [(0, "No Mic Detected")]
 
-default_mic_name = "Microphone Array (IntelÂ® Smart "
-default_mic_index = next((index for index, name in list_input_audio if default_mic_name in name), 0)
-default_mic_name_selected = list_input_audio[default_mic_index][1]
+try:
+    default_mic_name = "Microphone Array (IntelÂ® Smart "
+    default_mic_index = next((index for index, name in list_input_audio if default_mic_name in name), 0)
+    default_mic_name_selected = list_input_audio[default_mic_index][1]
+except:
+    default_mic_index=0
+    default_mic_name_selected = "No Mic Detected"
 
 if "input_audio" not in st.session_state:
     st.session_state.input_audio = default_mic_name_selected
