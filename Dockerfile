@@ -6,7 +6,6 @@ WORKDIR /app
 
 # Update and install additional system dependencies
 RUN apt-get update && apt-get install -y build-essential portaudio19-dev
-RUN apt install sqlite3 libsqlite3-dev
 # Copy the requirements.txt file to the working directory
 COPY requirements.txt .
 

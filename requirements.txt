@@ -168,3 +168,4 @@ dill
 category-encoders
 shap
 matplotlib
+pysqlite3-binary
