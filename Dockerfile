@@ -7,7 +7,7 @@ WORKDIR /app
 # Copy the requirements.txt file to the working directory
 COPY requirements.txt .
 
-RUN sudo apt-get install portaudio19-dev python3-all-dev
+RUN apt-get install portaudio19-dev python3-all-dev
 # Install the dependencies listed in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
