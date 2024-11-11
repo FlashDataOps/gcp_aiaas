@@ -183,7 +183,11 @@ with st.sidebar:
         archivo_db_seleccionado = st.selectbox("Selecciona una base de datos:", archivos_db)
         af.db_connection.db_name = archivo_db_seleccionado
         
-    
+        
+    if st.button("📤 Cargar BD", use_container_width=True):
+        with st.spinner("Actualizando modelo..."):
+            af.download_blob("single-cirrus-435319-f1-bucket", "foundations/FOUNDATIONS.db", fr"./db/FOUNDATIONS.db")
+            st.success("Modelo actualizado correctamente")
     # Select model
     st.session_state.model = st.selectbox(
         "Elige un modelo:",
