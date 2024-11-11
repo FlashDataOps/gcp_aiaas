@@ -160,8 +160,8 @@ openpyxl
 streamlit_pdf_viewer
 streamlit_pills
 langchain_google_vertexai
-#SpeechRecognition
-#PyAudio
+SpeechRecognition
+pyaudio
 gtts
 scikit-learn
 dill
