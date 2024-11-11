@@ -7,7 +7,7 @@ from streamlit_navigation_bar import st_navbar
 import time
 import os
 import aux_functions as af
-import speech_recognition as sr
+#import speech_recognition as sr
 from io import BytesIO
 from dotenv import load_dotenv
 load_dotenv()
