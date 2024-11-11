@@ -174,7 +174,8 @@ with st.sidebar:
     try:
         dbs = os.listdir(carpeta_db)
         # Filtrar para mostrar solo archivos, no carpetas
-        archivos_db = [f for f in dbs if os.path.isfile(os.path.join(carpeta_db, f))]
+        archivos_db = [f for f in dbs if os.path.isfile(os.path.join(carpeta_db, f)) and f.endswith('.db')]
+
     except FileNotFoundError:
         archivos_db = []
         st.error(f"La carpeta '{carpeta_db}' no existe.")
