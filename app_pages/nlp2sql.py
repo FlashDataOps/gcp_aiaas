@@ -162,13 +162,14 @@ with st.sidebar:
     
     audio_toggle = st.toggle("Respuestas con audio")
     
+    '''
     # Select mic input
     st.session_state.input_audio = st.selectbox(
         "Elige una entrada de audio:",
         [elem[1] for elem in list_input_audio],
         index=default_mic_index,
     )
-    
+    '''
     # Listar los archivos en la carpeta db
     carpeta_db = 'db' 
     try:
