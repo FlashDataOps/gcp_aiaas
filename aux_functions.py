@@ -8,6 +8,7 @@ import shap
 import matplotlib.pyplot as plt
 from google.cloud import storage
 import vertexai
+import numpy as np
 
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
