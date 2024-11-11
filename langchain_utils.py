@@ -529,9 +529,9 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
     if "ml" in res_intent:
         chain = prompt_ml | llm | StrOutputParser()
         ml_result = af.simulate_model_prediction(model_params)
-        #exit_status_local_shap, id_transaction, fig = af.generate_and_upload_shap_local(model_params)
-        #aux["shap"] = [fig]
-        #print(exit_status_local_shap, id_transaction, fig)
+        exit_status_local_shap, id_transaction, fig = af.generate_and_upload_shap_local(model_params)
+        aux["shap"] = [fig]
+        print(exit_status_local_shap, id_transaction, fig)
         config["params"] = model_params    
         config["result"] = ml_result
         print(config)
