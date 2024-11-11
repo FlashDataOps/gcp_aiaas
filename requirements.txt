@@ -161,8 +161,6 @@ streamlit_pdf_viewer
 streamlit_pills
 langchain_google_vertexai
 SpeechRecognition
-pipwin
-PyAudio
 gtts
 scikit-learn
 dill
