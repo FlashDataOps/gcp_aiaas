@@ -186,9 +186,9 @@ with st.sidebar:
         
         
     if st.button("📤 Cargar BD", use_container_width=True):
-        with st.spinner("Actualizando modelo..."):
+        with st.spinner("Cargando base de datos..."):
             af.download_blob("single-cirrus-435319-f1-bucket", "foundations/FOUNDATIONS.db", fr"./db/FOUNDATIONS.db")
-            st.success("Modelo actualizado correctamente")
+            st.success("Base de datos cargada correctamente")
     # Select model
     st.session_state.model = st.selectbox(
         "Elige un modelo:",
