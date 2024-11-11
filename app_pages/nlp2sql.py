@@ -257,6 +257,7 @@ for message in st.session_state.messages:
         if "figure" in message["aux"].keys() and len(message["aux"]["figure"]) > 0:
             st.plotly_chart(message["aux"]["figure"][0])
         elif "shap" in message["aux"].keys() and len(message["aux"]["shap"]) > 0:
+            st.set_option('deprecation.showPyplotGlobalUse', False)
             st.pyplot(message["aux"]["shap"][0])
         elif "audio" in message["aux"].keys():
             st.audio(message["aux"]["audio"], format='audio/mp3', autoplay=False)
