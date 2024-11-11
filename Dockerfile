@@ -4,8 +4,19 @@ FROM python:3.11-slim-bullseye
 # Set the working directory
 WORKDIR /app
 
-# Update and install additional system dependencies
-RUN apt-get update && apt-get install -y build-essential portaudio19-dev
+# Update and install additional system dependencies, including wget for downloading SQLite
+RUN apt-get update && \
+    apt-get install -y build-essential portaudio19-dev wget && \
+    # Download and compile a newer version of SQLite
+    wget https://www.sqlite.org/2023/sqlite-autoconf-3410200.tar.gz && \
+    tar xzf sqlite-autoconf-3410200.tar.gz && \
+    cd sqlite-autoconf-3410200 && \
+    ./configure && make && make install && \
+    cd .. && rm -rf sqlite-autoconf-3410200 sqlite-autoconf-3410200.tar.gz && \
+    # Update dynamic linker run-time bindings to recognize new SQLite library
+    ldconfig && \
+    # Clean up apt cache
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 # Copy the requirements.txt file to the working directory
 COPY requirements.txt .
 
