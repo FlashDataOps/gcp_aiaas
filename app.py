@@ -18,7 +18,7 @@ pg = st.navigation(
     {
    #    "Información": [welcome, doc],
        "Bots": [demo_agent],
-   #    "Ajustes": [bd, index] 
+       "Ajustes": [bd] 
     }
     )
 

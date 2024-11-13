@@ -99,7 +99,6 @@ for message in st.session_state.messages_agent:
     with st.chat_message(message["role"], avatar = "https://www.hola.com/horizon/square/4fe315b0171d-bond-t.jpg" if message["role"] == "assistant" else "https://cdn-icons-png.flaticon.com/512/9750/9750857.png"
 ):
         st.markdown(message["content"])
-        print(message["aux"])
         if "figure" in message["aux"].keys() and len(message["aux"]["figure"]) > 0:
             st.plotly_chart(message["aux"]["figure"][0])
         st.text("")
