@@ -95,6 +95,8 @@ def update_playback_rate(mp3_file, rate):
 
     # Incrustar el reproductor y el botón de descarga
     st.components.v1.html(html_code, height=100)
+    
+    
 def autoplay_audio(file_path: str):
     with open(file_path, "rb") as f:
         data = f.read()
