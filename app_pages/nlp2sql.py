@@ -151,9 +151,9 @@ if "model" not in st.session_state:
     st.session_state.max_tokens = max_tokens[st.session_state.model]
     st.session_state.input_audio = 1
 
-# Initialize chat history
+# Initialize chat history with welcoming message
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    st.session_state.messages = [{"role": "assistant", "content": "Welcome! How can I assist you today?", "aux": {}}]
     st.session_state.sql_messages = []
     st.session_state.show_success_audio = False
 

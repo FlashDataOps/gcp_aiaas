@@ -13,6 +13,10 @@ __pycache__/
 .mp3
 .wav
 
+# Pruebas
+prueba*
+borrar*
+
 # Distribution / packaging
 .Python
 build/
