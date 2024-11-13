@@ -11,12 +11,13 @@ bd = st.Page("./app_pages/bd.py", title="Añadir base de datos", icon="🔧")
 index = st.Page("./app_pages/index.py", title="Gestionar índices", icon="🔍")
 
 foundations = st.Page("./app_pages/foundations.py", title="Sr. Padre", icon="🙏")
+demo_agent = st.Page("./app_pages/demo_agent.py", title="Agente 007", icon="👮")
 
 
 pg = st.navigation(
     {
        "Información": [welcome, doc],
-       "Bots": [nlp2sql, rag, ppt, foundations],
+       "Bots": [nlp2sql, rag, ppt, demo_agent],
        "Ajustes": [bd, index] 
     }
     )
