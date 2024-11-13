@@ -153,7 +153,7 @@ if "model" not in st.session_state:
 
 # Initialize chat history with welcoming message
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Welcome! How can I assist you today?", "aux": {}}]
+    st.session_state.messages = [{"role": "assistant", "content": "Bienvenido al ChatBot de NH. ¿En qué puedo ayudarte?", "aux": {}}]
     st.session_state.sql_messages = []
     st.session_state.show_success_audio = False
 

@@ -235,6 +235,45 @@ prompt_general = ChatPromptTemplate.from_messages(
     ]
 )
 
+prompt_summary_of_the_day = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """
+            Genera un resumen de la información del día a partir de los datos de NH Hoteles. Utiliza el siguiente esquema para realizar la consulta:
+            
+            - Saludar e indicar la fecha del Business Date.
+
+            - Total Revenue: 
+                Cuanto es TREV y su desglose en: Cuanto es Actuals, cuanto es OTB y cuanto es PickUp.
+                Con ello decir cual es el porcentaje de completitud respecto a lo esperado.
+
+            - Room Revenue:
+                Cuanto es RREV y su desglose en: Cuanto es Actuals, cuanto es OTB y cuanto es PickUp.
+                Con ello decir cual es el porcentaje de completitud respecto a lo esperado.
+
+            - Other Revenue:
+                Cuanto es OREV y su desglose en: Cuanto es Actuals, cuanto es OTB y cuanto es PickUp.
+                Con ello decir cual es el porcentaje de completitud respecto a lo esperado.
+
+            - Pequeño resumen de lo anterior:
+                - Cual es el porcentaje del TREV asociado a RREV y OREV.
+                - Cual es el porcentaje de Actuals, OTB y Pick UP.
+                - Resumen más subjetivo: si el RREV va bien / mal o similares; comparación con niveles habituales de cada punto...
+
+            - Revenue por Hotel Business Unit:
+                Contar para cada BU cual es el Actuals, OTB, Pick Up y Forecast (y que % supone PickUp para saber si falta mucho para lo esperado)
+                Dentro de cada BU explicar brevemente como va cada Hotel Country (quizá mencionar solo el forecast y el pickup)
+
+            - Comparativa de forecast por Hotel Sub Business Unit (qué países están a la cabeza y a la cola).
+
+            - [No está en el resumen ejecutivo pero yo lo añadiría] Métricas:
+                Explicar el desempeño de cada métrica
+            """,
+        ),      
+    ]
+)
+
 def create_history(messages):
     """
     Creates a ChatMessageHistory object based on the given list of messages.
