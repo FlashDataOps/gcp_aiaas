@@ -47,8 +47,8 @@ prompt_intent = hub.pull("intent_demo_foundations")
 prompt_create_sql = hub.pull("create_sql")
 prompt_fix_sql_query = hub.pull("fix_sql_query")
 prompt_gen_response = hub.pull("gen_response")
-
-
+prompt_general_agent_007 = hub.pull("general_agent_007")
+prompt_gen_plot_agent_007 = hub.pull("gen_plot_agent_007")
 
 @lru_cache(maxsize=None)
 def get_model(model_name, temperature, max_tokens):
@@ -185,8 +185,6 @@ def invoke_gen_response(question, messages, sql_messages, model_name="llama3-70b
         "sql_result": sql_result
     }
 
-    response = chain.invoke(config)
-
     for chunk in chain.stream(config):
         final_response+=chunk
         yield chunk
@@ -199,7 +197,58 @@ def invoke_gen_response(question, messages, sql_messages, model_name="llama3-70b
     invoke_gen_response.history = history
     invoke_gen_response.aux = aux
 
+def invoke_general_agent_007(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192, sql_result=None):
+
+    llm = get_model(model_name, temperature, max_tokens)
+    chain = RunnablePassthrough.assign(schema=get_schema) | prompt_general_agent_007 | llm | StrOutputParser()    
+    history = create_history(messages)
+    aux = {}
+    final_response = ""
+
+    config = {
+        "question": question, 
+        "chat_history": history.messages
+    }
+
+    for chunk in chain.stream(config):
+        final_response+=chunk
+        yield chunk
+        
+    history.add_user_message(question)
+    history.add_ai_message(final_response)
+
+
+    invoke_general_agent_007.response = final_response
+    invoke_general_agent_007.history = history
+    invoke_general_agent_007.aux = aux
+
+def invoke_gen_plot_agent_007(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192, sql_result=None, sql_query=None):
+
+    llm = get_model(model_name, temperature, max_tokens)
+    chain = RunnablePassthrough.assign(schema=get_schema) | prompt_gen_plot_agent_007 | llm | StrOutputParser()    
+    history = create_history(messages)
+    aux = {}
+    final_response = ""
+
+    config = {
+        "question": question, 
+        "chat_history": history.messages,
+        "sql_result": sql_result,
+        "sql_query": sql_query
+        
+    }
+
+    response = chain.invoke(config)
+        
+    history.add_user_message(question)
+    history.add_ai_message(final_response)
+
+
+    invoke_gen_plot_agent_007.response = response
+    invoke_gen_plot_agent_007.history = history
+    invoke_gen_plot_agent_007.aux = aux
     
+    return response
 
 def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192):
     """

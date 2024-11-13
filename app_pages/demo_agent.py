@@ -96,8 +96,10 @@ render_or_update_model_info(st.session_state.model)
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages_agent:
-    with st.chat_message(message["role"]):
+    with st.chat_message(message["role"], avatar = "https://www.hola.com/horizon/square/4fe315b0171d-bond-t.jpg" if message["role"] == "assistant" else "https://cdn-icons-png.flaticon.com/512/9750/9750857.png"
+):
         st.markdown(message["content"])
+        print(message["aux"])
         if "figure" in message["aux"].keys() and len(message["aux"]["figure"]) > 0:
             st.plotly_chart(message["aux"]["figure"][0])
         st.text("")
@@ -105,14 +107,15 @@ for message in st.session_state.messages_agent:
 # Accept user input
 prompt = st.chat_input("¿En qué puedo ayudarte?")
 step = 1
+aux = {}
 if prompt:
     # Display user message in chat message container
-    with st.chat_message("user"):
+    with st.chat_message("user", avatar="https://cdn-icons-png.flaticon.com/512/9750/9750857.png"):
         st.markdown(prompt)
 
-    with st.chat_message("assistant"):
+    with st.chat_message("assistant", avatar= "https://www.hola.com/horizon/square/4fe315b0171d-bond-t.jpg"):
         st.write("**---------------------- INCICIO CADENA DE PENSAMIENTO ---------------------------**")
-        st.write(f"**Paso {step}: Identificando intención...**")
+        st.write(f"**Paso {step}: Identificando intención... 🔍**")
         step += 1
         with st.spinner("Pensando..."):
             intent = lu.invoke_intent(
@@ -129,7 +132,7 @@ if prompt:
             
         if "consulta" in intent:
             
-            st.write(f"**Paso {step}: Generando consulta SQL...**")
+            st.write(f"**Paso {step}: Generando consulta SQL... 📊**")
             step += 1
             with st.spinner("Pensando mucho..."):
                 sql_query = lu.invoke_create_sql(
@@ -144,10 +147,11 @@ if prompt:
             
                 time.sleep(2)
             #st.write(f"- **Query SQL** -> {sql_query}")
+            sql_query = sql_query.replace('```sql', "").replace("sql", "")
             st.code(sql_query, language='sql')
+
             
-            
-            st.write(f"**Paso {step}: Ejecutando consulta SQL...**")
+            st.write(f"**Paso {step}: Ejecutando consulta SQL... ▶️**")
             step += 1
             with st.spinner("Ejecutando consulta SQL..."):
                 result_query = lu.run_query(sql_query)
@@ -155,7 +159,7 @@ if prompt:
                 time.sleep(2)
                 st.write(f"- **Resultado** -> {result_query}")
             with st.spinner("Verificando consulta SQL..."):
-                st.write(f"**Paso {step}: Verificando consulta SQL...**")
+                st.write(f"**Paso {step}: Verificando consulta SQL... 🛠️**")
                 step += 1
                 
                 for tries in range(3):
@@ -170,17 +174,19 @@ if prompt:
                         temperature=st.session_state.temperature,
                         max_tokens=st.session_state.max_tokens
                         )
-
+                        sql_query = sql_query.replace('```sql', "").replace("sql", "")
                         result_query = lu.run_query(sql_query)
-                        
+                        st.write(f"- **Resultado** -> {result_query}")
                     else:
                         if tries > 0:
-                            st.write("- **Consulta SQL corregida y ejecutada correctamente**")
+                            st.write("- **Consulta SQL corregida y ejecutada correctamente ✅**")
+                            sql_query = sql_query.replace('```sql', "").replace("sql", "")
                             st.code(sql_query, language='sql')
                             st.write(f"- **Resultado** -> {result_query}")
                             break
                         else:
                             st.write("- **La consulta no tiene errores ✅**")
+                            #st.write(f"- **Resultado** -> {result_query}")
                             break
                 
 
@@ -197,10 +203,35 @@ if prompt:
             sql_result = result_query
         )
             st.write_stream(response)
-                
+            
+            with st.spinner("Generando gráfico... 📊"):
+                plotly_code = lu.invoke_gen_plot_agent_007(
+                question=prompt,
+                messages=st.session_state.messages_agent,
+                sql_messages = st.session_state.sql_messages,
+                model_name=model_options[model_options.index(st.session_state.model)],
+                temperature=st.session_state.temperature,
+                max_tokens=st.session_state.max_tokens,
+                sql_result = result_query,
+                sql_query = sql_query
+                )
+                plotly_code = plotly_code.replace("```python", "").replace('```', "").replace("fig.show()", "")
+                #st.code(plotly_code, language="python", line_numbers=True)
+                exec(plotly_code)
+                fig = eval("fig")
+                st.plotly_chart(fig)
+                aux["figure"] = [fig]
         else:
             st.write("**---------------------- FIN CADENA DE PENSAMIENTO ---------------------------**")
-            st.write("EYYYYYY")
+            response = lu.invoke_general_agent_007(
+            question=prompt,
+            messages=st.session_state.messages_agent,
+            sql_messages = st.session_state.sql_messages,
+            model_name=model_options[model_options.index(st.session_state.model)],
+            temperature=st.session_state.temperature,
+            max_tokens=st.session_state.max_tokens
+        )
+            st.write_stream(response)
         if "figure" in lu.invoke_chain.aux.keys() and len(lu.invoke_chain.aux["figure"]) > 0:
             st.plotly_chart(lu.invoke_chain.aux["figure"][0])
         if hasattr(lu.invoke_chain, 'recursos'):
@@ -209,5 +240,7 @@ if prompt:
 
     # Add user message to chat history
     st.session_state.messages_agent.append({"role": "user", "content": prompt, "aux": {}})
-    st.session_state.messages_agent.append({"role": "assistant", "content": lu.invoke_gen_response.response, "aux": {}})
-    print(st.session_state.messages_agent)
+    if "consulta" in intent:
+        st.session_state.messages_agent.append({"role": "assistant", "content": lu.invoke_gen_response.response, "aux": aux})
+    else:
+        st.session_state.messages_agent.append({"role": "assistant", "content": lu.invoke_general_agent_007.response, "aux": aux})

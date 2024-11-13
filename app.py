@@ -16,14 +16,14 @@ demo_agent = st.Page("./app_pages/demo_agent.py", title="Agente 007", icon="👮
 
 pg = st.navigation(
     {
-       "Información": [welcome, doc],
-       "Bots": [nlp2sql, rag, ppt, demo_agent],
-       "Ajustes": [bd, index] 
+   #    "Información": [welcome, doc],
+       "Bots": [demo_agent],
+   #    "Ajustes": [bd, index] 
     }
     )
 
 st.set_page_config(
-    page_title="MontyBot",
+    page_title="Agente 007",
     page_icon="🤖",
 )
 
