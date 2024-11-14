@@ -196,7 +196,7 @@ if prompt:
                             #st.write(f"- **Resultado** -> {result_query}")
                             break
             
-            st.write(f"**Paso {step}: ¿Se debería generar un gráfico?...❓**")
+            st.write(f"**Paso {step}: ¿Se debería generar un gráfico?❓**")
             step += 1
             gen_plot = False
             with st.spinner("Comprobando resultados de la base de datos..."):
