@@ -201,11 +201,14 @@ if prompt:
             gen_plot = False
             with st.spinner("Comprobando resultados de la base de datos..."):
                 time.sleep(SLEEP_TIME)
-                print(eval(result_query), type(eval(result_query)))
-                if len(eval(result_query)) > 1:
-                    gen_plot = True
-                    st.write("- **Se generará un gráfico ✅**")
-                else:
+                try:
+                    #print(eval(result_query), type(eval(result_query)))
+                    if len(eval(result_query)) > 1:
+                        gen_plot = True
+                        st.write("- **Se generará un gráfico ✅**")
+                    else:
+                        st.write("- **No se generará un gráfico ❌**")
+                except:
                     st.write("- **No se generará un gráfico ❌**")
                 
 
