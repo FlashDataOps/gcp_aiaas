@@ -70,7 +70,11 @@ with st.sidebar:
     if archivos_db:
         archivo_db_seleccionado = st.selectbox("Selecciona una base de datos:", archivos_db)
         af.db_connection.db_name = archivo_db_seleccionado
-        
+    
+    ERROR_PROVOCADO = st.toggle("Provocar error en la consulta")
+    SLEEP_TIME = st.slider('Selecciona un tiempo (seg) por iteración', min_value=0, max_value=5, step=1)
+
+    
     # Select model
     st.session_state.model = st.selectbox(
         "Elige un modelo:",
@@ -126,7 +130,7 @@ if prompt:
                 max_tokens=st.session_state.max_tokens
                 )
         
-            time.sleep(2)
+            time.sleep(SLEEP_TIME)
         st.write(f"- **Intención detectada** -> {intent}")
             
         if "consulta" in intent:
@@ -144,9 +148,12 @@ if prompt:
                 )
                 #sql_query = "SELCT COUNT(*) FROM COCHES"
             
-                time.sleep(2)
+                time.sleep(SLEEP_TIME)
             #st.write(f"- **Query SQL** -> {sql_query}")
+            if ERROR_PROVOCADO:
+                sql_query = sql_query.replace("SELECT", "SELCT")
             sql_query = sql_query.replace('```sql', "").replace("sql", "")
+
             st.code(sql_query, language='sql')
 
             
@@ -155,14 +162,15 @@ if prompt:
             with st.spinner("Ejecutando consulta SQL..."):
                 result_query = lu.run_query(sql_query)
                 
-                time.sleep(2)
+                time.sleep(SLEEP_TIME)
                 st.write(f"- **Resultado** -> {result_query}")
+            
+            st.write(f"**Paso {step}: Verificando consulta SQL... 🛠️**")
             with st.spinner("Verificando consulta SQL..."):
-                st.write(f"**Paso {step}: Verificando consulta SQL... 🛠️**")
                 step += 1
                 
                 for tries in range(3):
-        
+                    time.sleep(SLEEP_TIME)
                     if "Error" in result_query:
                         st.write(fr"- **Intento {tries+1} -> Arreglando consulta**")
                         sql_query = lu.invoke_fix_sql(
@@ -187,6 +195,18 @@ if prompt:
                             st.write("- **La consulta no tiene errores ✅**")
                             #st.write(f"- **Resultado** -> {result_query}")
                             break
+            
+            st.write(f"**Paso {step}: ¿Se debería generar un gráfico?...❓**")
+            step += 1
+            gen_plot = False
+            with st.spinner("Comprobando resultados de la base de datos..."):
+                time.sleep(SLEEP_TIME)
+                print(eval(result_query), type(eval(result_query)))
+                if len(eval(result_query)) > 1:
+                    gen_plot = True
+                    st.write("- **Se generará un gráfico ✅**")
+                else:
+                    st.write("- **No se generará un gráfico ❌**")
                 
 
             
@@ -200,26 +220,30 @@ if prompt:
             temperature=st.session_state.temperature,
             max_tokens=st.session_state.max_tokens,
             sql_result = result_query
-        )
+            )
             st.write_stream(response)
             
-            with st.spinner("Generando gráfico... 📊"):
-                plotly_code = lu.invoke_gen_plot_agent_007(
-                question=prompt,
-                messages=st.session_state.messages_agent,
-                sql_messages = st.session_state.sql_messages,
-                model_name=model_options[model_options.index(st.session_state.model)],
-                temperature=st.session_state.temperature,
-                max_tokens=st.session_state.max_tokens,
-                sql_result = result_query,
-                sql_query = sql_query
-                )
-                plotly_code = plotly_code.replace("```python", "").replace('```', "").replace("fig.show()", "")
-                #st.code(plotly_code, language="python", line_numbers=True)
-                exec(plotly_code)
-                fig = eval("fig")
-                st.plotly_chart(fig)
-                aux["figure"] = [fig]
+            if gen_plot:
+                with st.spinner("Generando gráfico... 📊"):
+                    try:
+                        plotly_code = lu.invoke_gen_plot_agent_007(
+                        question=prompt,
+                        messages=st.session_state.messages_agent,
+                        sql_messages = st.session_state.sql_messages,
+                        model_name=model_options[model_options.index(st.session_state.model)],
+                        temperature=st.session_state.temperature,
+                        max_tokens=st.session_state.max_tokens,
+                        sql_result = result_query,
+                        sql_query = sql_query
+                        )
+                        plotly_code = plotly_code.replace("```python", "").replace('```', "").replace("fig.show()", "")
+                        #st.code(plotly_code, language="python", line_numbers=True)
+                        exec(plotly_code)
+                        fig = eval("fig")
+                        st.plotly_chart(fig)
+                        aux["figure"] = [fig]
+                    except:
+                        st.write("Lo siento no he podido generar el gráfico 😔")
         else:
             st.write("**---------------------- FIN CADENA DE PENSAMIENTO ---------------------------**")
             response = lu.invoke_general_agent_007(
