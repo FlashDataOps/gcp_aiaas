@@ -471,7 +471,7 @@ def create_history(messages):
             history.add_ai_message(message["content"])
     return history
 
-def invoke_chain_shap(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192, json_params=None, db_name=None, model_params = None, id_transaction = None):
+def invoke_chain_shap(question, messages, sql_messages, model_name="gemini-1.5-flash-002", temperature=0, max_tokens=8192, json_params=None, db_name=None, model_params = None, id_transaction = None):
     llm = get_model(model_name, temperature, max_tokens)
     history = create_history(messages)
     path_file = f"gs://single-cirrus-435319-f1-bucket/foundations/plots_shap/shap_local_{id_transaction}.png"
