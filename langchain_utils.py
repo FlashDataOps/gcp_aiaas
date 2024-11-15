@@ -472,7 +472,7 @@ def create_history(messages):
     return history
 
 def invoke_chain_shap(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192, json_params=None, db_name=None, model_params = None, id_transaction = None):
-    llm = get_model("llama3-70b-8192", temperature, max_tokens)
+    llm = get_model(model_name, temperature, max_tokens)
     history = create_history(messages)
     path_file = f"gs://single-cirrus-435319-f1-bucket/foundations/plots_shap/shap_local_{id_transaction}.png"
     config = {
@@ -491,7 +491,7 @@ def invoke_chain_shap(question, messages, sql_messages, model_name="llama3-70b-8
     for chunk in shap_vision_local_chain.stream(config):
         yield chunk
 
-def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192, json_params=None, db_name=None, model_params = None):
+def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=128000, json_params=None, db_name=None, model_params = None):
     """
     Invokes the language chain model to generate a response based on the given question and chat history.
 
