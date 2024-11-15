@@ -24,6 +24,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 import traceback
 import pandas as pd
+import plotly.graph_objects as go
 
 load_dotenv()
 
@@ -250,13 +251,10 @@ prompt_create_sql_response = ChatPromptTemplate.from_messages(
             - Pregunta: {input}
             - Query SQL: {query}
             - Respuesta: {response}
-            
-            En tu respuesta debes indicar la query SQL que se ha generado para la pregunta del usuario. Escribela de forma que sea fácil de leer. Evita que sea una única línea e indenta bien cada linea de la query.
-            
-            No utilices el formato que te he dado anteriormente para responder a la pregunta, muestra la información en uno o dos párrafos
+                        
             Siempre muestralo de una forma bonita y ordenada, utilizando tablas o bullets points con saltos de línea a ser posible.
             UTILIZA FORMATO MARKDOWN
-            RESPONDE EN ESPAÑOL DE FORMA DETALLADA
+            RESPONDE EN ESPAÑOL DE FORMA BREVE Y CONCISA SIN HACER REFERENCIAS A LA BASE DE DATOS. 
             """,
         ),
         ("placeholder", "{chat_history}"),
@@ -268,18 +266,24 @@ prompt_custom_chart = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            """
-            Responde únicamente con código python
-            Debes utilizar los siguientes datos para escribir el código en plotly en python que represente la respuesta realizada con la siguiente query:
-            - Query SQL: {query}
-            - Respuesta: {response}
-            
-            SOLO DEBES INCLUIR CÓDIGO PYTHON EN TU RESPUESTA. NO INCLUYAS LENGUAJE NATURAL INTRODUCIENDO TU RESPUESTA.
-            HAZ EL GRÁFICO BONITO Y VISUAL. QUIERO QUE ESTÉ PREPARADO PARA SER MOSTRADO ANTE UN CLIENTE MUY IMPORTANTE.
-            
-            ASEGURATE DE QUE LA RESPUESTA TIENE ÚNICAMENTE CÓDIGO PYTHON
-            
-            RESPONDE EN ESPAÑOL
+            """            
+            Debes generar un gráfico utilizando la librería plotly que represente correctamente la siguiente información:
+
+            - Pregunta del usuario: {input}
+
+            - Query ejecutada sobre la base de datos: {query}
+
+            - Resultado obtenido de la base de datos: {response}
+
+            Te paso el schema de la base de datos por si lo necesitas para hacer el gráfico:
+
+            {schema}
+
+            La leyenda, títulos y nombre de los elementos deben estar escritos en lenguaje natural y en español. No debes hacer referencia a los nombres de las columnas de la base de datos.
+
+            DEBES OFRECER ÚNICAMENTE CÓDIGO PYTHON. NO HAGAS INTRODUCCIÓN NI EXPLICACIÓN DEL CÓDIGO
+            NO IMPORTES LIBRERIAS-
+            DEBES AÑADIR SIEMPRE AL FINAL 
             """,
         ),
         ("user", "{input}"),
@@ -468,7 +472,7 @@ def create_history(messages):
     return history
 
 def invoke_chain_shap(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192, json_params=None, db_name=None, model_params = None, id_transaction = None):
-    llm = get_model(model_name, temperature, max_tokens)
+    llm = get_model("llama3-70b-8192", temperature, max_tokens)
     history = create_history(messages)
     path_file = f"gs://single-cirrus-435319-f1-bucket/foundations/plots_shap/shap_local_{id_transaction}.png"
     config = {
@@ -554,7 +558,8 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         )
         
         plot_chain = (
-            prompt_custom_chart
+            RunnablePassthrough.assign(schema=get_schema)
+            | prompt_custom_chart
             | llm
             | StrOutputParser()
         )
@@ -596,11 +601,13 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
             if len(list_result) > 1:
                 del config["schema"]
                 plot_code = plot_chain.invoke(config)
-                
                 plot_code = plot_code.replace("```python", "").replace("```", "").replace("fig.show()", "")
+                plot_code = plot_code + '\naux["figure"] = [fig]'
+                print(plot_code, type(plot_code))
                 exec(plot_code)
-                aux["figure"] = eval("[fig]")
+                #aux["figure"] = eval("[fig]")
         except Exception as e:
+            traceback.print_exc()
             print(f"Error al generar el gráfico {e}")
     
     invoke_chain.response = response

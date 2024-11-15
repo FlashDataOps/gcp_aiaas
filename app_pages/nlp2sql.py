@@ -133,7 +133,7 @@ def reset_chat_history():
     if "messages" in st.session_state:
         st.session_state.messages = []
 
-model_options = ["llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768", "gemma-7b-it", "gemini-1.5-flash-002", "gemini-1.5-pro-002"]
+model_options = ["gemini-1.5-flash-002", "gemini-1.5-pro-002"]
 max_tokens = {
     "llama3-70b-8192": 8192,
     "llama3-8b-8192": 8192,
