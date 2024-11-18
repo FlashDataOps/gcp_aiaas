@@ -86,7 +86,7 @@ prompt_create_sql = ChatPromptTemplate.from_messages(
             •	OTB -> Reservas activas (en euros).
             •	Forecast -> Previsión (en euros), ingresos esperados.
             •	Local_Currency -> Moneda local.
-            •	Exchange_rate_to_euro -> relación de la moneda local con EUR.
+            •	Exchange_rate_to_EUR -> relación de la moneda local con EUR.
             •	Hotel_ID -> Identificador del hotel.
             •	Business_date -> día en el que se observa la situación (actualidad).
             •	Stay_date -> Día al que hacen referencia los datos.
@@ -140,7 +140,9 @@ prompt_create_sql = ChatPromptTemplate.from_messages(
             •	OTB_business_date  -> df['OTB'].sum(). Suma de reservas totales en €.
             •	Forecast_business_date -> df['Forecast'].sum(). Suma de predicciones en €.
             •	Total_business_date -> Actuals_business_date + OTB_business_date  + Forecast_business_date. Suma de ocupaciones activas, reservas y previsiones.
-            •	Perc_expected_revenue -> (actuals_business_date + OTB_business_date) / total_business_date. Porcentaje de € sobre el total.
+            •	Perc_expected_revenue -> (actuals_business_date + OTB_business_date) / total_business_date. Porcentaje de euros € obtenidos o reservados sobre el total estimado.
+            
+            Ten en cuenta que TREV = Total_business_date; RREV = Total_business_date filtrado para métrica RP; OREV = Total_business_date para todas las métricas excepto RP.
             
             Utiliza el historial para adaptar la consulta SQL. No añadas respuestas en lenguaje natural.
             
