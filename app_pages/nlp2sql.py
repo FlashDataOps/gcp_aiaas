@@ -245,7 +245,7 @@ for message in st.session_state.messages:
             st.audio(message["aux"]["audio"], format="audio/mp3", autoplay=False)
 
 # Accept user input
-prompt = st.chat_input("How can I help you?")
+prompt = st.chat_input("¿Cómo puedo ayudarte?", key="user_input")
 
 if prompt:
     # Display user message in chat message container

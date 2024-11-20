@@ -242,12 +242,12 @@ prompt_summary_of_the_day = ChatPromptTemplate.from_messages(
         (
             "system",
             """
-            Genera un resumen de la información del día a partir de los datos de NH Hoteles. Utiliza el siguiente esquema para realizar la consulta:
+            Genera un resumen de la información del día a partir de los datos de NH Hoteles. 
             Cada día se ejecuta un proceso que calcula diferentes datos para los Hoteles NH. Este día se conoce como Business Date (fecha actual). En PowerBI se puede seleccionar el Business Date de “hoy” o el del miércoles de la semana anterior por temas internos de NH. El PowerBI del que disponemos es el del 02 de Octubre de 2024. La fecha Stay Date hace referencia a la fecha de la que se muestran los datos (reservas para dicho día, ocupaciones etc).
             Si tomamos el día de hoy como Bussines Date, On-The-Books (OTB) serán las reservas activas a día de hoy para los diferentes Stay Dates, Actuals serán las ocupaciones activas hoy para cada Stay Date y Pick Up son las ocupaciones necesarias para alcanzar el Forecast.
             Los datos que hemos descargado se corresponden con aquellos de la tabla Rev-for-pre-outputs-rev desde el 01-09-2024 hasta el 30-09-2024, de todos los segmentos salvo Others y TNCD (Transient Restricted). Además, se han tomado los datos del maestro de hoteles, maestro de segmentos y maestro de métricas.
+            Asegurate de no solo mostar el resultado sino también de interpretarlo y explicarlo, a ser posible de forma natural para un alto cargo de una empresa.
 
-            
             A continuación te facilito un resumen de las columnas más importantes en el dataset:
             Campos y variables.
             •	Segment -> es el tipo de clientes a los que se hace referencia.
@@ -272,14 +272,6 @@ prompt_summary_of_the_day = ChatPromptTemplate.from_messages(
             •	Hotel_Consolidate -> indica si el hotel se considera maduro (lleva años abierto).
             •	RRM -> Revenue Manager.
 
-            Algunas métricas útiles son:
-            •	Actuals_business_date -> df[df ['Stay_date']<df ['Business_date']]['Actuals'].sum(). La suma de los € de ocupaciones activas a día de hoy (Business Date).
-            •	OTB_business_date  -> df['OTB'].sum(). Suma de reservas totales en €.
-            •	Forecast_business_date -> df['Forecast'].sum(). Suma de predicciones en €.
-            •	Total_business_date -> Actuals_business_date + OTB_business_date  + Forecast_business_date. Suma de ocupaciones activas, reservas y previsiones.
-            •	Perc_expected_revenue -> (actuals_business_date + OTB_business_date) / total_business_date. Porcentaje de € sobre el total.
-
-            
             A continuación te doy unas columnas y sus posibles valores para ayudarte a filtrar:
             •	Segment: 
                 •	BUGR -> Business groups (grupos de negocio)
@@ -304,7 +296,9 @@ prompt_summary_of_the_day = ChatPromptTemplate.from_messages(
                 •	TREV -> RREV + OREV
                 •	OTB -> On-the-books / Reservas
             
-            PASOS A SEGUIR:
+            PASOS A SEGUIR para generar el resumen diario:
+            Asegurate de no solo mostar el resultado sino también de interpretarlo y explicarlo, a ser posible de forma natural para un alto cargo de una empresa.
+            
             - Saludar e indicar la fecha del Business Date {business_date}.
 
             - Total Revenue: 
@@ -347,9 +341,7 @@ prompt_summary_of_the_day = ChatPromptTemplate.from_messages(
                 Explicar el desempeño de cada métrica
                 Datos a utilizar: {metrics}
                 Columnas: [Metric	Total_Actuals	Total_OTB	Total_PickUp	Total_Forecast	Perc_PickUp_to_Forecast	Perc_OTB_to_Forecast	Perc_Actuals_to_Forecast	Perc_Actuals_OTB_to_Forecast]
-                
-            Asegurate de no solo mostar el resultado sino también de interpretarlo y explicarlo, a ser posible de forma natural para un alto cargo de una empresa.
-            """,
+                """,
         ),      
     ]
 )
