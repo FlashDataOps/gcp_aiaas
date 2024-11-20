@@ -103,6 +103,10 @@ class DB_Connection:
         db = SQLDatabase.from_uri(f"sqlite:///db/{self.db_name}")
         return db
     
+    def get_db_summary_of_the_day(self):
+        db = SQLDatabase.from_uri(f"sqlite:///db/df_nh_demo.db")
+        return db
+    
     def upload_db_from_settings(self, file, table_name, sep, encoding):
         conn = sqlite3.connect(fr'db/{table_name}.db')
         if "csv" in file.name:
@@ -117,4 +121,162 @@ class DB_Connection:
 db_connection = DB_Connection()
 
 
+def summary_of_the_day_query(db):
+    
+    query_business_date = """SELECT Business_Date FROM df_nh_demo LIMIT 1;"""
+    res_business_date = db.run(query_business_date)
+    
+    query_TREV = """
+                    SELECT SUM(Actuals) AS Total_Actuals, SUM(OTB) AS Total_OTB, SUM(Pick_Up) AS Total_PickUp, SUM(Actuals + OTB + Forecast) AS TREV, (SUM(Actuals + OTB) * 1.0) / SUM(Actuals + OTB + Forecast) AS perc_expected_revenue 
+                    FROM df_nh_demo;
+                    """
+    res_TREV = db.run(query_TREV)
+    
+    query_RREV = """SELECT 
+                        SUM(Actuals) AS Total_Actuals_RREV, 
+                        SUM(OTB) AS Total_OTB_RREV, 
+                        SUM(Pick_Up) AS Total_PickUp_RREV, 
+                        SUM(Actuals + OTB + Forecast) AS RREV, 
+                        (SUM(Actuals + OTB) * 1.0) / SUM(Actuals + OTB + Forecast) AS perc_expected_revenue_RREV 
+                    FROM 
+                        df_nh_demo
+                    WHERE 
+                        Metric = 'RP';
+                    """
+    res_RREV = db.run(query_RREV)
+    
+    query_OREV = """SELECT 
+                        SUM(Actuals) AS Total_Actuals_OREV, 
+                        SUM(OTB) AS Total_OTB_OREV, 
+                        SUM(Pick_Up) AS Total_PickUp_OREV, 
+                        SUM(Actuals + OTB + Forecast) AS OREV, 
+                        (SUM(Actuals + OTB) * 1.0) / SUM(Actuals + OTB + Forecast) AS perc_expected_revenue_OREV 
+                    FROM 
+                        df_nh_demo
+                    WHERE 
+                        Metric != 'RP';
+                    """
+    res_OREV = db.run(query_OREV)
+    
+    query_pctg_RREV_OREV = """SELECT 
+                    -- Total Revenue (TREV)
+                    SUM(Actuals + OTB + Forecast) AS TREV,
+                    
+                    -- Room Revenue (RREV)
+                    SUM(CASE WHEN Metric = 'RP' THEN Actuals + OTB + Forecast ELSE 0 END) AS RREV,
+                    
+                    -- Other Revenue (OREV)
+                    SUM(CASE WHEN Metric != 'RP' THEN Actuals + OTB + Forecast ELSE 0 END) AS OREV,
+                    
+                    -- Percentages
+                    (SUM(CASE WHEN Metric = 'RP' THEN Actuals + OTB + Forecast ELSE 0 END) * 1.0) / SUM(Actuals + OTB + Forecast) AS perc_RREV_of_TREV,
+                    (SUM(CASE WHEN Metric != 'RP' THEN Actuals + OTB + Forecast ELSE 0 END) * 1.0) / SUM(Actuals + OTB + Forecast) AS perc_OREV_of_TREV
+                FROM 
+                    df_nh_demo;"""
+      
+    res_pctg_RREV_OREV = db.run(query_pctg_RREV_OREV)
+                  
+    query_pctg_actuals_OTB_PickUp = """SELECT 
+                                        -- TREV, RREV y OREV
+                                        SUM(Actuals + OTB + Forecast) AS TREV,
+                                        SUM(CASE WHEN Metric = 'RP' THEN Actuals + OTB + Forecast ELSE 0 END) AS RREV,
+                                        SUM(CASE WHEN Metric != 'RP' THEN Actuals + OTB + Forecast ELSE 0 END) AS OREV,
+                                        
+                                        -- Porcentajes de Actuals
+                                        (SUM(Actuals) * 1.0) / SUM(Actuals + OTB + Forecast) AS perc_Actuals_of_TREV,
+                                        (SUM(CASE WHEN Metric = 'RP' THEN Actuals ELSE 0 END) * 1.0) / SUM(CASE WHEN Metric = 'RP' THEN Actuals + OTB + Forecast ELSE 0 END) AS perc_Actuals_of_RREV,
+                                        (SUM(CASE WHEN Metric != 'RP' THEN Actuals ELSE 0 END) * 1.0) / SUM(CASE WHEN Metric != 'RP' THEN Actuals + OTB + Forecast ELSE 0 END) AS perc_Actuals_of_OREV,
 
+                                        -- Porcentajes de OTB
+                                        (SUM(OTB) * 1.0) / SUM(Actuals + OTB + Forecast) AS perc_OTB_of_TREV,
+                                        (SUM(CASE WHEN Metric = 'RP' THEN OTB ELSE 0 END) * 1.0) / SUM(CASE WHEN Metric = 'RP' THEN Actuals + OTB + Forecast ELSE 0 END) AS perc_OTB_of_RREV,
+                                        (SUM(CASE WHEN Metric != 'RP' THEN OTB ELSE 0 END) * 1.0) / SUM(CASE WHEN Metric != 'RP' THEN Actuals + OTB + Forecast ELSE 0 END) AS perc_OTB_of_OREV,
+
+                                        -- Porcentajes de PickUp
+                                        (SUM(Pick_Up) * 1.0) / SUM(Actuals + OTB + Forecast) AS perc_PickUp_of_TREV,
+                                        (SUM(CASE WHEN Metric = 'RP' THEN Pick_Up ELSE 0 END) * 1.0) / SUM(CASE WHEN Metric = 'RP' THEN Actuals + OTB + Forecast ELSE 0 END) AS perc_PickUp_of_RREV,
+                                        (SUM(CASE WHEN Metric != 'RP' THEN Pick_Up ELSE 0 END) * 1.0) / SUM(CASE WHEN Metric != 'RP' THEN Actuals + OTB + Forecast ELSE 0 END) AS perc_PickUp_of_OREV
+                                    FROM 
+                                        df_nh_demo;
+                                                """
+    res_pctg_actuals_OTB_PickUp = db.run(query_pctg_actuals_OTB_PickUp)
+                                          
+    query_hotelBU = """SELECT 
+                    Hotel_BU, SUM(Actuals), SUM(OTB), SUM(Pick_Up)
+                FROM 
+                    df_nh_demo
+                GROUP BY Hotel_BU;
+                """
+    res_hotelBU = db.run(query_hotelBU)
+    
+    query_country = """SELECT 
+                    Hotel_Country, SUM(Actuals), SUM(OTB), SUM(Pick_Up)
+                FROM 
+                    df_nh_demo
+                GROUP BY Hotel_Country;
+                """
+    res_country = db.run(query_country)
+              
+    query_subBU = """
+                    SELECT 
+                        Hotel_SubBU AS Hotel_SubBU,  -- País o SubBU
+                        SUM(Forecast) AS Total_Forecast
+                    FROM 
+                        df_nh_demo
+                    GROUP BY 
+                        Hotel_SubBU
+                    ORDER BY
+                        Total_Forecast DESC;  """
+                        
+    res_subBU = db.run(query_subBU)
+                  
+    query_metrics="""
+                    -- Calcular el desempeño de todas las métricas disponibles
+                    WITH Revenue_Metrics AS (
+                        SELECT 
+                            Metric,  -- Todas las métricas disponibles (ej. RP, BKF, FPB, etc.)
+                            
+                            -- Calcular los valores totales por cada métrica
+                            SUM(Actuals) AS Total_Actuals,
+                            SUM(OTB) AS Total_OTB,
+                            SUM(Pick_Up) AS Total_PickUp,
+                            SUM(Forecast) AS Total_Forecast,
+                            
+                            -- Cálculos de porcentajes para evaluar el desempeño
+                            (SUM(Pick_Up) * 1.0) / NULLIF(SUM(Forecast), 0) AS Perc_PickUp_to_Forecast,
+                            (SUM(OTB) * 1.0) / NULLIF(SUM(Forecast), 0) AS Perc_OTB_to_Forecast,
+                            (SUM(Actuals) * 1.0) / NULLIF(SUM(Forecast), 0) AS Perc_Actuals_to_Forecast,
+                            ((SUM(Actuals) + SUM(OTB)) * 1.0) / NULLIF(SUM(Forecast), 0) AS Perc_Actuals_OTB_to_Forecast
+                        FROM 
+                            df_nh_demo
+                        GROUP BY 
+                            Metric  -- Agrupamos solo por la métrica
+                    )
+
+                    -- Seleccionar y mostrar las métricas con sus respectivos cálculos
+                    SELECT 
+                        Metric,
+                        Total_Actuals,
+                        Total_OTB,
+                        Total_PickUp,
+                        Total_Forecast,
+                        Perc_PickUp_to_Forecast,
+                        Perc_OTB_to_Forecast,
+                        Perc_Actuals_to_Forecast,
+                        Perc_Actuals_OTB_to_Forecast
+                    FROM 
+                        Revenue_Metrics
+                    ORDER BY 
+                        CASE 
+                            WHEN Metric = 'RP' THEN 1
+                            WHEN Metric = 'BKF' THEN 2
+                            WHEN Metric = 'FPB' THEN 3
+                            WHEN Metric = 'RREV' THEN 4
+                            ELSE 5  -- Ordenamos en el orden que prefieras o por defecto
+                        END;
+
+                    """
+    
+    res_metric = db.run(query_metrics)
+    
+    return res_business_date, res_TREV, res_RREV, res_OREV, res_pctg_RREV_OREV, res_pctg_actuals_OTB_PickUp, res_hotelBU, res_subBU, res_country, res_metric

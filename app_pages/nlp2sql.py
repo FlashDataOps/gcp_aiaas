@@ -28,6 +28,7 @@ default_mic_name_selected = list_input_audio[default_mic_index][1]
 
 if "input_audio" not in st.session_state:
     st.session_state.input_audio = default_mic_name_selected
+    
 
 def update_chat_input(new_input):
     js = f"""
@@ -153,7 +154,25 @@ if "model" not in st.session_state:
 
 # Initialize chat history with welcoming message
 if "messages" not in st.session_state:
-    st.session_state.messages = [{"role": "assistant", "content": "Bienvenido al ChatBot de NH. ¿En qué puedo ayudarte?", "aux": {}}]
+    try:
+        model_name = st.session_state.model  # Default model from session state
+        temperature = st.session_state.temperature  # Default temperature from session state
+        max_tokens_value = st.session_state.max_tokens  # Max tokens from session state
+        
+        # Generate the initial summary message
+        initial_message_content = lu.summary_of_the_date_generation(model_name, temperature, max_tokens_value)
+        print(initial_message_content)
+        
+        # Add the initial message to the session state
+        st.session_state.messages = [
+            {"role": "assistant", "content": initial_message_content, "aux": {}}
+        ]
+    except Exception as e:
+        st.error(f"Error generating initial message: {e}")
+        st.session_state.messages = [
+            {"role": "assistant", "content": "Bienvenido al ChatBot de NH. ¿En qué puedo ayudarte?", "aux": {}}
+        ]
+
     st.session_state.sql_messages = []
     st.session_state.show_success_audio = False
 

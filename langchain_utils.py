@@ -244,33 +244,48 @@ prompt_summary_of_the_day = ChatPromptTemplate.from_messages(
             """
             Genera un resumen de la información del día a partir de los datos de NH Hoteles. Utiliza el siguiente esquema para realizar la consulta:
             
-            - Saludar e indicar la fecha del Business Date.
+            - Saludar e indicar la fecha del Business Date {business_date}.
 
             - Total Revenue: 
                 Cuanto es TREV y su desglose en: Cuanto es Actuals, cuanto es OTB y cuanto es PickUp.
                 Con ello decir cual es el porcentaje de completitud respecto a lo esperado.
-
+                Datos a utilizar: {trev}
+                Columnas: [Total_Actuals	Total_OTB	Total_PickUp	TREV	perc_expected_revenue]
+                
             - Room Revenue:
                 Cuanto es RREV y su desglose en: Cuanto es Actuals, cuanto es OTB y cuanto es PickUp.
                 Con ello decir cual es el porcentaje de completitud respecto a lo esperado.
+                Datos a utilizar: {rrev}
+                Columnas: [Total_Actuals_RREV	Total_OTB_RREV	Total_PickUp_RREV	RREV	perc_expected_revenue_RREV]
 
             - Other Revenue:
                 Cuanto es OREV y su desglose en: Cuanto es Actuals, cuanto es OTB y cuanto es PickUp.
                 Con ello decir cual es el porcentaje de completitud respecto a lo esperado.
+                Datos a utilizar: {orev}
+                Columnas: [Total_Actuals_OREV	Total_OTB_OREV	Total_PickUp_OREV	OREV	perc_expected_revenue_OREV]
 
             - Pequeño resumen de lo anterior:
                 - Cual es el porcentaje del TREV asociado a RREV y OREV.
                 - Cual es el porcentaje de Actuals, OTB y Pick UP.
                 - Resumen más subjetivo: si el RREV va bien / mal o similares; comparación con niveles habituales de cada punto...
+                Datos a utilizar: {pctg_rrev_orev}, {pctg_actuals_OTB_pickup}
+                Columnas: [TREV	RREV	OREV	perc_RREV_of_TREV	perc_OREV_of_TREV]
+                Columnas: [TREV	RREV	OREV	perc_Actuals_of_TREV	perc_Actuals_of_RREV	perc_Actuals_of_OREV	perc_OTB_of_TREV	perc_OTB_of_RREV	perc_OTB_of_OREV	perc_PickUp_of_TREV	perc_PickUp_of_RREV	perc_PickUp_of_OREV]
 
             - Revenue por Hotel Business Unit:
                 Contar para cada BU cual es el Actuals, OTB, Pick Up y Forecast (y que % supone PickUp para saber si falta mucho para lo esperado)
                 Dentro de cada BU explicar brevemente como va cada Hotel Country (quizá mencionar solo el forecast y el pickup)
+                Datos a utilizar: {hotelBU}
+                Columnas: [Hotel_Country	SUM(Actuals)	SUM(OTB)	SUM(Pick_Up)]
 
             - Comparativa de forecast por Hotel Sub Business Unit (qué países están a la cabeza y a la cola).
+              Datos a utilizar: {hotelSubBU}
+              Columnas: [Hotel_SubBU	Total_Forecast]
 
-            - [No está en el resumen ejecutivo pero yo lo añadiría] Métricas:
+            - Métricas:
                 Explicar el desempeño de cada métrica
+                Datos a utilizar: {metrics}
+                Columnas: [Metric	Total_Actuals	Total_OTB	Total_PickUp	Total_Forecast	Perc_PickUp_to_Forecast	Perc_OTB_to_Forecast	Perc_Actuals_to_Forecast	Perc_Actuals_OTB_to_Forecast]
             """,
         ),      
     ]
@@ -294,6 +309,37 @@ def create_history(messages):
         else:
             history.add_ai_message(message["content"])
     return history
+
+def summary_of_the_date_generation(model_name, temperature, max_tokens):
+    db = af.db_connection.get_db_summary_of_the_day()
+    res_business_date, res_TREV, res_RREV, res_OREV, res_pctg_RREV_OREV, res_pctg_actuals_OTB_PickUp, \
+        res_hotelBU, res_subBU, res_country, res_metric = af.summary_of_the_day_query(db)
+
+    llm = get_model(model_name, temperature, max_tokens)
+
+    summary_chain = (
+            prompt_summary_of_the_day
+            | llm
+            | StrOutputParser()
+        )
+    
+    config = {
+            "business_date": res_business_date,
+            "trev": res_TREV,
+            "rrev": res_RREV,
+            "orev": res_OREV,
+            "pctg_rrev_orev": res_pctg_RREV_OREV,
+            "pctg_actuals_OTB_pickup": res_pctg_actuals_OTB_PickUp,
+            "hotelBU": res_hotelBU,
+            "hotelSubBU": res_subBU,
+            "country": res_country,
+            "metrics": res_metric
+    }
+    
+    initial_message = summary_chain.invoke(config)
+    
+    return initial_message
+    
 
 def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192):
     """
@@ -351,14 +397,15 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
             | llm
             | StrOutputParser()
         )
+        
         config = {
         "input": question, 
         "chat_history": sql_history.messages,
         "few_shots": af.create_few_shots() 
         }
+        
         query = sql_chain.invoke(config)
         query = clean_query(query)
-        #print(query)
         sql_history.add_user_message(question)
         #sql_history.add_ai_message(query)
         print("Ejecutando consulta...")
@@ -409,3 +456,4 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
     invoke_chain.response = response
     invoke_chain.history = history
     invoke_chain.aux = aux
+    
