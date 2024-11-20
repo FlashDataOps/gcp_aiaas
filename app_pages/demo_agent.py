@@ -33,7 +33,7 @@ def reset_chat_history():
         st.session_state.messages_agent = []
         st.session_state.sql_messages = []
 
-model_options = ["llama3-70b-8192","gemini-1.5-flash-002", "gemini-1.5-pro-002"]
+model_options = ["llama3-70b-8192","gemini-1.5-flash-002"]
 max_tokens = {
     "llama3-70b-8192": 8192,
     "llama3-8b-8192": 8192,
@@ -71,7 +71,8 @@ with st.sidebar:
         archivo_db_seleccionado = st.selectbox("Selecciona una base de datos:", archivos_db)
         af.db_connection.db_name = archivo_db_seleccionado
     
-    ERROR_PROVOCADO = st.toggle("Provocar error en la consulta")
+    # ERROR_PROVOCADO = st.toggle("Provocar error en la consulta")
+    ERROR_PROVOCADO= False
     SLEEP_TIME = st.slider('Selecciona un tiempo (seg) por iteración', min_value=0, max_value=5, step=1)
 
     
@@ -79,17 +80,17 @@ with st.sidebar:
     st.session_state.model = st.selectbox(
         "Elige un modelo:",
         model_options,
-        index=1
+        index=0
     )
 
-    # Select temperature
-    st.session_state.temperature = st.slider('Selecciona una temperatura:', min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
+    # # Select temperature
+    # st.session_state.temperature = st.slider('Selecciona una temperatura:', min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
 
-    # Select max tokens
-    if st.session_state.max_tokens > max_tokens[st.session_state.model]:
-        max_value = max_tokens[st.session_state.model]
+    # # Select max tokens
+    # if st.session_state.max_tokens > max_tokens[st.session_state.model]:
+    #     max_value = max_tokens[st.session_state.model]
 
-    st.session_state.max_tokens = st.number_input('Seleccione un máximo de tokens:', min_value=1, max_value=max_tokens[st.session_state.model], value=max_tokens[st.session_state.model], step=100)
+    # st.session_state.max_tokens = st.number_input('Seleccione un máximo de tokens:', min_value=1, max_value=max_tokens[st.session_state.model], value=max_tokens[st.session_state.model], step=100)
 
     # Reset chat history button
     if st.button(":broom: Vaciar Chat", use_container_width=True):
@@ -100,7 +101,7 @@ render_or_update_model_info(st.session_state.model)
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages_agent:
-    with st.chat_message(message["role"], avatar = "https://www.hola.com/horizon/square/4fe315b0171d-bond-t.jpg" if message["role"] == "assistant" else "https://cdn-icons-png.flaticon.com/512/9750/9750857.png"
+    with st.chat_message(message["role"]
 ):
         st.markdown(message["content"])
         if "figure" in message["aux"].keys() and len(message["aux"]["figure"]) > 0:
@@ -113,10 +114,10 @@ step = 1
 aux = {}
 if prompt:
     # Display user message in chat message container
-    with st.chat_message("user", avatar="https://cdn-icons-png.flaticon.com/512/9750/9750857.png"):
+    with st.chat_message("user"):
         st.markdown(prompt)
-
-    with st.chat_message("assistant", avatar= "https://www.hola.com/horizon/square/4fe315b0171d-bond-t.jpg"):
+        
+    with st.chat_message("assistant"):
         st.write("**---------------------- INCICIO CADENA DE PENSAMIENTO ---------------------------**")
         st.write(f"**Paso {step}: Identificando intención... 🔍**")
         step += 1

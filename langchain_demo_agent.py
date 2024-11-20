@@ -50,6 +50,7 @@ prompt_gen_response = hub.pull("gen_response")
 prompt_general_agent_007 = hub.pull("general_agent_007")
 prompt_gen_plot_agent_007 = hub.pull("gen_plot_agent_007")
 
+
 @lru_cache(maxsize=None)
 def get_model(model_name, temperature, max_tokens):
     """
@@ -250,7 +251,7 @@ def invoke_gen_plot_agent_007(question, messages, sql_messages, model_name="llam
     
     return response
 
-def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192):
+def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192, main_prompt=''):
     """
     Invokes the language chain model to generate a response based on the given question and chat history.
 
@@ -294,3 +295,6 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
     invoke_chain.response = response
     invoke_chain.history = history
     invoke_chain.aux = aux
+    
+    print('response',response)
+    return response
