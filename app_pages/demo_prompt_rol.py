@@ -77,7 +77,7 @@ with st.sidebar:
     # st.session_state.max_tokens = st.number_input('Seleccione un máximo de tokens:', min_value=1, max_value=max_tokens[st.session_state.model], value=max_tokens[st.session_state.model], step=100)
 
     # # Reset chat history button
-    if st.button("Vaciar Chat"):
+    if st.button(":broom: Vaciar chat", use_container_width=True):
         reset_chat_history()
     
 # Render or update model information
