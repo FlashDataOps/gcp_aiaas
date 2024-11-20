@@ -154,25 +154,9 @@ if "model" not in st.session_state:
     st.session_state.input_audio = 1
 
 if "messages" not in st.session_state:
-    try:
-        model_name = st.session_state.model
-        temperature = st.session_state.temperature
-        max_tokens_value = st.session_state.max_tokens
-        
-        initial_message_content = lu.summary_of_the_date_generation(model_name, temperature, max_tokens_value)
-        
-        st.session_state.messages = [
-            {
-                "role": "assistant",
-                "content": initial_message_content["content"],
-                "aux": initial_message_content["aux"]
-            }
-        ]
-    except Exception as e:
-        st.error(f"Error generating the initial message: {e}")
-        st.session_state.messages = [
-            {"role": "assistant", "content": "Welcome to the NH ChatBot. How can I assist you?", "aux": {}}
-        ]
+
+    st.session_state.messages = []
+    st.session_state.initial_message_displayed = False
 
     st.session_state.sql_messages = []
     st.session_state.show_success_audio = False
@@ -181,7 +165,7 @@ if "messages" not in st.session_state:
 with st.sidebar:
     st.title("Model Configuration")
     
-    audio_toggle = st.toggle("Responses with audio")
+    audio_toggle = st.toggle("Responses with audio", value=True)
     
     # Select mic input
     st.session_state.input_audio = st.selectbox(
@@ -232,6 +216,22 @@ with st.sidebar:
 # Render or update model information
 render_or_update_model_info(st.session_state.model)
 
+if st.session_state.initial_message_displayed == False:
+    model_name = st.session_state.model
+    temperature = st.session_state.temperature
+    max_tokens_value = st.session_state.max_tokens
+    with st.spinner("Generando informe diario..."):
+        initial_message_content = lu.summary_of_the_date_generation(model_name, temperature, max_tokens_value)
+               
+        st.session_state.messages = [
+            {
+                "role": "assistant",
+                "content": initial_message_content["content"],
+                "aux": initial_message_content["aux"]
+            }
+        ]
+    st.session_state.initial_message_displayed = True
+
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
@@ -263,11 +263,11 @@ if prompt:
         )
         
         # Display assistant's response
-        st.markdown(response)
+        st.write_stream(response)
         
         # Handle figures in assistant response
         aux_v2 = lu.invoke_chain.aux
-        if "figure" in aux_v2 and len(aux_v2["figure"]) > 0:
+        if "figure" in aux_v2.keys() and len(aux_v2["figure"]) > 0:
             with st.spinner("Generating graph..."):
                 for figure in aux_v2["figure"]:
                     st.plotly_chart(figure)
@@ -282,4 +282,4 @@ if prompt:
 
         # Update session state with the new assistant response and any auxiliary data
         st.session_state.messages.append({"role": "user", "content": prompt, "aux": {}})
-        st.session_state.messages.append({"role": "assistant", "content": response, "aux": aux_v2})
+        st.session_state.messages.append({"role": "assistant", "content": lu.invoke_chain.response, "aux": aux_v2})

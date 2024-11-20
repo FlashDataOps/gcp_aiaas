@@ -544,6 +544,7 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         
         query = sql_chain.invoke(config)
         query = clean_query(query)
+        print(query)
         sql_history.add_user_message(question)
         #sql_history.add_ai_message(query)
         print("Ejecutando consulta...")

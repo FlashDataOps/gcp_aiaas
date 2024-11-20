@@ -72,7 +72,6 @@ def create_few_shots(df = pd.read_excel(f"./few_shots/preguntas_respuestas_NH.xl
         if row['Resultado'] != '':
             lista_tuplas.append(("user", row['Pregunta']))
             lista_tuplas.append(("assistant", row['Código SQL']))
-    print(lista_tuplas)
     return lista_tuplas
 
 def format_text_for_audio(texto):
