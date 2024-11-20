@@ -35,6 +35,13 @@ def reset_chat_history():
     if "messages_foundations" in st.session_state:
         st.session_state.messages_foundations = []
 
+# Función genérica para manejar clics en los botones
+def toggle_button(button_key):
+    # Desactivar todos los botones antes de activar el seleccionado
+    for key in st.session_state.button_states:
+        st.session_state.button_states[key] = False
+    st.session_state.button_states[button_key] = True
+
 model_options = ["llama3-70b-8192","gemini-1.5-flash-002"]
 max_tokens = {
     "llama3-70b-8192": 8192,
@@ -57,6 +64,17 @@ if "messages_foundations" not in st.session_state:
     st.session_state.sql_messages = []
     st.session_state.prompt = None
     
+# Inicialización de los estados de los botones
+if 'button_states' not in st.session_state:
+    st.session_state.button_states = {
+        'button1': False,
+        'button2': False,
+        'button3': False,
+        'button4': False,
+        'button5': False,
+    }
+
+
 with st.sidebar:
     st.title("Configuración de modelo")
 
@@ -91,24 +109,6 @@ for message in st.session_state.messages_foundations:
             st.plotly_chart(message["aux"]["figure"][0])
         st.text("")
 
-
-# Inicialización de los estados de los botones
-if 'button_states' not in st.session_state:
-    st.session_state.button_states = {
-        'button1': False,
-        'button2': False,
-        'button3': False,
-        'button4': False,
-        'button5': False,
-    }
-
-# Función genérica para manejar clics en los botones
-def toggle_button(button_key):
-    # Desactivar todos los botones antes de activar el seleccionado
-    for key in st.session_state.button_states:
-        st.session_state.button_states[key] = False
-    st.session_state.button_states[button_key] = True
-
 # Crear botones con texto y on_click genérico
 buttons = [
     ("Eres una especialista de la Agencia Tributaria de Canarias 👤", 'button1'),
@@ -120,7 +120,7 @@ buttons = [
 
 # Mostrar los botones y asociar la función de clic a cada uno
 for label, key in buttons:
-    st.button(label, key=key, on_click=toggle_button, args=(key,))
+    st.button(label, key=key, on_click=toggle_button, args=(key,), use_container_width=True)
 
 # Asignar el valor de prompt_selection según el estado de los botones
 prompt_selection = next(
