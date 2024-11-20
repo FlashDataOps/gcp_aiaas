@@ -15,6 +15,7 @@ load_dotenv()
 import traceback
 from gtts import gTTS
 import base64
+import datetime
 
 try:
     list_input_audio = [input for input in enumerate(sr.Microphone.list_microphone_names())]
@@ -147,87 +148,85 @@ max_tokens = {
 
 # Initialize model
 if "model" not in st.session_state:
-    st.session_state.model = model_options[0]
+    st.session_state.model = model_options[1]
     st.session_state.temperature = 0
     st.session_state.max_tokens = max_tokens[st.session_state.model]
     st.session_state.input_audio = 1
 
-# Initialize chat history with welcoming message
 if "messages" not in st.session_state:
     try:
-        model_name = st.session_state.model  # Default model from session state
-        temperature = st.session_state.temperature  # Default temperature from session state
-        max_tokens_value = st.session_state.max_tokens  # Max tokens from session state
+        model_name = st.session_state.model
+        temperature = st.session_state.temperature
+        max_tokens_value = st.session_state.max_tokens
         
-        # Generate the initial summary message
         initial_message_content = lu.summary_of_the_date_generation(model_name, temperature, max_tokens_value)
-        print(initial_message_content)
         
-        # Add the initial message to the session state
         st.session_state.messages = [
-            {"role": "assistant", "content": initial_message_content, "aux": {}}
+            {
+                "role": "assistant",
+                "content": initial_message_content["content"],
+                "aux": initial_message_content["aux"]
+            }
         ]
     except Exception as e:
-        st.error(f"Error generating initial message: {e}")
+        st.error(f"Error generating the initial message: {e}")
         st.session_state.messages = [
-            {"role": "assistant", "content": "Bienvenido al ChatBot de NH. ¿En qué puedo ayudarte?", "aux": {}}
+            {"role": "assistant", "content": "Welcome to the NH ChatBot. How can I assist you?", "aux": {}}
         ]
 
     st.session_state.sql_messages = []
     st.session_state.show_success_audio = False
 
+# Continue with sidebar settings...
 with st.sidebar:
-    st.title("Configuración de modelo")
+    st.title("Model Configuration")
     
-    audio_toggle = st.toggle("Respuestas con audio")
+    audio_toggle = st.toggle("Responses with audio")
     
     # Select mic input
     st.session_state.input_audio = st.selectbox(
-        "Elige una entrada de audio:",
+        "Choose an audio input:",
         [elem[1] for elem in list_input_audio],
         index=default_mic_index,
     )
     
-    # Listar los archivos en la carpeta db
+    # List files in the 'db' folder
     carpeta_db = 'db' 
     try:
         dbs = os.listdir(carpeta_db)
-        # Filtrar para mostrar solo archivos, no carpetas
         archivos_db = [f for f in dbs if os.path.isfile(os.path.join(carpeta_db, f))]
     except FileNotFoundError:
         archivos_db = []
-        st.error(f"La carpeta '{carpeta_db}' no existe.")
+        st.error(f"The folder '{carpeta_db}' does not exist.")
     
     if archivos_db:
-        archivo_db_seleccionado = st.selectbox("Selecciona una base de datos:", archivos_db)
+        archivo_db_seleccionado = st.selectbox("Select a database:", archivos_db)
         af.db_connection.db_name = archivo_db_seleccionado
         
-    
     # Select model
     st.session_state.model = st.selectbox(
-        "Elige un modelo:",
+        "Choose a model:",
         model_options,
         index=0
     )
 
     # Select temperature
-    st.session_state.temperature = st.slider('Selecciona una temperatura:', min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
+    st.session_state.temperature = st.slider('Select a temperature:', min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
 
     # Select max tokens
     if st.session_state.max_tokens > max_tokens[st.session_state.model]:
         max_value = max_tokens[st.session_state.model]
 
-    st.session_state.max_tokens = st.number_input('Seleccione un máximo de tokens:', min_value=1, max_value=max_tokens[st.session_state.model], value=max_tokens[st.session_state.model], step=100)
+    st.session_state.max_tokens = st.number_input('Select max tokens:', min_value=1, max_value=max_tokens[st.session_state.model], value=max_tokens[st.session_state.model], step=100)
     
     clear_chat_column, record_audio_column= st.columns([1, 1])
     # Reset chat history button
-
-    if st.button(":broom: Limpiar chat", use_container_width=True):
+    if st.button(":broom: Clear chat", use_container_width=True):
         reset_chat_history()
 
-    if st.button("🎙️ Grabar", use_container_width=True):
-        st.session_state.show_success_audio =True
-        with st.spinner("Escuchando... 👂"):
+    if st.button("🎙️ Record", use_container_width=True):
+        st.session_state.show_success_audio = True
+        with st.spinner("Listening... 👂"):
             result = asyncio.run(speech_to_text())
   
 # Render or update model information
@@ -237,14 +236,16 @@ render_or_update_model_info(st.session_state.model)
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-        if "figure" in message["aux"].keys() and len(message["aux"]["figure"]) > 0:
-            st.plotly_chart(message["aux"]["figure"][0])
-        elif "audio" in message["aux"].keys():
-            st.audio(message["aux"]["audio"], format='audio/mp3', autoplay=False)
-        #st.text("")
+
+        if "figures" in message["aux"] and len(message["aux"]["figures"]) > 0:
+            for figure in message["aux"]["figures"]:
+                st.plotly_chart(figure["figure"])
+
+        if "audio" in message["aux"]:
+            st.audio(message["aux"]["audio"], format="audio/mp3", autoplay=False)
 
 # Accept user input
-prompt = st.chat_input("¿En qué puedo ayudarte?")
+prompt = st.chat_input("How can I help you?")
 
 if prompt:
     # Display user message in chat message container
@@ -255,26 +256,30 @@ if prompt:
         response = lu.invoke_chain(
             question=prompt,
             messages=st.session_state.messages,
-            sql_messages = st.session_state.sql_messages,
+            sql_messages=st.session_state.sql_messages,
             model_name=model_options[model_options.index(st.session_state.model)],
             temperature=st.session_state.temperature,
             max_tokens=st.session_state.max_tokens
         )
-        st.write_stream(response)
-        if "figure" in lu.invoke_chain.aux.keys() and len(lu.invoke_chain.aux["figure"]) > 0:
-            with st.spinner("Generando gráfico..."):
-                st.plotly_chart(lu.invoke_chain.aux["figure"][0])
-        if hasattr(lu.invoke_chain, 'recursos'):
-            for recurso in lu.invoke_chain.recursos:
-                st.button(recurso)
-           
+        
+        # Display assistant's response
+        st.markdown(response)
+        
+        # Handle figures in assistant response
         aux_v2 = lu.invoke_chain.aux
-        if audio_toggle:
-            with st.spinner("Generando audio..."):
-                mp3_file = text_to_speech(lu.invoke_chain.response)
+        if "figure" in aux_v2 and len(aux_v2["figure"]) > 0:
+            with st.spinner("Generating graph..."):
+                for figure in aux_v2["figure"]:
+                    st.plotly_chart(figure)
+        
+        # Handle resources like audio
+        if "audio" in aux_v2:
+            with st.spinner("Generating audio..."):
+                mp3_file = text_to_speech(response)
                 update_playback_rate(mp3_file=mp3_file, rate=1.25)
                 aux_v2["audio"] = mp3_file
+                st.audio(mp3_file, format="audio/mp3", autoplay=False)
 
-    # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": prompt, "aux": {}})
-    st.session_state.messages.append({"role": "assistant", "content": lu.invoke_chain.response, "aux": aux_v2})
+        # Update session state with the new assistant response and any auxiliary data
+        st.session_state.messages.append({"role": "user", "content": prompt, "aux": {}})
+        st.session_state.messages.append({"role": "assistant", "content": response, "aux": aux_v2})

@@ -243,7 +243,68 @@ prompt_summary_of_the_day = ChatPromptTemplate.from_messages(
             "system",
             """
             Genera un resumen de la información del día a partir de los datos de NH Hoteles. Utiliza el siguiente esquema para realizar la consulta:
+            Cada día se ejecuta un proceso que calcula diferentes datos para los Hoteles NH. Este día se conoce como Business Date (fecha actual). En PowerBI se puede seleccionar el Business Date de “hoy” o el del miércoles de la semana anterior por temas internos de NH. El PowerBI del que disponemos es el del 02 de Octubre de 2024. La fecha Stay Date hace referencia a la fecha de la que se muestran los datos (reservas para dicho día, ocupaciones etc).
+            Si tomamos el día de hoy como Bussines Date, On-The-Books (OTB) serán las reservas activas a día de hoy para los diferentes Stay Dates, Actuals serán las ocupaciones activas hoy para cada Stay Date y Pick Up son las ocupaciones necesarias para alcanzar el Forecast.
+            Los datos que hemos descargado se corresponden con aquellos de la tabla Rev-for-pre-outputs-rev desde el 01-09-2024 hasta el 30-09-2024, de todos los segmentos salvo Others y TNCD (Transient Restricted). Además, se han tomado los datos del maestro de hoteles, maestro de segmentos y maestro de métricas.
+
             
+            A continuación te facilito un resumen de las columnas más importantes en el dataset:
+            Campos y variables.
+            •	Segment -> es el tipo de clientes a los que se hace referencia.
+            •	Metric -> tipo de servicio al que se hace referencia.
+            •	Actuals -> ocupaciones activas (en euros).
+            •	OTB -> Reservas activas (en euros).
+            •	Forecast -> Previsión (en euros), ingresos esperados.
+            •	Local_Currency -> Moneda local.
+            •	Exchange_rate_to_EUR -> relación de la moneda local con EUR.
+            •	Hotel_ID -> Identificador del hotel.
+            •	Business_date -> día en el que se observa la situación (actualidad).
+            •	Stay_date -> Día al que hacen referencia los datos.
+            •	Pick_Up -> Forecast - (Actuals + OTB). Lo que falta para llegar al forecast.
+            •	Pts -> Period to stay (diferencia entre stay date y business date).
+            •	Hotel_Type -> Hotel / Restaurante.
+            •	Hotel_Name -> nombre del hotel.
+            •	Hotel_Status -> OPEN / SIGNED.
+            •	Hotel_BU -> Business Unit: BU America / BU Northern Europe / BU Southern Europe.
+            •	Hotel_SubBU -> Sub Business Unit, agrupación de países.
+            •	Hotel_Rooms -> nº de habitaciones del hotel.
+            •	Hotel_Cluster -> Agrupación de hoteles.
+            •	Hotel_Consolidate -> indica si el hotel se considera maduro (lleva años abierto).
+            •	RRM -> Revenue Manager.
+
+            Algunas métricas útiles son:
+            •	Actuals_business_date -> df[df ['Stay_date']<df ['Business_date']]['Actuals'].sum(). La suma de los € de ocupaciones activas a día de hoy (Business Date).
+            •	OTB_business_date  -> df['OTB'].sum(). Suma de reservas totales en €.
+            •	Forecast_business_date -> df['Forecast'].sum(). Suma de predicciones en €.
+            •	Total_business_date -> Actuals_business_date + OTB_business_date  + Forecast_business_date. Suma de ocupaciones activas, reservas y previsiones.
+            •	Perc_expected_revenue -> (actuals_business_date + OTB_business_date) / total_business_date. Porcentaje de € sobre el total.
+
+            
+            A continuación te doy unas columnas y sus posibles valores para ayudarte a filtrar:
+            •	Segment: 
+                •	BUGR -> Business groups (grupos de negocio)
+                •	COMP -> Complementary (complementarios)
+                •	CORP -> Corporative (corporativos)
+                •	CREW -> para hoteles cerca de aeropuertos, tripulación 
+                •	LEGR -> Grupos de ocio (Leisure Groups)
+                •	MECO -> Meetings & Conferences (reuniones y conferencias)
+                •	OTHE -> Others (otros)
+            •	Metric:
+                •	FPB -> BKF + F&B 
+                •	BKF -> Breakfast (desayuno)
+                •	EVENTS -> Eventos
+                •	RN -> Room Nights  
+                •	RP -> Room Revenue RREV (dinero generado con las habitaciones)
+                •	F&B -> Food & beverage
+            
+            Otras siglas y sus significados:
+                •	ADR -> precio medio de la habitación
+                •	TREV -> Total Revenue (dinero total generado)
+                •	OREV -> Other Revenue (dinero no generado por las habitaciones)
+                •	TREV -> RREV + OREV
+                •	OTB -> On-the-books / Reservas
+            
+            PASOS A SEGUIR:
             - Saludar e indicar la fecha del Business Date {business_date}.
 
             - Total Revenue: 
@@ -286,6 +347,8 @@ prompt_summary_of_the_day = ChatPromptTemplate.from_messages(
                 Explicar el desempeño de cada métrica
                 Datos a utilizar: {metrics}
                 Columnas: [Metric	Total_Actuals	Total_OTB	Total_PickUp	Total_Forecast	Perc_PickUp_to_Forecast	Perc_OTB_to_Forecast	Perc_Actuals_to_Forecast	Perc_Actuals_OTB_to_Forecast]
+                
+            Asegurate de no solo mostar el resultado sino también de interpretarlo y explicarlo, a ser posible de forma natural para un alto cargo de una empresa.
             """,
         ),      
     ]
@@ -311,34 +374,117 @@ def create_history(messages):
     return history
 
 def summary_of_the_date_generation(model_name, temperature, max_tokens):
+    """
+    Generates a summary of the day's data with visualizations for each metric.
+    """
+    # Get data
     db = af.db_connection.get_db_summary_of_the_day()
-    res_business_date, res_TREV, res_RREV, res_OREV, res_pctg_RREV_OREV, res_pctg_actuals_OTB_PickUp, \
-        res_hotelBU, res_subBU, res_country, res_metric = af.summary_of_the_day_query(db)
+    results = af.summary_of_the_day_query(db)
+    (res_business_date, res_TREV, res_RREV, res_OREV, res_pctg_RREV_OREV, 
+     res_pctg_actuals_OTB_PickUp, res_hotelBU, res_subBU, res_country, res_metric) = results
 
+    # Initialize LLM and get text summary
     llm = get_model(model_name, temperature, max_tokens)
-
-    summary_chain = (
-            prompt_summary_of_the_day
-            | llm
-            | StrOutputParser()
-        )
+    summary_chain = prompt_summary_of_the_day | llm | StrOutputParser()
     
     config = {
-            "business_date": res_business_date,
-            "trev": res_TREV,
-            "rrev": res_RREV,
-            "orev": res_OREV,
-            "pctg_rrev_orev": res_pctg_RREV_OREV,
-            "pctg_actuals_OTB_pickup": res_pctg_actuals_OTB_PickUp,
-            "hotelBU": res_hotelBU,
-            "hotelSubBU": res_subBU,
-            "country": res_country,
-            "metrics": res_metric
+        "business_date": res_business_date,
+        "trev": res_TREV,
+        "rrev": res_RREV,
+        "orev": res_OREV,
+        "pctg_rrev_orev": res_pctg_RREV_OREV,
+        "pctg_actuals_OTB_pickup": res_pctg_actuals_OTB_PickUp,
+        "hotelBU": res_hotelBU,
+        "hotelSubBU": res_subBU,
+        "country": res_country,
+        "metrics": res_metric
     }
     
     initial_message = summary_chain.invoke(config)
     
-    return initial_message
+    # Setup plotting chain
+    plot_prompt = ChatPromptTemplate.from_messages([(
+        "system", """Crea una visualización profesional usando plotly para el siguiente conjunto de datos.
+                    La visualización debe ser clara, informativa y adecuada para presentaciones de negocios.
+                    Asegúrate de:
+                    1. Importar todas las librerías necesarias al inicio
+                    2. Usar una paleta de colores profesional
+                    4. No usar configuraciones de múltiples ejes (xaxis2, etc.)
+                    5. No incluir fig.show()
+                    6. Indicar claramente el contenido de la visualización, tanto en título como en etiquetas.
+                    7. Hacer el gráfico más adecuado para cada conjunto de datos.
+                    8. No inventes métricas o datos, utiliza los datos proporcionados.
+                    9. No hables de ingresos, beneficios, proporciones etc, sino de las variables:
+                        A continuación te facilito un resumen de las columnas más importantes en el dataset:
+                        Campos y variables.
+                        •	Segment -> es el tipo de clientes a los que se hace referencia.
+                        •	Metric -> tipo de servicio al que se hace referencia.
+                        •	Actuals -> ocupaciones activas (en euros).
+                        •	OTB -> Reservas activas (en euros).
+                        •	Forecast -> Previsión (en euros), ingresos esperados.
+                        •	Local_Currency -> Moneda local.
+                        •	Exchange_rate_to_EUR -> relación de la moneda local con EUR.
+                        •	Hotel_ID -> Identificador del hotel.
+                        •	Business_date -> día en el que se observa la situación (actualidad).
+                        •	Stay_date -> Día al que hacen referencia los datos.
+                        •	Pick_Up -> Forecast - (Actuals + OTB). Lo que falta para llegar al forecast.
+                        •	Pts -> Period to stay (diferencia entre stay date y business date).
+                        •	Hotel_Type -> Hotel / Restaurante.
+                        •	Hotel_Name -> nombre del hotel.
+                        •	Hotel_Status -> OPEN / SIGNED.
+                        •	Hotel_BU -> Business Unit: BU America / BU Northern Europe / BU Southern Europe.
+                        •	Hotel_SubBU -> Sub Business Unit, agrupación de países.
+                        •	Hotel_Rooms -> nº de habitaciones del hotel.
+                        •	Hotel_Cluster -> Agrupación de hoteles.
+                        •	Hotel_Consolidate -> indica si el hotel se considera maduro (lleva años abierto).
+                        •	RRM -> Revenue Manager.
+
+                    Responde solo con código Python, sin texto adicional."""), 
+        ("user", "Crea una visualización para los datos: {data}")
+    ])
+    
+    plot_chain = plot_prompt | llm | StrOutputParser()
+    figures = []
+    
+    # Define datasets to visualize
+    datasets = {
+        "TREV": res_TREV,
+        "RREV": res_RREV,
+        "OREV": res_OREV,
+        "Revenue_Distribution": res_pctg_RREV_OREV,
+        "Revenue_Components": res_pctg_actuals_OTB_PickUp,
+        "Business_Units": res_hotelBU,
+        "Sub_Business_Units": res_subBU,
+        "Metrics": res_metric
+    }
+    
+    # Generate plots
+    for name, data in datasets.items():
+        try:
+            globals_dict = {}
+            exec("import plotly.graph_objects as go\nimport plotly.express as px\nimport pandas as pd\nimport numpy as np", globals_dict)
+            
+            plot_code = plot_chain.invoke({"data": data}).strip()
+            plot_code = plot_code.replace("```python", "").replace("```", "")
+            
+            exec(plot_code, globals_dict)
+            
+            if "fig" in globals_dict:
+                figures.append({
+                    "name": name,
+                    "figure": globals_dict["fig"]
+                })
+            
+        except Exception as e:
+            print(f"Error generating plot for {name}: {str(e)}")
+            continue
+
+    return {
+        "content": initial_message,
+        "aux": {"figures": figures}
+    }
+
+
     
 
 def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192):
