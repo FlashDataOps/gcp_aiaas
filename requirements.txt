@@ -160,5 +160,5 @@ openpyxl
 streamlit_pdf_viewer
 SpeechRecognition
 azure-cognitiveservices-speech
-PyAudio
+pyaudio
 gtts
