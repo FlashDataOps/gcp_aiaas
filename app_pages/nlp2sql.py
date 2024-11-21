@@ -191,7 +191,7 @@ with st.sidebar:
     st.session_state.model = st.selectbox(
         "Choose a model:",
         model_options,
-        index=0
+        index=1
     )
 
     # Select temperature
@@ -220,66 +220,91 @@ if st.session_state.initial_message_displayed == False:
     model_name = st.session_state.model
     temperature = st.session_state.temperature
     max_tokens_value = st.session_state.max_tokens
-    with st.spinner("Generando informe diario..."):
-        initial_message_content = lu.summary_of_the_date_generation(model_name, temperature, max_tokens_value)
-               
+    with st.spinner("Generating daily report..."):
+        # Generate initial message with content and auxiliary data
+        initial_message_content = lu.summary_of_the_date_generation(
+            model_name, temperature, max_tokens_value
+        )
+        
+        # Generate audio for the initial message
+        mp3_file = text_to_speech(initial_message_content['content'])
+        initial_message_content["aux"]["audio"] = mp3_file
+        
+        # Update the initial message in the session state
         st.session_state.messages = [
             {
                 "role": "assistant",
                 "content": initial_message_content["content"],
-                "aux": initial_message_content["aux"]
+                "aux": {
+                    "figures": initial_message_content["aux"]['figures'],
+                    "audio": initial_message_content["aux"]['audio']
+                }
             }
         ]
-    st.session_state.initial_message_displayed = True
+        
+        st.session_state.initial_message_displayed = True
 
 # Display chat messages from history on app rerun
-for message in st.session_state.messages:
+for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
+        
+        print(idx, message)
 
-        if "figures" in message["aux"] and len(message["aux"]["figures"]) > 0:
+        if "figures" in message["aux"].keys() and len(message["aux"]["figures"]) > 0:
             for figure in message["aux"]["figures"]:
                 st.plotly_chart(figure["figure"])
 
-        if "audio" in message["aux"]:
-            st.audio(message["aux"]["audio"], format="audio/mp3", autoplay=False)
+        if "audio" in message["aux"].keys():
+            message["aux"]["audio"].seek(0)
+            update_playback_rate(mp3_file=message["aux"]['audio'], rate=1.25)
 
 # Accept user input
 prompt = st.chat_input("¿Cómo puedo ayudarte?", key="user_input")
 
 if prompt:
-    # Display user message in chat message container
+    # Display user message
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
+        # Generate response
         response = lu.invoke_chain(
             question=prompt,
             messages=st.session_state.messages,
             sql_messages=st.session_state.sql_messages,
-            model_name=model_options[model_options.index(st.session_state.model)],
+            model_name=st.session_state.model,
             temperature=st.session_state.temperature,
             max_tokens=st.session_state.max_tokens
         )
         
-        # Display assistant's response
-        st.write_stream(response)
+        # Stream the response
+        full_response = st.write_stream(response)
         
-        # Handle figures in assistant response
+        # Prepare auxiliary data
         aux_v2 = lu.invoke_chain.aux
-        if "figure" in aux_v2.keys() and len(aux_v2["figure"]) > 0:
-            with st.spinner("Generating graph..."):
+        
+        # Generate audio if toggle is on
+        if audio_toggle:
+            with st.spinner("Generating audio..."):
+                mp3_file = text_to_speech(full_response)
+                update_playback_rate(mp3_file=mp3_file, rate=1.25)
+                mp3_file.seek(0)
+                aux_v2["audio"] = mp3_file
+                # st.audio(mp3_file, format="audio/mp3", autoplay=F)
+        
+        # Handle figures
+        if "figure" in aux_v2 and aux_v2["figure"]:
+            with st.spinner("Generating graphs..."):
                 for figure in aux_v2["figure"]:
                     st.plotly_chart(figure)
         
-        # Handle resources like audio
-        if "audio" in aux_v2:
-            with st.spinner("Generating audio..."):
-                mp3_file = text_to_speech(response)
-                update_playback_rate(mp3_file=mp3_file, rate=1.25)
-                aux_v2["audio"] = mp3_file
-                st.audio(mp3_file, format="audio/mp3", autoplay=False)
-
-        # Update session state with the new assistant response and any auxiliary data
-        st.session_state.messages.append({"role": "user", "content": prompt, "aux": {}})
-        st.session_state.messages.append({"role": "assistant", "content": lu.invoke_chain.response, "aux": aux_v2})
+        # Update session state
+        st.session_state.messages.extend([
+            {"role": "user", "content": prompt, "aux": {}},
+            {
+                "role": "assistant", 
+                "content": full_response, 
+                "aux": aux_v2
+            }
+        ])

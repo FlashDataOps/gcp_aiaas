@@ -394,7 +394,7 @@ def summary_of_the_date_generation(model_name, temperature, max_tokens):
     
     initial_message = summary_chain.invoke(config)
     
-    # Setup plotting chain
+    # # Setup plotting chain
     plot_prompt = ChatPromptTemplate.from_messages([(
         "system", """Crea una visualización profesional usando plotly para el siguiente conjunto de datos.
                     La visualización debe ser clara, informativa y adecuada para presentaciones de negocios.
