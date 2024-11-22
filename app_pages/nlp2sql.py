@@ -23,12 +23,12 @@ except:
     traceback.print_exc()
     list_input_audio = [(0, "No Mic Detected")]
 
-#default_mic_name = "Microphone Array (IntelÂ® Smart "
-#default_mic_index = next((index for index, name in list_input_audio if default_mic_name in name), 0)
-#default_mic_name_selected = list_input_audio[default_mic_index][1]
+default_mic_name = "Microphone Array (IntelÂ® Smart "
+default_mic_index = next((index for index, name in list_input_audio if default_mic_name in name), 0)
+default_mic_name_selected = list_input_audio[default_mic_index][1]
 
-#if "input_audio" not in st.session_state:
-#    st.session_state.input_audio = default_mic_name_selected
+if "input_audio" not in st.session_state:
+   st.session_state.input_audio = default_mic_name_selected
     
 
 def update_chat_input(new_input):
@@ -57,20 +57,20 @@ async def speech_to_text():
     except ValueError:
         device_index = 0 # por defecto si no se ecuentra el micro de PwC
         
-    #with sr.Microphone(device_index=device_index) as source:
-    #    audio = recognizer.listen(source)
-    #    
-    #    try:
-    #        text = recognizer.recognize_google(audio, language='es-ES')
-    #        update_chat_input(text)
-    #        #st.success(f"Texto reconocido: {text}")
-    #        st.session_state.user_input = text  # Actualizar el valor del input con el texto transcrito
-    #    except sr.UnknownValueError:
-    #        traceback.print_exc()
-    #        #st.error("No se pudo entender el audio.")
-    #    except sr.RequestError:
-    #        traceback.print_exc()
-    #        #st.error("Error al intentar usar el servicio de Google Speech Recognition.")
+    with sr.Microphone(device_index=device_index) as source:
+       audio = recognizer.listen(source)
+       
+       try:
+           text = recognizer.recognize_google(audio, language='es-ES')
+           update_chat_input(text)
+           #st.success(f"Texto reconocido: {text}")
+           st.session_state.user_input = text  # Actualizar el valor del input con el texto transcrito
+       except sr.UnknownValueError:
+           traceback.print_exc()
+           #st.error("No se pudo entender el audio.")
+       except sr.RequestError:
+           traceback.print_exc()
+           #st.error("Error al intentar usar el servicio de Google Speech Recognition.")
 
 def text_to_speech(input_text):
     try:
@@ -86,13 +86,15 @@ def text_to_speech(input_text):
         return mp3_fp
     except Exception as e:
         st.error(f"Error al generar el audio: {e}")
+        
 
-def update_playback_rate(mp3_file, rate):
+
+def update_playback_rate(mp3_file, rate, autoplay=""):
     audio_data = mp3_file.read()
     b64_audio = base64.b64encode(audio_data).decode("utf-8")
     # Crear HTML para el reproductor con JavaScript para la velocidad
     html_code = f""" <div data-stale="false" width: 100% class="element-container st-emotion-cache-a1dagx e1f1d6gn4" data-test="element-container"> 
-    <audio id="audio" controls autoplay style="width: 100%;"> 
+    <audio id="audio" controls {autoplay} style="width: 100%;"> 
     <source src="data:audio/mp3;base64,{b64_audio}" type="audio/mp3">
     </audio> 
     <script> document.getElementById("audio").playbackRate = {rate}; </script> </div> """
@@ -111,6 +113,8 @@ def autoplay_audio(file_path: str):
     </audio>
     """
     st.markdown(md, unsafe_allow_html=True)
+    
+    
 def render_or_update_model_info(model_name):
     """
     Renders or updates the model information on the webpage.
@@ -170,11 +174,11 @@ with st.sidebar:
     audio_toggle = st.toggle("Responses with audio", value=True)
     
     # Select mic input
-    #st.session_state.input_audio = st.selectbox(
-    #    "Choose an audio input:",
-    #    [elem[1] for elem in list_input_audio],
-    #    index=default_mic_index,
-    #)
+    st.session_state.input_audio = st.selectbox(
+       "Choose an audio input:",
+       [elem[1] for elem in list_input_audio],
+       index=default_mic_index,
+    )
     
     # List files in the 'db' folder
     carpeta_db = 'db' 
@@ -227,39 +231,42 @@ if st.session_state.initial_message_displayed == False:
         initial_message_content = lu.summary_of_the_date_generation(
             model_name, temperature, max_tokens_value
         )
+        st.write_stream(initial_message_content)
         
         # Generate audio for the initial message
-        mp3_file = text_to_speech(initial_message_content['content'])
-        initial_message_content["aux"]["audio"] = mp3_file
+        mp3_file = text_to_speech(lu.summary_of_the_date_generation.initial_message)
+        lu.summary_of_the_date_generation.aux["audio"] = mp3_file
         
         # Update the initial message in the session state
         st.session_state.messages = [
             {
                 "role": "assistant",
-                "content": initial_message_content["content"],
+                "content": lu.summary_of_the_date_generation.initial_message,
                 "aux": {
-                    "figures": initial_message_content["aux"]['figures'],
-                    "audio": initial_message_content["aux"]['audio']
+                    "figures": lu.summary_of_the_date_generation.aux['figures'],
+                    "audio": lu.summary_of_the_date_generation.aux['audio']
                 }
             }
         ]
-        
-        st.session_state.initial_message_displayed = True
 
 # Display chat messages from history on app rerun
 for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
         
-        print(idx, message)
-
+        if "audio" in message["aux"].keys():
+            if not st.session_state.initial_message_displayed:
+                update_playback_rate(mp3_file=message["aux"]['audio'], rate=1.25, autoplay='autoplay')
+                
+                st.session_state.initial_message_displayed = True
+            else:
+                update_playback_rate(mp3_file=message["aux"]['audio'], rate=1.25)
+                message["aux"]['audio'].seek(0)
+        
+        # with st.spinner("Generando gráficos ..."):
         if "figures" in message["aux"].keys() and len(message["aux"]["figures"]) > 0:
             for figure in message["aux"]["figures"]:
                 st.plotly_chart(figure["figure"])
-
-        if "audio" in message["aux"].keys():
-            message["aux"]["audio"].seek(0)
-            update_playback_rate(mp3_file=message["aux"]['audio'], rate=1.25)
 
 # Accept user input
 prompt = st.chat_input("¿Cómo puedo ayudarte?", key="user_input")
@@ -288,16 +295,18 @@ if prompt:
         
         # Generate audio if toggle is on
         if audio_toggle:
-            with st.spinner("Generating audio..."):
+            with st.spinner("Generando audio ..."):
                 mp3_file = text_to_speech(full_response)
-                update_playback_rate(mp3_file=mp3_file, rate=1.25)
+                update_playback_rate(mp3_file=mp3_file, rate=1.25, autoplay="autoplay")
                 mp3_file.seek(0)
                 aux_v2["audio"] = mp3_file
                 # st.audio(mp3_file, format="audio/mp3", autoplay=F)
         
+        print(aux_v2)
         # Handle figures
-        if "figure" in aux_v2 and aux_v2["figure"]:
-            with st.spinner("Generating graphs..."):
+        if "figure" in aux_v2.keys():
+            print('entro')
+            with st.spinner("Generando gráficos ..."):
                 for figure in aux_v2["figure"]:
                     st.plotly_chart(figure)
         

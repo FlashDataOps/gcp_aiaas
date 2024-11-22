@@ -379,7 +379,7 @@ def summary_of_the_date_generation(model_name, temperature, max_tokens):
 
     # Initialize LLM and get text summary
     llm = get_model(model_name, temperature, max_tokens)
-    summary_chain = prompt_summary_of_the_day | llm | StrOutputParser()
+    summary_chain = RunnablePassthrough.assign(schema=get_schema) | prompt_summary_of_the_day | llm | StrOutputParser()
     
     config = {
         "business_date": res_business_date,
@@ -394,7 +394,11 @@ def summary_of_the_date_generation(model_name, temperature, max_tokens):
         "metrics": res_metric
     }
     
-    initial_message = summary_chain.invoke(config)
+    # initial_message = summary_chain.invoke(config)
+    initial_message = ""
+    for chunk in summary_chain.stream(config):
+        initial_message += chunk
+        yield chunk
     
     # # Setup plotting chain
     plot_prompt = ChatPromptTemplate.from_messages([(
@@ -473,13 +477,15 @@ def summary_of_the_date_generation(model_name, temperature, max_tokens):
             print(f"Error generating plot for {name}: {str(e)}")
             continue
 
-    return {
-        "content": initial_message,
-        "aux": {"figures": figures}
-    }
-
-
+    summary_of_the_date_generation.initial_message = initial_message
+    summary_of_the_date_generation.aux = {"aux": {'figures': figures}}
     
+    # return {
+    #     "content": initial_message,
+    #     # "aux": {"figures": figures}
+    #     "aux": {"figures": []}
+    # # }
+
 
 def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192):
     """
@@ -582,8 +588,10 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
     
     if "consulta" in res_intent and flag_correct_query == True:
         try:
+            print(result, type(result))
             list_result = result
             if len(list_result) > 1:
+                
                 del config["schema"]
                 plot_code = plot_chain.invoke(config)
                 #print(plot_code)
