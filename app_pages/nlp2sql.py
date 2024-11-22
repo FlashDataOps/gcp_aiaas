@@ -23,12 +23,12 @@ except:
     traceback.print_exc()
     list_input_audio = [(0, "No Mic Detected")]
 
-default_mic_name = "Microphone Array (IntelÂ® Smart "
-default_mic_index = next((index for index, name in list_input_audio if default_mic_name in name), 0)
-default_mic_name_selected = list_input_audio[default_mic_index][1]
+#default_mic_name = "Microphone Array (IntelÂ® Smart "
+#default_mic_index = next((index for index, name in list_input_audio if default_mic_name in name), 0)
+#default_mic_name_selected = list_input_audio[default_mic_index][1]
 
-if "input_audio" not in st.session_state:
-    st.session_state.input_audio = default_mic_name_selected
+#if "input_audio" not in st.session_state:
+#    st.session_state.input_audio = default_mic_name_selected
     
 
 def update_chat_input(new_input):
@@ -52,23 +52,25 @@ async def speech_to_text():
     list_input_audio_names = [name for _, name in list_input_audio]
     
     try:
-        device_index = list_input_audio_names.index(st.session_state.input_audio)
+        pass
+        #device_index = list_input_audio_names.index(st.session_state.input_audio)
     except ValueError:
         device_index = 0 # por defecto si no se ecuentra el micro de PwC
-    with sr.Microphone(device_index=device_index) as source:
-        audio = recognizer.listen(source)
         
-        try:
-            text = recognizer.recognize_google(audio, language='es-ES')
-            update_chat_input(text)
-            #st.success(f"Texto reconocido: {text}")
-            st.session_state.user_input = text  # Actualizar el valor del input con el texto transcrito
-        except sr.UnknownValueError:
-            traceback.print_exc()
-            #st.error("No se pudo entender el audio.")
-        except sr.RequestError:
-            traceback.print_exc()
-            #st.error("Error al intentar usar el servicio de Google Speech Recognition.")
+    #with sr.Microphone(device_index=device_index) as source:
+    #    audio = recognizer.listen(source)
+    #    
+    #    try:
+    #        text = recognizer.recognize_google(audio, language='es-ES')
+    #        update_chat_input(text)
+    #        #st.success(f"Texto reconocido: {text}")
+    #        st.session_state.user_input = text  # Actualizar el valor del input con el texto transcrito
+    #    except sr.UnknownValueError:
+    #        traceback.print_exc()
+    #        #st.error("No se pudo entender el audio.")
+    #    except sr.RequestError:
+    #        traceback.print_exc()
+    #        #st.error("Error al intentar usar el servicio de Google Speech Recognition.")
 
 def text_to_speech(input_text):
     try:
@@ -168,11 +170,11 @@ with st.sidebar:
     audio_toggle = st.toggle("Responses with audio", value=True)
     
     # Select mic input
-    st.session_state.input_audio = st.selectbox(
-        "Choose an audio input:",
-        [elem[1] for elem in list_input_audio],
-        index=default_mic_index,
-    )
+    #st.session_state.input_audio = st.selectbox(
+    #    "Choose an audio input:",
+    #    [elem[1] for elem in list_input_audio],
+    #    index=default_mic_index,
+    #)
     
     # List files in the 'db' folder
     carpeta_db = 'db' 

@@ -248,6 +248,8 @@ prompt_summary_of_the_day = ChatPromptTemplate.from_messages(
             Los datos que hemos descargado se corresponden con aquellos de la tabla Rev-for-pre-outputs-rev desde el 01-09-2024 hasta el 30-09-2024, de todos los segmentos salvo Others y TNCD (Transient Restricted). Además, se han tomado los datos del maestro de hoteles, maestro de segmentos y maestro de métricas.
             Asegurate de no solo mostar el resultado sino también de interpretarlo y explicarlo, a ser posible de forma natural para un alto cargo de una empresa.
 
+            Aquí tienes el esquema de la base de datos: {schema}
+            
             A continuación te facilito un resumen de las columnas más importantes en el dataset:
             Campos y variables.
             •	Segment -> es el tipo de clientes a los que se hace referencia.
@@ -435,7 +437,7 @@ def summary_of_the_date_generation(model_name, temperature, max_tokens):
         ("user", "Crea una visualización para los datos: {data}")
     ])
     
-    plot_chain = plot_prompt | llm | StrOutputParser()
+    plot_chain = RunnablePassthrough.assign(schema=get_schema)| plot_prompt | llm | StrOutputParser()
     figures = []
     
     # Define datasets to visualize
