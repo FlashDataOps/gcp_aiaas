@@ -226,7 +226,7 @@ if st.session_state.initial_message_displayed == False:
     model_name = st.session_state.model
     temperature = st.session_state.temperature
     max_tokens_value = st.session_state.max_tokens
-    with st.spinner("Generating daily report..."):
+    with st.spinner("Generando reporte diario..."):
         # Generate initial message with content and auxiliary data
         initial_message_content = lu.summary_of_the_date_generation(
             model_name, temperature, max_tokens_value
@@ -235,7 +235,7 @@ if st.session_state.initial_message_displayed == False:
         
         # Generate audio for the initial message
         mp3_file = text_to_speech(lu.summary_of_the_date_generation.initial_message)
-        lu.summary_of_the_date_generation.aux["audio"] = mp3_file
+        lu.summary_of_the_date_generation.aux["aux"]["audio"] = mp3_file
         
         # Update the initial message in the session state
         st.session_state.messages = [
@@ -243,8 +243,8 @@ if st.session_state.initial_message_displayed == False:
                 "role": "assistant",
                 "content": lu.summary_of_the_date_generation.initial_message,
                 "aux": {
-                    "figures": lu.summary_of_the_date_generation.aux['figures'],
-                    "audio": lu.summary_of_the_date_generation.aux['audio']
+                    "figures": lu.summary_of_the_date_generation.aux["aux"]['figures'],
+                    "audio": lu.summary_of_the_date_generation.aux["aux"]['audio']
                 }
             }
         ]
@@ -254,19 +254,20 @@ for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
         
+        # with st.spinner("Generando gráficos ..."):
+        if "figures" in message["aux"].keys() and len(message["aux"]["figures"]) > 0:
+            for figure in message["aux"]["figures"]:
+                st.plotly_chart(figure["figure"])
+                      
         if "audio" in message["aux"].keys():
             if not st.session_state.initial_message_displayed:
                 update_playback_rate(mp3_file=message["aux"]['audio'], rate=1.25, autoplay='autoplay')
                 
                 st.session_state.initial_message_displayed = True
+                # st.session_state.messages = []
             else:
                 update_playback_rate(mp3_file=message["aux"]['audio'], rate=1.25)
                 message["aux"]['audio'].seek(0)
-        
-        # with st.spinner("Generando gráficos ..."):
-        if "figures" in message["aux"].keys() and len(message["aux"]["figures"]) > 0:
-            for figure in message["aux"]["figures"]:
-                st.plotly_chart(figure["figure"])
 
 # Accept user input
 prompt = st.chat_input("¿Cómo puedo ayudarte?", key="user_input")
@@ -280,8 +281,8 @@ if prompt:
         # Generate response
         response = lu.invoke_chain(
             question=prompt,
-            messages=st.session_state.messages,
-            sql_messages=st.session_state.sql_messages,
+            messages=st.session_state.messages[1:],
+            sql_messages=st.session_state.sql_messages[1:],
             model_name=st.session_state.model,
             temperature=st.session_state.temperature,
             max_tokens=st.session_state.max_tokens
@@ -302,10 +303,8 @@ if prompt:
                 aux_v2["audio"] = mp3_file
                 # st.audio(mp3_file, format="audio/mp3", autoplay=F)
         
-        print(aux_v2)
         # Handle figures
         if "figure" in aux_v2.keys():
-            print('entro')
             with st.spinner("Generando gráficos ..."):
                 for figure in aux_v2["figure"]:
                     st.plotly_chart(figure)
