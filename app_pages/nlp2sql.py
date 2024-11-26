@@ -243,7 +243,7 @@ if st.session_state.initial_message_displayed == False:
                 "role": "assistant",
                 "content": lu.summary_of_the_date_generation.initial_message,
                 "aux": {
-                    "figures": lu.summary_of_the_date_generation.aux["aux"]['figures'],
+                    "figure": lu.summary_of_the_date_generation.aux["aux"]['figure'],
                     "audio": lu.summary_of_the_date_generation.aux["aux"]['audio']
                 }
             }
@@ -252,22 +252,27 @@ if st.session_state.initial_message_displayed == False:
 # Display chat messages from history on app rerun
 for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        if st.session_state.initial_message_displayed:
+            st.markdown(message["content"])            
         
-        # with st.spinner("Generando gráficos ..."):
-        if "figures" in message["aux"].keys() and len(message["aux"]["figures"]) > 0:
-            for figure in message["aux"]["figures"]:
-                st.plotly_chart(figure["figure"])
-                      
         if "audio" in message["aux"].keys():
             if not st.session_state.initial_message_displayed:
-                update_playback_rate(mp3_file=message["aux"]['audio'], rate=1.25, autoplay='autoplay')
+                update_playback_rate(mp3_file=message["aux"]['audio'], rate=1.55, autoplay='autoplay')
                 
                 st.session_state.initial_message_displayed = True
                 # st.session_state.messages = []
             else:
-                update_playback_rate(mp3_file=message["aux"]['audio'], rate=1.25)
+                update_playback_rate(mp3_file=message["aux"]['audio'], rate=1.55)
                 message["aux"]['audio'].seek(0)
+        
+        if "figure" in message["aux"].keys():
+            for figure in message["aux"]["figure"]:
+                st.plotly_chart(figure['figure'])
+        
+        if "figure_p" in message["aux"].keys():
+            for figure in message["aux"]["figure_p"]:
+                st.plotly_chart(figure)
+                      
 
 # Accept user input
 prompt = st.chat_input("¿Cómo puedo ayudarte?", key="user_input")
@@ -298,15 +303,15 @@ if prompt:
         if audio_toggle:
             with st.spinner("Generando audio ..."):
                 mp3_file = text_to_speech(full_response)
-                update_playback_rate(mp3_file=mp3_file, rate=1.25, autoplay="autoplay")
+                update_playback_rate(mp3_file=mp3_file, rate=1.55, autoplay="autoplay")
                 mp3_file.seek(0)
                 aux_v2["audio"] = mp3_file
                 # st.audio(mp3_file, format="audio/mp3", autoplay=F)
-        
+                
         # Handle figures
-        if "figure" in aux_v2.keys():
+        if "figure_p" in aux_v2.keys():
             with st.spinner("Generando gráficos ..."):
-                for figure in aux_v2["figure"]:
+                for figure in aux_v2["figure_p"]:
                     st.plotly_chart(figure)
         
         # Update session state

@@ -163,7 +163,10 @@ prompt_create_sql_response = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            """Basándote en los siguientes datos, responde en lenguaje natural:
+            """Basándote en los siguientes datos, responde en lenguaje natural. Minimiza el uso de "bullet points", ya que el texto deberá ser leído por un bot de voz.
+            Indica las unidades cuando sea necesario (casi todas las variables son EUR / €). Redondea siempre a los miles o millones:
+            Es muy importante (lo más importante), que si se tienen muchos datos no se mencionen todos, sino que se haga un resumen general obteniendo siempre insights.
+            Si se pregunta por una cuestión muy específica, se puede responder con más detalle, pero siempre intentando resumir.
             Debes utilizar los siguientes datos para responder a la pregunta del usuario:
             {schema}
             
@@ -308,24 +311,14 @@ prompt_summary_of_the_day = ChatPromptTemplate.from_messages(
                 Con ello decir cual es el porcentaje de completitud respecto a lo esperado.
                 Datos a utilizar: {trev}
                 Columnas: [Total_Actuals	Total_OTB	Total_PickUp	TREV	perc_expected_revenue]
-                
-            - Room Revenue:
-                Cuanto es RREV y su desglose en: Cuanto es Actuals, cuanto es OTB y cuanto es PickUp.
-                Con ello decir cual es el porcentaje de completitud respecto a lo esperado.
-                Datos a utilizar: {rrev}
-                Columnas: [Total_Actuals_RREV	Total_OTB_RREV	Total_PickUp_RREV	RREV	perc_expected_revenue_RREV]
-
-            - Other Revenue:
-                Cuanto es OREV y su desglose en: Cuanto es Actuals, cuanto es OTB y cuanto es PickUp.
-                Con ello decir cual es el porcentaje de completitud respecto a lo esperado.
-                Datos a utilizar: {orev}
-                Columnas: [Total_Actuals_OREV	Total_OTB_OREV	Total_PickUp_OREV	OREV	perc_expected_revenue_OREV]
 
             - Pequeño resumen de lo anterior:
                 - Cual es el porcentaje del TREV asociado a RREV y OREV.
                 - Cual es el porcentaje de Actuals, OTB y Pick UP.
                 - Resumen más subjetivo: si el RREV va bien / mal o similares; comparación con niveles habituales de cada punto...
-                Datos a utilizar: {pctg_rrev_orev}, {pctg_actuals_OTB_pickup}
+                Datos a utilizar: {rrev}, {orev}, {pctg_rrev_orev}, {pctg_actuals_OTB_pickup}
+                Columnas: [Total_Actuals_RREV	Total_OTB_RREV	Total_PickUp_RREV	RREV	perc_expected_revenue_RREV]
+                Columnas: [Total_Actuals_OREV	Total_OTB_OREV	Total_PickUp_OREV	OREV	perc_expected_revenue_OREV]
                 Columnas: [TREV	RREV	OREV	perc_RREV_of_TREV	perc_OREV_of_TREV]
                 Columnas: [TREV	RREV	OREV	perc_Actuals_of_TREV	perc_Actuals_of_RREV	perc_Actuals_of_OREV	perc_OTB_of_TREV	perc_OTB_of_RREV	perc_OTB_of_OREV	perc_PickUp_of_TREV	perc_PickUp_of_RREV	perc_PickUp_of_OREV]
 
@@ -334,19 +327,36 @@ prompt_summary_of_the_day = ChatPromptTemplate.from_messages(
                 Dentro de cada BU explicar brevemente como va cada Hotel Country (quizá mencionar solo el forecast y el pickup)
                 Datos a utilizar: {hotelBU}
                 Columnas: [Hotel_Country	SUM(Actuals)	SUM(OTB)	SUM(Pick_Up)]
-
-            - Comparativa de forecast por Hotel Sub Business Unit (qué países están a la cabeza y a la cola).
-              Datos a utilizar: {hotelSubBU}
-              Columnas: [Hotel_SubBU	Total_Forecast]
-
-            - Métricas:
-                Explicar el desempeño de cada métrica
-                Datos a utilizar: {metrics}
-                Columnas: [Metric	Total_Actuals	Total_OTB	Total_PickUp	Total_Forecast	Perc_PickUp_to_Forecast	Perc_OTB_to_Forecast	Perc_Actuals_to_Forecast	Perc_Actuals_OTB_to_Forecast]
-                """,
+    
+            IMPORTANTE: Toma los datos que has obtenido anteriormente y resume mucho su contenido, destacando únicamente lo más importante y organizando los resultados por secciones.
+            No hace falta que menciones absolutamente todos los datos, sino que es mejor tener una visión general.
+            Las cifras que ofrezcas redondéalas a los millones, con un decimal. No ofrezcas listas de "bullets", sino texto que explique claramente los insight más importantes del día.
+            Por último, el texto que ofrezcas debe esta correctamente puntuado, para que un asistente de voz pueda leerlo de forma normal. Genera un texto poco repetitivo (no repitas constantemente las mismas expresiones ni estructuras) y conciso.
+            Es muy importante que sea conciso.""",
         ),      
     ]
 )
+
+# - Comparativa de forecast por Hotel Sub Business Unit (qué países están a la cabeza y a la cola).
+#               Datos a utilizar: {hotelSubBU}
+#               Columnas: [Hotel_SubBU	Total_Forecast]
+
+# - Métricas:
+#     Explicar el desempeño de cada métrica
+#     Datos a utilizar: {metrics}
+#     Columnas: [Metric	Total_Actuals	Total_OTB	Total_PickUp	Total_Forecast	Perc_PickUp_to_Forecast	Perc_OTB_to_Forecast	Perc_Actuals_to_Forecast	Perc_Actuals_OTB_to_Forecast]
+            
+# - Room Revenue:
+#     Cuanto es RREV y su desglose en: Cuanto es Actuals, cuanto es OTB y cuanto es PickUp.
+#     Con ello decir cual es el porcentaje de completitud respecto a lo esperado.
+#     Datos a utilizar: {rrev}
+#     Columnas: [Total_Actuals_RREV	Total_OTB_RREV	Total_PickUp_RREV	RREV	perc_expected_revenue_RREV]
+
+# - Other Revenue:
+#     Cuanto es OREV y su desglose en: Cuanto es Actuals, cuanto es OTB y cuanto es PickUp.
+#     Con ello decir cual es el porcentaje de completitud respecto a lo esperado.
+#     Datos a utilizar: {orev}
+#     Columnas: [Total_Actuals_OREV	Total_OTB_OREV	Total_PickUp_OREV	OREV	perc_expected_revenue_OREV]
 
 def create_history(messages):
     """
@@ -446,13 +456,13 @@ def summary_of_the_date_generation(model_name, temperature, max_tokens):
     
     # Define datasets to visualize
     datasets = {
-        "TREV": res_TREV,
-        "RREV": res_RREV,
-        "OREV": res_OREV,
-        "Revenue_Distribution": res_pctg_RREV_OREV,
-        "Revenue_Components": res_pctg_actuals_OTB_PickUp,
+        # "TREV": res_TREV,
+        # "RREV": res_RREV,
+        # "OREV": res_OREV,
+        # "Revenue_Distribution": res_pctg_RREV_OREV,
+        # "Revenue_Components": res_pctg_actuals_OTB_PickUp,
         "Business_Units": res_hotelBU,
-        "Sub_Business_Units": res_subBU,
+        # "Sub_Business_Units": res_subBU,
         "Metrics": res_metric
     }
     
@@ -478,13 +488,7 @@ def summary_of_the_date_generation(model_name, temperature, max_tokens):
             continue
 
     summary_of_the_date_generation.initial_message = initial_message
-    summary_of_the_date_generation.aux = {"aux": {'figures': figures}}
-    
-    # return {
-    #     "content": initial_message,
-    #     # "aux": {"figures": figures}
-    #     "aux": {"figures": []}
-    # # }
+    summary_of_the_date_generation.aux = {"aux": {'figure': figures}}
 
 
 def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192):
@@ -598,7 +602,7 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
                 plot_code = plot_code.replace("```python", "").replace("```", "").replace("fig.show()", "")
                 exec(plot_code)
                 
-                aux["figure"] = eval("[fig]")
+                aux["figure_p"] = eval("[fig]")
         except Exception as e:
             print(f"Error al generar el gráfico {e}")
     
