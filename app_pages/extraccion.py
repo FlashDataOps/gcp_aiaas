@@ -8,6 +8,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain.memory import ConversationBufferWindowMemory
 from dotenv import load_dotenv
 from langchain_google_vertexai import ChatVertexAI
+from langchain_community.document_loaders import PyPDFLoader
+import os
 
 load_dotenv()
 
@@ -41,7 +43,18 @@ with st.sidebar:
     
     if files is not None:
         # Leer el contenido del archivo
-        files = files.read().decode("utf-8")
+        if files.name.endswith('.txt'):
+            files = files.read().decode("utf-8")
+        elif files.name.endswith('.pdf'):
+            temp_file_path = os.path.join("temp", files.name)
+            os.makedirs("temp", exist_ok=True)
+            with open(temp_file_path, "wb") as f:
+                f.write(files.read())
+
+            loader = PyPDFLoader(temp_file_path)
+            files = loader.load()
+        else:
+            pass
     
     if st.button(":broom: Clear chat", use_container_width=True):
         reset_chat_history()
@@ -95,16 +108,78 @@ if question := st.chat_input("Enter your prompt here..."):
         En st.dataframe() mete el parámetro: use_container_width=True
         
         Información que vas a utilizar para responder: {files}
+         
+
+        Busca estas variables y extrae su valor:
+        'NÚMERO DE PÓLIZA',
+        'Producto',
+        'No. de Póliza',
+        'Módulo',
+        'Oficina',
+        'Ramo',
+        'Subramo',
+        'Inciso',
+        'Nombre del Contratante',
+        'R.F.C.',
+        'Calle y número',
+        'Colonia',
+        'Población/Municipio',
+        'C.P.',
+        'Estado',
+        'Teléfono',
+        'Conductor habitual',
+        'Beneficiario preferente',
+        'Fecha de emisión',
+        'Prima neta',
+        'Inicio de vigencia',
+        'Fin de vigencia',
+        'Moneda',
+        'Derecho de póliza'
+         
+        EJEMPLO:
+        datos_poliza = '\{{
+            'NÚMERO DE PÓLIZA': '123456789',
+            'Producto': 'Seguro de Auto',
+            'No. de Póliza': 'ABC123',
+            'Módulo': 'Módulo 1',
+            'Oficina': 'Oficina Central',
+            'Ramo': 'Autos',
+            'Subramo': 'Particular',
+            'Inciso': '001',
+            'Nombre del Contratante': 'Juan Pérez López',
+            'R.F.C.': 'PELJ800101XXX',
+            'Calle y número': 'Av. Siempre Viva 123',
+            'Colonia': 'Centro',
+            'Población/Municipio': 'Ciudad de México',
+            'C.P.': '01000',
+            'Estado': 'Ciudad de México',
+            'Teléfono': '555-123-4567',
+            'Conductor habitual': 'Juan Pérez López',
+            'Beneficiario preferente': 'Banco ABC',
+            'Fecha de emisión': '2024-01-01',
+            'Prima neta': '1500.00',
+            'Inicio de vigencia': '2024-01-01',
+            'Fin de vigencia': '2024-12-31',
+            'Moneda': 'MXN',
+            'Derecho de póliza': '200.00'
+        }}\'
+
+         
+        A la hora de crear un dataframe utiliza un diccionario con los campos mencionados arriba y su correspondiente valor.
+        Si no encuentras un valor para uno de los campos, rellena con N/A.
+        Se riguroso en tus decisiones.
         """),
         ("placeholder", "{chat_history}"),
         ('user', "{question}")
     ])
 
     # Usar el modelo para generar la respuesta
-    llm = ChatVertexAI(
-    model_name="gemini-1.5-flash-002",
-    project="single-cirrus-435319-f1",
-    verbose=True)
+    # llm = ChatVertexAI(
+    # model_name="gemini-1.5-flash-002",
+    # project="single-cirrus-435319-f1",
+    # verbose=True)
+
+    llm = ChatGroq(model = "LLaMA3-70b-8192")
 
     chain = (prompt | llm | StrOutputParser())
 
@@ -128,12 +203,16 @@ if question := st.chat_input("Enter your prompt here..."):
             if code_match.group(1).strip().startswith("python"):
                 # Eliminar "python" al inicio si está presente
                 python_code = code_match.group(1).strip()[len("python"):].strip()
+
+                # st.code(python_code)
                 
                 local_scope = {}
                 exec(python_code, {}, local_scope)
             else:
                 # Si no inicia con "python", simplemente usar el contenido extraído
                 python_code = code_match.group(1).strip()
+
+                # st.code(python_code)
 
                 local_scope = {}
                 exec(python_code, {}, local_scope)
@@ -149,7 +228,7 @@ if question := st.chat_input("Enter your prompt here..."):
         df = local_scope["df"]
         st.session_state.dfs[len(st.session_state.messages_extracciones)] = df  # Asociar al mensaje actual
     else:
-        df = None
+        pass
 
     # Agregar la tabla en el historial de chat
     st.session_state.messages_extracciones.append({
