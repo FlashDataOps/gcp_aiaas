@@ -152,7 +152,6 @@ zipp==3.19.2
 streamlit-navigation-bar
 stqdm
 plotly
-langchain_google_vertexai
 langchainhub
 langgraph
 openpyxl
@@ -161,3 +160,9 @@ streamlit_pills
 matplotlib
 fpdf2
 langchain_google_vertexai
+seaborn
+io
+re
+os
+sqlite3
+datetime
