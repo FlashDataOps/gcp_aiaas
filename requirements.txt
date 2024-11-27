@@ -161,5 +161,4 @@ matplotlib
 fpdf2
 langchain_google_vertexai
 seaborn
-sqlite3
 datetime
