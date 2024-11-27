@@ -11,6 +11,8 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 import plotly.graph_objects as go
 import plotly.express as px  # Import adicional para gráficos más sofisticados
+from langchain_google_vertexai import ChatVertexAI
+
 
 # Cargar las variables del archivo .env
 load_dotenv()
@@ -50,7 +52,10 @@ if "memory" not in st.session_state:
     st.session_state.memory_sql = ConversationBufferWindowMemory(k=5, return_messages=True)
 
 # Configurar el modelo LLM con LLaMA3-70b-8192
-llm = ChatGroq(model="LLaMA3-70b-8192")  # Configurado para usar el modelo de Meta
+llm = ChatVertexAI(
+    model_name="gemini-1.5-flash-002",
+    project="single-cirrus-435319-f1",
+    verbose=True)  # Configurado para usar el modelo de Meta
 
 # Inicializar el chat si no está inicializado
 if "messages" not in st.session_state:

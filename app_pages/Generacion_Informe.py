@@ -13,7 +13,7 @@ from datetime import datetime
 import re
 import sqlite3
 from langchain_community.utilities.sql_database import SQLDatabase
-
+from langchain_google_vertexai import ChatVertexAI
 
 # Cargar las variables del archivo .env
 load_dotenv()
@@ -70,7 +70,10 @@ if 'Nombre' in df.columns:
                     df_empresa[col] = pd.to_numeric(df_empresa[col], errors='coerce')
 
             # Configurar el modelo LLM con LLaMA3-70b-8192
-            llm = ChatGroq(model="LLaMA3-70b-8192")
+            llm = ChatVertexAI(
+                model_name="gemini-1.5-flash-002",
+                project="single-cirrus-435319-f1",
+                verbose=True)
 
             # Generar información resumida del DataFrame de la empresa
             def generate_summary_info(df):

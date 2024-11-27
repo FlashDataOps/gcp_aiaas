@@ -158,3 +158,6 @@ langgraph
 openpyxl
 streamlit_pdf_viewer
 streamlit_pills
+matplotlib
+fpdf2
+langchain_google_vertexai

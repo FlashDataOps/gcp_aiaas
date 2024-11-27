@@ -7,6 +7,7 @@ from langchain.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 from langchain.memory import ConversationBufferWindowMemory
 from dotenv import load_dotenv
+from langchain_google_vertexai import ChatVertexAI
 
 load_dotenv()
 
@@ -100,7 +101,11 @@ if question := st.chat_input("Enter your prompt here..."):
     ])
 
     # Usar el modelo para generar la respuesta
-    llm = ChatGroq(model="llama3-70b-8192")
+    llm = ChatVertexAI(
+    model_name="gemini-1.5-flash-002",
+    project="single-cirrus-435319-f1",
+    verbose=True)
+
     chain = (prompt | llm | StrOutputParser())
 
     with st.chat_message("user", avatar='👨‍💻'):
