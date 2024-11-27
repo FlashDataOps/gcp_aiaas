@@ -174,12 +174,12 @@ if question := st.chat_input("Enter your prompt here..."):
     ])
 
     # Usar el modelo para generar la respuesta
-    # llm = ChatVertexAI(
-    # model_name="gemini-1.5-flash-002",
-    # project="single-cirrus-435319-f1",
-    # verbose=True)
+    llm = ChatVertexAI(
+    model_name="gemini-1.5-flash-002",
+    project="single-cirrus-435319-f1",
+    verbose=True)
 
-    llm = ChatGroq(model = "LLaMA3-70b-8192")
+    # llm = ChatGroq(model = "LLaMA3-70b-8192")
 
     chain = (prompt | llm | StrOutputParser())
 
