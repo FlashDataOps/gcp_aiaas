@@ -4,7 +4,7 @@ welcome = st.Page("./app_pages/portada.py", title="Portada", icon="👓")
 
 extraccion = st.Page("./app_pages/extraccion.py", title="Extraccion", icon="👓")
 
-chatbot = st.Page("./app_pages/ChatBot.py", title="ChatBot", icon="🧑‍💼")
+chatbot = st.Page("./app_pages/Chatbot.py", title="ChatBot", icon="🧑‍💼")
 
 informes = st.Page("./app_pages/Generacion_Informe.py", title="Informes", icon="🗒️")
 

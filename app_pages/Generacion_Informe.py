@@ -260,7 +260,7 @@ if 'Nombre' in df.columns:
                     st.markdown("#### Ramos propuestos con la prima estimada de Prospect")
                     st.image(img_buffer)
                     # Mostrar la tabla correspondiente
-                    st.dataframe(ramo_prospect)
+                    st.dataframe(ramo_prospect, use_container_width = True)
 
 
             # Definir una clase PDF que hereda de FPDF

@@ -30,6 +30,17 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
+def reset_chat_history():
+    """
+    Resets the chat history by clearing the 'messages' list in the session state.
+    """
+    if "messages" in st.session_state:
+        st.session_state.messages = []
+
+with st.sidebar:
+    if st.button(":broom: Clear chat", use_container_width=True):
+        reset_chat_history()
+
 db_conn = sqlite3.connect("db/database.db")
 db = SQLDatabase.from_uri("sqlite:///database.db")
 

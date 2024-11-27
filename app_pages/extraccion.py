@@ -23,6 +23,13 @@ st.markdown("""
     </div>
     """, unsafe_allow_html=True)
 
+def reset_chat_history():
+    """
+    Resets the chat history by clearing the 'messages' list in the session state.
+    """
+    if "messages_extracciones" in st.session_state:
+        st.session_state.messages_extracciones = []
+
 # Configuración en la barra lateral
 with st.sidebar:
     st.title("Menú de configuración")
@@ -34,10 +41,13 @@ with st.sidebar:
     if files is not None:
         # Leer el contenido del archivo
         files = files.read().decode("utf-8")
+    
+    if st.button(":broom: Clear chat", use_container_width=True):
+        reset_chat_history()
 
 # Inicializar historial de chat y memoria
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+if "messages_extracciones" not in st.session_state:
+    st.session_state.messages_extracciones = []
 
 if "dfs" not in st.session_state:  # Diccionario para guardar los DataFrames
     st.session_state.dfs = {}
@@ -53,7 +63,7 @@ if "memory" not in st.session_state:
 #             if st.session_state.df is not st.session_state.df.empty:
 #                 st.dataframe(st.session_state.df, hide_index = True, use_container_width=True)
 
-for i, message in enumerate(st.session_state.messages):
+for i, message in enumerate(st.session_state.messages_extracciones):
     avatar = '🤖' if message["role"] == "assistant" else '👨‍💻'
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
@@ -64,7 +74,7 @@ for i, message in enumerate(st.session_state.messages):
 
 # Procesar la pregunta del usuario
 if question := st.chat_input("Enter your prompt here..."):
-    st.session_state.messages.append({"role": "user", "content": question})
+    st.session_state.messages_extracciones.append({"role": "user", "content": question})
 
     prompt = ChatPromptTemplate.from_messages([
         ('system', """
@@ -132,12 +142,12 @@ if question := st.chat_input("Enter your prompt here..."):
     
     if "df" in local_scope:
         df = local_scope["df"]
-        st.session_state.dfs[len(st.session_state.messages)] = df  # Asociar al mensaje actual
+        st.session_state.dfs[len(st.session_state.messages_extracciones)] = df  # Asociar al mensaje actual
     else:
         df = None
 
     # Agregar la tabla en el historial de chat
-    st.session_state.messages.append({
+    st.session_state.messages_extracciones.append({
         "role": "assistant",
         "content": text_response
     })
