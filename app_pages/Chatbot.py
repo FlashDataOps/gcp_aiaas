@@ -57,6 +57,7 @@ llm = ChatVertexAI(
     project="single-cirrus-435319-f1",
     verbose=True)  # Configurado para usar el modelo de Meta
 
+llm_groq = ChatGroq(model="llama3-70b-8192")
 # Inicializar el chat si no está inicializado
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -214,11 +215,10 @@ if question := st.chat_input("Escribe tu pregunta aquí..."):
                     
                     prompt_custom_chart = ChatPromptTemplate.from_messages(
                     [
-                        MessagesPlaceholder(variable_name="chat_history"),
                         (
                             "system",
                             """
-                            Responde únicamente con código Python.
+                            Responde únicamente con código Python utilizando la librería Plotly.
                             Debes utilizar los siguientes datos para escribir el código en Plotly en Python que represente la respuesta realizada con la siguiente query:
                             - Query SQL: {query}
                             - Respuesta: {response}
@@ -266,15 +266,16 @@ if question := st.chat_input("Escribe tu pregunta aquí..."):
                         
                             EL CÓDIGO DEBE DEFINIR UNA VARIABLE LLAMADA 'fig' QUE CONTENGA LA FIGURA DE PLOTLY.
                             
-                            ASEGÚRATE DE QUE LA RESPUESTA TIENE ÚNICAMENTE CÓDIGO PYTHON.
-                            
+                            ASEGÚRATE DE QUE LA RESPUESTA TIENE ÚNICAMENTE CÓDIGO PYTHON Y ESTÁ PREPARADO PARA SER EJECUTADO
+                                                        
                             RESPONDE EN ESPAÑOL.
                             """,
                         ),
+                        #MessagesPlaceholder(variable_name="chat_history"),
                         ("user", "{input}"),
                     ]
                     )
-                    plot_chain = (prompt_custom_chart | llm | StrOutputParser())
+                    plot_chain = (prompt_custom_chart | llm_groq | StrOutputParser())
                     len_df = len(result_df)
                     plot_code = {}
                     if len(result_df) > 2:
