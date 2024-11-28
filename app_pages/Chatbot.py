@@ -90,7 +90,6 @@ if question := st.chat_input("Escribe tu pregunta aquí..."):
     # tablas_y_columnas = "\n".join([f"Tabla '{tabla}': {', '.join(columnas)}" for tabla, columnas in columnas_disponibles.items()])
     empresas_previas = ', '.join(st.session_state.get('previous_companies', []))
     prompt = ChatPromptTemplate.from_messages([
-        MessagesPlaceholder(variable_name="chat_history"),
         ('system', """
         Eres un asistente especializado en análisis de datos SQL. Las columnas disponibles en las tablas son las siguientes:
         {tablas_y_columnas}
@@ -152,6 +151,7 @@ if question := st.chat_input("Escribe tu pregunta aquí..."):
         
         Además, debes proporcionar un resumen breve del contenido de la tabla en lenguaje natural para los usuarios, destacando los puntos más relevantes.
         """),
+        MessagesPlaceholder(variable_name="chat_history"),
         ('user', "{question}")
     ])
 
@@ -187,6 +187,7 @@ if question := st.chat_input("Escribe tu pregunta aquí..."):
                     # Crear un segundo prompt para explicar el contenido de la tabla
                     explanation_prompt = ChatPromptTemplate.from_messages([
                         ('system', "Eres un asistente especializado en análisis de datos con experiencia en ventas de seguros. Proporciona explicaciones claras y concisas que ayuden a los agentes de ventas a entender y utilizar la información."),
+                        MessagesPlaceholder(variable_name="chat_history"),
                         ('user', f"""
                         He generado una tabla con los siguientes datos:
                         
