@@ -227,7 +227,7 @@ prompt_extraer_campos_ficha = ChatPromptTemplate.from_messages(
             - Ciudad: Ciudad de residencia del estudiante.
             - Provincia: Provincia de residencia del estudiante.
             - Primera_Opcion: Primera opción de centro o programa de estudios del estudiante. Corresponde con el grado que esté marcado con un 1 en las imagenes que te he pasado.
-            - Opciones_Secundarias: Otras opciones de centros o programas de estudios del estudiante. Corresponde con los grados que estén marcados con una Xen las imagenes que te he pasado .
+            - Opciones_Secundarias: Otras opciones de centros o programas de estudios del estudiante. Corresponde con los grados que estén marcados con una X en las imagenes que te he pasado .
      
             Si no encuentras añgún campo debes rellenarlo con "N/A".
             Debes ser riguroso con la extracción de campos y no inventarte ningún dato
@@ -263,7 +263,7 @@ prompt_extraer_campos_ficha = ChatPromptTemplate.from_messages(
                 }
             ],
         ),
-        ("user", "Los datos de primera opción y opciones secundarias los puedes obtener de las siguientes imagenes:"),
+        ("user", "Los datos de primera opción (marcada con 1) y opciones secundarias (marcada con X) los puedes obtener de las siguientes imagenes. Recuerda añadir solo grados universitarios:"),
         MessagesPlaceholder("image_data"),
     ]
 )

@@ -162,6 +162,4 @@ SpeechRecognition
 azure-cognitiveservices-speech
 pyaudio
 gtts
-fitz
 PyMuPDF
-PyPDF2
