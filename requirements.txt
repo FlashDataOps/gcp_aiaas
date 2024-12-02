@@ -163,3 +163,4 @@ azure-cognitiveservices-speech
 pyaudio
 gtts
 PyMuPDF
+PyPDF2
