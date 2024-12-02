@@ -226,15 +226,9 @@ prompt_extraer_campos_ficha = ChatPromptTemplate.from_messages(
             - Nota_Media: Nota media del estudiante en su colegio.
             - Ciudad: Ciudad de residencia del estudiante.
             - Provincia: Provincia de residencia del estudiante.
-            - Orientacion: Puede tomar el valor de Sí o No en función del recuadro a la izquierda del texto. Corresponde con la casilla: REALIZAR UNA ORIENTACIÓN INDIVIDUAL (NO SÉ QUÉ ESTUDIAR)
-            - Puertas_Abiertas: Puede tomar el valor de Sí o No en función del recuadro a la izquierda del texto. Corresponde con la casilla: ASISTIR A UNA JORNADA DE PUERTAS ABIERTAS O SESIÓN INFORMATIVA 
-            - Pruebas_Admision: Puede tomar el valor de Sí o No en función del recuadro a la izquierda del texto. Corresponde con la casilla: REALIZAR LAS PRUEBAS DE ADMISIÓN
-            - Contacto_Urgente: Puede tomar el valor de Sí o No en función del recuadro a la izquierda del texto. Corresponde con la casilla: QUIERO QUE ME CONTACTÉIS CUANTO ANTES
             - Primera_Opcion: Primera opción de centro o programa de estudios del estudiante. Corresponde con el grado que esté marcado con un 1 en las imagenes que te he pasado.
             - Opciones_Secundarias: Otras opciones de centros o programas de estudios del estudiante. Corresponde con los grados que estén marcados con una Xen las imagenes que te he pasado .
-            - Quiere_Info: Indica si el estudiante desea recibir más información. Corresponde con la casilla: QUIERO RECIBIR INFORMACIÓN SOBRE EL CENTRO DE FORMACIÓN PROFESIONAL SUPERIOR
-            FRANCISCO DE VITORIA.
- 
+     
             Si no encuentras añgún campo debes rellenarlo con "N/A".
             Debes ser riguroso con la extracción de campos y no inventarte ningún dato
             
@@ -251,11 +245,6 @@ prompt_extraer_campos_ficha = ChatPromptTemplate.from_messages(
             - Nota_Media
             - Ciudad 
             - Provincia
-            - Solicita Orientacion 
-            - Solicita Puertas Abiertas
-            - Solicita Pruebas Admision
-            - Solicita Contacto Urgente
-            - Quiere más Info
             
             La segunda tabla con los siguientes campos los valores de opciones deben ser bullet points en formato MARKDOWN bien organizados:
             - Primera Opción
@@ -264,7 +253,7 @@ prompt_extraer_campos_ficha = ChatPromptTemplate.from_messages(
             Las tablas y los bullet points deben estar en formato markdown
             """,
         ),
-        ("user", "Extrae de forma rigurosa los campos de la siguiente imagen"),
+        ("user", "No hagas referencia a las instruciones que te he dado, únicamente debes extraer la información de los siguientes 7 documentos que te voy a enviar y colocala en tablas con columna de campo y valor:"),
         (
             "human",
             [
@@ -274,6 +263,7 @@ prompt_extraer_campos_ficha = ChatPromptTemplate.from_messages(
                 }
             ],
         ),
+        ("user", "Los datos de primera opción y opciones secundarias los puedes obtener de las siguientes imagenes:"),
         MessagesPlaceholder("image_data"),
     ]
 )
@@ -297,7 +287,7 @@ def create_history(messages):
             history.add_ai_message(message["content"])
     return history
 
-def invoke_extraer_campos_ficha(model_name="gemini-1.5-flash-002", temperature=0, max_tokens=128000, doc_pdf="", image_data=[]):
+def invoke_extraer_campos_ficha(model_name="gemini-1.5-pro-002", temperature=1, max_tokens=8192, doc_pdf="", image_data=[]):
     llm = get_model(model_name, temperature, max_tokens)
     chain = prompt_extraer_campos_ficha | llm | StrOutputParser()
     response = ""
@@ -306,17 +296,19 @@ def invoke_extraer_campos_ficha(model_name="gemini-1.5-flash-002", temperature=0
     for image in image_data:
         #format_image = base64.b64encode(image).decode("utf-8")
         list_images.append(
-            (
+        (
             "human",
             [
                 {
                     "type": "image_url",
-                    "image_url": {"url": f'data:image/jpeg;base64,{image}'},
+                    "image_url": {"url": image},
                 }
             ],
         )
         )
-    #print(list_images)
+    print("ANTES DE LLAMAAAAAAAAAAAAAAAAR")
+    print(doc_pdf)   
+    print(list_images)
     
     config = {
         "doc_pdf": doc_pdf,

@@ -10,7 +10,7 @@ from PIL import Image
 import io
 import base64
 from PyPDF2 import PdfReader, PdfWriter
-
+import traceback
 def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 class DB_Connection:
@@ -75,21 +75,27 @@ def save_pdf_pages(file, n):
     
 def upload_blob(file, folder_name):
     """Sube un archivo al bucket. Si es un PDF, sube las primeras n páginas."""
+    temp_file_path = None
     try:
         bucket_name = "single-cirrus-435319-f1-bucket"
-        file_name = os.path.basename(file.name)
+        try:
+            file_name = os.path.basename(file.name)
+        except:
+            file_name = os.path.basename(file)
         destination_blob_name = f"{folder_name}/{file_name}"
         storage_client = storage.Client()
         bucket = storage_client.bucket(bucket_name)
         blob = bucket.blob(destination_blob_name)
         
-        temp_file_path = None
-
-        # Guardar archivo temporalmente para otros tipos de archivo
-        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-            file.seek(0)
-            temp_file.write(file.read())  # Escribir los datos al archivo temporal
-            temp_file_path = temp_file.name
+        
+        try:
+            # Guardar archivo temporalmente para otros tipos de archivo
+            with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+                file.seek(0)
+                temp_file.write(file.read())  # Escribir los datos al archivo temporal
+                temp_file_path = temp_file.name
+        except:
+            temp_file_path = file
         
         # Subir el archivo al bucket de GCS
         blob.upload_from_filename(temp_file_path, content_type=get_mime_type(file_name))
@@ -97,13 +103,9 @@ def upload_blob(file, folder_name):
         print(f"File {file_name} uploaded to {destination_blob_name}.")
         return True
     except Exception as e:
+        traceback.print_exc()
         print(f"Error subiendo el archivo: {e}")
         return False
-    finally:
-        # Limpiar archivo temporal
-        if temp_file_path and os.path.exists(temp_file_path):
-            os.remove(temp_file_path)
-            print("Fichero temporal eliminado")
 
 def get_mime_type(filename):
 
@@ -130,6 +132,8 @@ def extract_areas_from_pdf_base64(pdf_path, page_number):
     :param page_number: Número de página (empieza desde 1).
     :return: Lista de strings en formato data:image/jpeg;base64.
     """
+    temp_file_path = None
+    file_name = pdf_path.name.split(".")[0]
     # Guardar archivo temporalmente
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
         pdf_path.seek(0)
@@ -162,17 +166,29 @@ def extract_areas_from_pdf_base64(pdf_path, page_number):
 
     # Recortar y almacenar las imágenes como Base64
     base64_images = []
-    for area in areas:
+    for index, area in enumerate(areas):
         cropped_image = img.crop(area)
         buffer = io.BytesIO()
-        cropped_image.save(buffer, format="JPEG")
-        cropped_image.save(fr"C:\Users\AMONTORIOP002\Downloads\UFV\{area}.jpeg")
-        encoded_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        base64_images.append(encoded_image)
+        cropped_image.save(buffer, format="PNG")
+        cropped_image.save(fr"temp_data\{file_name}_{index}.png")
+        
+        name_file = pdf_path.name.split(".")[0]
+        path_ficha_gcp = f"ufv-demo/ficha-admision/{name_file}"
+        print("Buscando si existe fichero en blob")
+        lista_blobs = list_blobs(folder_name=path_ficha_gcp)
+        print(fr"{path_ficha_gcp}/{file_name}_{index}.png")
+        if not fr"{path_ficha_gcp}/{file_name}_{index}.png" in lista_blobs:
+            upload_blob(file=fr"temp_data\{file_name}_{index}.png", folder_name=fr"ufv-demo/ficha-admision/{file_name}")
+        
+        base64_images.append(fr"gs://single-cirrus-435319-f1-bucket/ufv-demo/ficha-admision/{pdf_path.name.split('.')[0]}/{pdf_path.name.split('.')[0]}_{index}.png")
+        #encoded_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        #base64_images.append(encoded_image)
         buffer.close()
 
     doc.close()
     if temp_file_path and os.path.exists(temp_file_path):
         os.remove(temp_file_path)
         print("Fichero temporal de imagenes eliminado")
+    
+    print(base64_images)
     return base64_images

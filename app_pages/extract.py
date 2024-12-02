@@ -41,7 +41,8 @@ if st.button("📤 Extraer campos", type="primary", use_container_width=True):
     if uploaded_file is not None:
         with st.spinner('Extrayendo campos...'):
             try:
-                path_ficha_gcp = "ufv-demo/ficha-admision"
+                name_file = uploaded_file.name.split(".")[0]
+                path_ficha_gcp = f"ufv-demo/ficha-admision/{name_file}"
                 print("Buscando si existe fichero en blob")
                 lista_blobs = af.list_blobs(folder_name=path_ficha_gcp)
                 if not fr"{path_ficha_gcp}/{uploaded_file.name}" in lista_blobs:
@@ -55,6 +56,8 @@ if st.button("📤 Extraer campos", type="primary", use_container_width=True):
                 print("Extrayendo Imagenes...")
                 image_data = af.extract_areas_from_pdf_base64(pdf_path=uploaded_file, page_number=2)
                 print("Imagenes extraidas ->", {len(image_data)})
+                print(doc_pdf, type(doc_pdf))
+                print(image_data, type(image_data[0]))
                 campos = lu.invoke_extraer_campos_ficha(
                     doc_pdf=doc_pdf,
                     image_data=image_data
