@@ -166,6 +166,7 @@ def extract_areas_from_pdf_base64(pdf_path, page_number):
         cropped_image = img.crop(area)
         buffer = io.BytesIO()
         cropped_image.save(buffer, format="JPEG")
+        cropped_image.save(fr"C:\Users\AMONTORIOP002\Downloads\UFV\{area}.jpeg")
         encoded_image = base64.b64encode(buffer.getvalue()).decode("utf-8")
         base64_images.append(encoded_image)
         buffer.close()

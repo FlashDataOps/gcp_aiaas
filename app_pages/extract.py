@@ -54,7 +54,7 @@ if st.button("📤 Extraer campos", type="primary", use_container_width=True):
                 doc_pdf = f"gs://single-cirrus-435319-f1-bucket/{path_ficha_gcp}/{uploaded_file.name}"
                 print("Extrayendo Imagenes...")
                 image_data = af.extract_areas_from_pdf_base64(pdf_path=uploaded_file, page_number=2)
-                print("Imagenes extraidas")
+                print("Imagenes extraidas ->", {len(image_data)})
                 campos = lu.invoke_extraer_campos_ficha(
                     doc_pdf=doc_pdf,
                     image_data=image_data

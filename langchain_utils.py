@@ -257,9 +257,11 @@ prompt_extraer_campos_ficha = ChatPromptTemplate.from_messages(
             - Solicita Contacto Urgente
             - Quiere más Info
             
-            La segunda tabla con los siguientes campos Los valores de opciones deben ser bullet points en formato markdown bien organizados:
+            La segunda tabla con los siguientes campos los valores de opciones deben ser bullet points en formato MARKDOWN bien organizados:
             - Primera Opción
             - Opciones Secundarias
+            
+            Las tablas y los bullet points deben estar en formato markdown
             """,
         ),
         ("user", "Extrae de forma rigurosa los campos de la siguiente imagen"),
