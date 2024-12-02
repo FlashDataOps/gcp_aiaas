@@ -8,14 +8,14 @@ import pandas as pd
 import numpy as np
 import langchain_utils as lu
 import base64
-
+import traceback
 # Título de la aplicación
-st.title("Check Foto de Carnet")
+st.title("Extracción de campos")
 # Texto descriptivo
-st.write("Puedes subir una foto y comprobar si es correcta para un carnet de estudiante.")
+st.write("Puedes subir una ficha de admisión de la UFV y obtener toda la información del docuemnto.")
 
 # Área de arrastrar y soltar para subir el archivo
-uploaded_file = st.file_uploader("Arrastra y suelta tu archivo aquí o selecciona un archivo", type=["png"])
+uploaded_file = st.file_uploader("Arrastra y suelta tu archivo aquí o selecciona un archivo", type=["pdf"])
 
 if uploaded_file:
     if uploaded_file.type == "image/png":
@@ -34,27 +34,29 @@ if uploaded_file:
         )
         st.markdown("")
 
-
-    
 campos = ""
 
 # Botón para subir el archivo
-if st.button("📤 Analizar imagen", type="primary", use_container_width=True):
+if st.button("📤 Extraer campos", type="primary", use_container_width=True):
     if uploaded_file is not None:
-        with st.spinner('Analizando imagen...'):
+        with st.spinner('Extrayendo campos...'):
             try:
-                path_carnet_gcp = "ufv-demo/foto-carnet"
+                path_ficha_gcp = "ufv-demo/ficha-admision"
                 print("Buscando si existe fichero en blob")
-                lista_blobs = af.list_blobs(folder_name=path_carnet_gcp)
-                if not fr"{path_carnet_gcp}/{uploaded_file.name}" in lista_blobs:
+                lista_blobs = af.list_blobs(folder_name=path_ficha_gcp)
+                if not fr"{path_ficha_gcp}/{uploaded_file.name}" in lista_blobs:
                     print("No existe, se procede a subir")
-                    af.upload_blob(file=uploaded_file, folder_name=path_carnet_gcp)
+                    af.upload_blob(file=uploaded_file, folder_name=path_ficha_gcp)
                     time.sleep(5)
                 else:
                     print("Existe")
                 
-                image_data = f"gs://single-cirrus-435319-f1-bucket/ufv-demo/foto-carnet/{uploaded_file.name}"
-                campos = lu.invoke_extraer_campos_foto(
+                doc_pdf = f"gs://single-cirrus-435319-f1-bucket/{path_ficha_gcp}/{uploaded_file.name}"
+                print("Extrayendo Imagenes...")
+                image_data = af.extract_areas_from_pdf_base64(pdf_path=uploaded_file, page_number=2)
+                print("Imagenes extraidas")
+                campos = lu.invoke_extraer_campos_ficha(
+                    doc_pdf=doc_pdf,
                     image_data=image_data
                 )
                 #if "correcta" in campos.lower() or "correcto" in campos.lower():
@@ -62,6 +64,7 @@ if st.button("📤 Analizar imagen", type="primary", use_container_width=True):
                 #else:
                 #    st.error(f"Foto de perfil incorrecta")
             except Exception as e:
+                traceback.print_exc()
                 st.error(fr"Error -> {e}")
         
         # Aquí puedes añadir lógica para interactuar con la base de datos usando el archivo subido
