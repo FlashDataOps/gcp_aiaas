@@ -95,13 +95,13 @@ with st.sidebar:
     )
 
     # Select temperature
-    st.session_state.temperature = st.slider('Select a temperature:', min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
+    st.session_state.temperature = st.slider('Select a level of creativity:', min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
 
     # Select max tokens
     if st.session_state.max_tokens > max_tokens[st.session_state.model]:
         max_value = max_tokens[st.session_state.model]
 
-    st.session_state.max_tokens = st.number_input('Select max tokens:', min_value=1, max_value=max_tokens[st.session_state.model], value=max_tokens[st.session_state.model], step=100)
+    st.session_state.max_tokens = 8000#st.number_input('Select max tokens:', min_value=1, max_value=max_tokens[st.session_state.model], value=max_tokens[st.session_state.model], step=100)
     
     clear_chat_column, record_audio_column= st.columns([1, 1])
     # Reset chat history button
@@ -115,8 +115,7 @@ render_or_update_model_info(st.session_state.model)
 # Display chat messages from history on app rerun
 for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
-        if st.session_state.initial_message_displayed:
-            st.markdown(message["content"])            
+        st.markdown(message["content"])            
         
         if "figure_p" in message["aux"].keys():
             for figure in message["aux"]["figure_p"]:

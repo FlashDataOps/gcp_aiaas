@@ -82,6 +82,7 @@ prompt_create_sql = ChatPromptTemplate.from_messages(
 
 prompt_create_sql_response = ChatPromptTemplate.from_messages(
     [
+        ("placeholder", "{chat_history}"),
         (
             "system",
             """Based on the following data, respond in natural language.
@@ -95,7 +96,6 @@ prompt_create_sql_response = ChatPromptTemplate.from_messages(
                 Always use English as the text language.
             """,
         ),
-        ("placeholder", "{chat_history}"),
         ("user", "{input}"),
     ]
 )
@@ -123,22 +123,24 @@ prompt_custom_chart = ChatPromptTemplate.from_messages(
 
 prompt_intent = ChatPromptTemplate.from_messages(
     [
+        ("placeholder", "{chat_history}"),
         (
             "system",
             """Your task is to determine the user's intent based on their message. The possibilities are:
-
-                Query: If the user is making a query about contractual data with the following schema: {schema}
-                Other: Anything not related to querying contractual data, but text itself
-                Respond only with the words [Query, Other]. If you are unsure, respond with Other.
+                
+                Query: If the user is making a query about contractual data with the following schema: {schema}. The user must specifically say: "in the dataset..." or "in our data...". If not, respond with Other.
+                Other: If the user wants to generate text based on previous knlowledge, or if they want to get information about a text or field of knowledge. The user doesn't mention the data.
+                
+                Respond only with the words [Query, Other]. Unless really clear, respond with Other.
             """,
         ),
-        ("placeholder", "{chat_history}"),
         ("user", "{input}"),
     ]
 )
 
 prompt_general = ChatPromptTemplate.from_messages(
     [
+        ("placeholder", "{chat_history}"),
         (
             "system",
             """You are an assistant working at FCC constructions. Your task is to help the user understand the information in the database.
@@ -146,10 +148,100 @@ prompt_general = ChatPromptTemplate.from_messages(
 
                 Query: If the user makes a query about a dataset, you can generate a chart and text. The dataset schema is as follows: {schema}
                 
-                #! Meter una buena descripcion
+                These are the documents available for now:
+                
+                ### First
+                CONSTRUCTION CONTRACT
+                This Construction Contract ("Contract") is entered into on the date specified below between the Ministry of Infrastructure and Transport ("Client") and Global Construction Inc. ("Contractor"). The purpose of this Contract is to formalize the agreement between the parties for the construction of a roadway project located in Zaragoza, Aragón, Spain. Both parties agree to the terms and conditions outlined herein, which define their rights, responsibilities, and obligations to ensure the successful completion of the project.
+                Contract Number: CON-2024-001 Start Date: 2024-12-10 Estimated Completion Date: 2026-03-15
+                Contracting Parties
+                Client Name: Ministry of Infrastructure and Transport Client Tax ID: A12345678
+                Contractor Name: Global Construction Inc. Contractor Tax ID: B98765432
+                Project Information
+                Type of Construction: Roadway Location: Zaragoza, Aragón, Spain Approved Budget: €45,000,000 Total Duration (days): 460 Project Status: Planned
+                Technical Details
+                Project Dimensions:
+                •
+                Length: 25 km
+                •
+                Width: 15 m
+                •
+                Height/Depth: 3 m
+                Main Materials Used: Concrete, asphalt, reinforced steel, aluminum signage
+                Project Description: The project entails the construction of a new expressway connecting Zaragoza with nearby towns to reduce travel time and improve regional connectivity. It will include four lanes (two in each direction), safety shoulders, rest areas, and a bridge over the Ebro River.
+                Financial Clauses
+                Payment Terms:
+                •
+                20% advance payment at the start of the project.
+                •
+                60% in monthly installments based on progress certified by technical supervision.
+                •
+                20% upon final delivery and approval by the client.
+                Delay Penalties:
+                •
+                Penalty of €25,000 for each week of unjustified delay.
+                Schedule and Milestones
+                MILESTONE
+                START DATE
+                ESTIMATED COMPLETION DATE
+                MILESTONE DESCRIPTION TOPOGRAPHIC STUDIES 2024-12-15 2025-02-01 Terrain evaluation and design adjustments.
+                EARTHWORKS
+                2025-02-15
+                2025-07-30
+                Initial land preparation. FOUNDATION PLACEMENT 2025-08-01 2025-12-31 Structural base for the roadway.
+                PAVING
+                2026-01-15
+                2026-02-28
+                Asphalt laying along the route. SIGNAGE INSTALLATION 2026-03-01 2026-03-10 Installation of safety signs and signals.
+                
+                ### SECOND
+                CONSTRUCTION CONTRACT
+                Contract Number: CON-2024-002 Start Date: 2024-11-01 Estimated Completion Date: 2025-12-20
+                This Construction Contract ("Contract") is entered into on the date specified below between the City of Valencia Public Works Department ("Client") and Apex Infrastructure Ltd. ("Contractor"). The purpose of this Contract is to formalize the agreement between the parties for the construction of a pedestrian suspension bridge located in Valencia, Spain. Both parties agree to the terms and conditions outlined herein, which define their rights, responsibilities, and obligations to ensure the successful completion of the project.
+                Contracting Parties
+                Client Name: City of Valencia Public Works Department Client Tax ID: C12398765
+                Contractor Name: Apex Infrastructure Ltd. Contractor Tax ID: D45612389
+                Project Information
+                Type of Construction: Pedestrian Bridge Location: Valencia, Spain Approved Budget: €18,500,000 Total Duration (days): 415 Project Status: Planned
+                Technical Details
+                Project Dimensions:
+                •
+                Length: 180 m
+                •
+                Width: 6 m
+                •
+                Height/Depth: 25 m
+                Main Materials Used: Reinforced concrete, structural steel, tempered glass for railings
+                Project Description: The project involves the construction of a modern pedestrian suspension bridge crossing the Turia River in Valencia. The bridge will feature a sleek, contemporary design, incorporating energy-efficient lighting and eco-friendly materials. It will connect key recreational areas on both sides of the river, promoting accessibility and enhancing the urban landscape.
+                Financial Clauses
+                Payment Terms:
+                •
+                25% advance payment upon contract signing.
+                •
+                50% in monthly installments based on progress verified by independent inspectors.
+                •
+                25% upon final inspection and project approval.
+                Delay Penalties:
+                •
+                Penalty of €20,000 for every week of unjustified delay.
+                Schedule and Milestones
+                MILESTONE
+                START DATE
+                ESTIMATED COMPLETION DATE
+                MILESTONE DESCRIPTION SITE PREPARATION 2024-11-05 2025-01-15 Clearing, surveying, and foundation preparation.
+                FOUNDATION WORK
+                2025-01-20
+                2025-04-30
+                Laying and securing the bridge foundation. SUSPENSION SYSTEM SETUP 2025-05-10 2025-09-20 Installation of cables and main structure.
+                DECK CONSTRUCTION
+                2025-10-01
+                2025-11-30
+                Building the pedestrian walkway and railings. FINAL TOUCHES AND INSPECTION 2025-12-01 2025-12-15 Adding lighting, testing, and inspection.
+                
+                Use Markdown to format the answer and include tables if necessary.
             """,
         ),
-        ("placeholder", "{chat_history}"),
+        
         ("human", "{input}")        
     ]
 )
@@ -268,7 +360,6 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
     for chunk in chain.stream(config):
         response+=chunk
         yield chunk
-    
     
     history.add_user_message(question)
     history.add_ai_message(response)
