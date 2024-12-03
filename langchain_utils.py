@@ -66,21 +66,18 @@ def get_model(model_name, temperature, max_tokens):
 # First we need a prompt that we can pass into an LLM to generate this search query
 prompt_create_sql = ChatPromptTemplate.from_messages(
     [
+        ("placeholder", "{chat_history}"),
         (
             "system",
-            """Basándote en la tabla esquema de abajo, escribe una consulta SQL para SQLLite que pueda responder a la pregunta del usuario:
+            """Basándote en la tabla esquema:
             {schema}
             
-            A continuación te paso una descripción general de los datos que te vas a encontrar:
-            
-            #! TODO REESCRIBIR PROMPT
-            
-            No incluyas introducción, ni introduzcas en una lista la resupuesta
+            Escribe una consulta SQL para SQLLite que pueda responder a la pregunta del usuario.            
+            No incluyas introducción, ni introduzcas en una lista la resupuesta, solo incluye la consulta SQL.
             
             """,
         ),
-        ("placeholder", "{chat_history}"),
-        ("user", "{input}"),
+        ("user", "{input}")
     ]
 )
 
@@ -88,10 +85,7 @@ prompt_create_sql_response = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            """Basándote en los siguientes datos, responde en lenguaje natural. Minimiza el uso de "bullet points", ya que el texto deberá ser leído por un bot de voz.
-            Indica las unidades cuando sea necesario (casi todas las variables son EUR / €). Redondea siempre a los miles o millones:
-            Es muy importante (lo más importante), que si se tienen muchos datos no se mencionen todos, sino que se haga un resumen general obteniendo siempre insights.
-            Si se pregunta por una cuestión muy específica, se puede responder con más detalle, pero siempre intentando resumir.
+            """Basándote en los siguientes datos, responde en lenguaje natural. 
             Debes utilizar los siguientes datos para responder a la pregunta del usuario:
             {schema}
             
@@ -100,11 +94,8 @@ prompt_create_sql_response = ChatPromptTemplate.from_messages(
             - Respuesta: {response}
             
             
-            La respuesta debe tener dos seccions. Por un lado, de forma breve y concisa una frase con la respuesta a la pregunta del usuario. Por otro lado, si es posible, debes incluir un parrafo con un insight que se pueda extraer del resultado de la base de datos. No incluyas cabeceras para cada sección, directamente las información.
-            No hagas referencia a la base de datos en ningún momento, ni a la consulta realizada ni a los resultados extraidos en bruto.
-            Siempre muestralo de una forma bonita y ordenada, utilizando tablas o bullets points con saltos de línea a ser posible.
-            UTILIZA FORMATO MARKDOWN
-            RESPONDE EN ESPAÑOL DE BREVE A LA PREGUNTA DEL USUARIO
+            Utiliza formato markdown y emplea elementos visuales para hacer la respuesta más atractiva, como tablas en caso necesario. 
+            Usa siempre inglés como idioma de texto.
             """,
         ),
         ("placeholder", "{chat_history}"),

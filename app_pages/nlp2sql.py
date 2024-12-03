@@ -8,7 +8,6 @@ import time
 import os
 import aux_functions as af
 import speech_recognition as sr
-import azure.cognitiveservices.speech as speechsdk
 from io import BytesIO
 from dotenv import load_dotenv
 load_dotenv()
@@ -125,7 +124,7 @@ for idx, message in enumerate(st.session_state.messages):
                       
 
 # Accept user input
-prompt = st.chat_input("¿Cómo puedo ayudarte?", key="user_input")
+prompt = st.chat_input("How can I help you?", key="user_input")
 
 if prompt:
     # Display user message
@@ -151,7 +150,7 @@ if prompt:
                 
         # Handle figures
         if "figure_p" in aux_v2.keys():
-            with st.spinner("Generando gráficos ..."):
+            with st.spinner("Generating plots ..."):
                 for figure in aux_v2["figure_p"]:
                     st.plotly_chart(figure)
         
