@@ -287,7 +287,7 @@ def create_history(messages):
             history.add_ai_message(message["content"])
     return history
 
-def invoke_extraer_campos_ficha(model_name="gemini-1.5-pro-002", temperature=1, max_tokens=8192, doc_pdf="", image_data=[]):
+def invoke_extraer_campos_ficha(model_name="gemini-1.5-pro-002", temperature=0.2, max_tokens=8192, doc_pdf="", image_data=[]):
     llm = get_model(model_name, temperature, max_tokens)
     chain = prompt_extraer_campos_ficha | llm | StrOutputParser()
     response = ""

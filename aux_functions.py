@@ -81,7 +81,7 @@ def upload_blob(file, folder_name):
         try:
             file_name = os.path.basename(file.name)
         except:
-            file_name = os.path.basename(file)
+            file_name = os.path.basename(file).replace("temp_data\\", "")
         destination_blob_name = f"{folder_name}/{file_name}"
         storage_client = storage.Client()
         bucket = storage_client.bucket(bucket_name)
