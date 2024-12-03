@@ -150,6 +150,7 @@ def extract_areas_from_pdf_base64(pdf_path, page_number):
     # Obtener las dimensiones de la imagen original
     width, height = img.size
     
+
     # Calcular las divisiones en tercios verticales y mitades horizontales
     third_width = width // 3
     half_height = height // 2
@@ -163,7 +164,19 @@ def extract_areas_from_pdf_base64(pdf_path, page_number):
         (2 * third_width, 0, width, half_height),          # Derecha_Superior
         (2 * third_width, half_height, width, height)      # Derecha_Inferior
     ]
+    
+    '''
+    # Calcular las divisiones en cuartos horizontales
+    quarter_height = height // 4
 
+    # Definir las áreas de recorte para los 4 rectángulos horizontales
+    areas = [
+        (0, 0, width, quarter_height),                      # Superior
+        (0, quarter_height, width, 2 * quarter_height),     # Segundo cuarto
+        (0, 2 * quarter_height, width, 3 * quarter_height), # Tercer cuarto
+        (0, 3 * quarter_height, width, height)             # Inferior
+    ]    
+    '''
     # Recortar y almacenar las imágenes como Base64
     base64_images = []
     for index, area in enumerate(areas):

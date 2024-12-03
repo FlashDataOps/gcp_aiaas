@@ -21,7 +21,7 @@ with open("./design/photo/styles.css", encoding="utf-8") as f:
 st.write("Puedes subir una foto y comprobar si es correcta para un carnet de estudiante.")
 
 # Área de arrastrar y soltar para subir el archivo
-uploaded_file = st.file_uploader("Arrastra y suelta tu archivo aquí o selecciona un archivo", type=["png"])
+uploaded_file = st.file_uploader("Arrastra y suelta tu archivo aquí o selecciona un archivo", type=["png", "jpeg"])
 
 if uploaded_file:
     if uploaded_file.type == "image/png":

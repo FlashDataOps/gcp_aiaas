@@ -68,102 +68,6 @@ def get_model(model_name, temperature, max_tokens):
     return llm[model_name]
 
 # First we need a prompt that we can pass into an LLM to generate this search query
-prompt_create_sql = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            """Basándote en la tabla esquema de abajo, escribe una consulta SQL para SQLLite que pueda responder a la pregunta del usuario:
-            {schema}
-            
-            A continuación te paso una descripción general de los datos que te vas a encontrar:
-            
-            Cada día se ejecuta un proceso que calcula diferentes datos para los Hoteles NH. Este día se conoce como Business Date (fecha actual). En PowerBI se puede seleccionar el Business Date de “hoy” o el del miércoles de la semana anterior por temas internos de NH. El PowerBI del que disponemos es el del 02 de Octubre de 2024. La fecha Stay Date hace referencia a la fecha de la que se muestran los datos (reservas para dicho día, ocupaciones etc).
-            Si tomamos el día de hoy como Bussines Date, On-The-Books (OTB) serán las reservas activas a día de hoy para los diferentes Stay Dates, Actuals serán las ocupaciones activas hoy para cada Stay Date y Pick Up son las ocupaciones necesarias para alcanzar el Forecast.
-            Los datos que hemos descargado se corresponden con aquellos de la tabla Rev-for-pre-outputs-rev desde el 01-09-2024 hasta el 30-09-2024, de todos los segmentos salvo Others y TNCD (Transient Restricted). Además, se han tomado los datos del maestro de hoteles, maestro de segmentos y maestro de métricas.
-
-            
-            A continuación te facilito un resumen de las columnas más importantes en el dataset:
-            Campos y variables.
-            •	Segment -> es el tipo de clientes a los que se hace referencia.
-            •	Metric -> tipo de servicio al que se hace referencia.
-            •	Actuals -> ocupaciones activas (en euros).
-            •	OTB -> Reservas activas (en euros).
-            •	Forecast -> Previsión (en euros), ingresos esperados.
-            •	Local_Currency -> Moneda local.
-            •	Exchange_rate_to_EUR -> relación de la moneda local con EUR.
-            •	Hotel_ID -> Identificador del hotel.
-            •	Business_date -> día en el que se observa la situación (actualidad).
-            •	Stay_date -> Día al que hacen referencia los datos.
-            •	Pick_Up -> Forecast - (Actuals + OTB). Lo que falta para llegar al forecast.
-            •	Pts -> Period to stay (diferencia entre stay date y business date).
-            •	Hotel_Type -> Hotel / Restaurante.
-            •	Hotel_Name -> nombre del hotel.
-            •	Hotel_Status -> OPEN / SIGNED.
-            •	Hotel_BU -> Business Unit: BU America / BU Northern Europe / BU Southern Europe.
-            •	Hotel_SubBU -> Sub Business Unit, agrupación de países.
-            •	Hotel_Rooms -> nº de habitaciones del hotel.
-            •	Hotel_Cluster -> Agrupación de hoteles.
-            •	Hotel_Consolidate -> indica si el hotel se considera maduro (lleva años abierto).
-            •	RRM -> Revenue Manager.
-
-            Algunas métricas útiles son:
-            •	Actuals_business_date -> df[df ['Stay_date']<df ['Business_date']]['Actuals'].sum(). La suma de los € de ocupaciones activas a día de hoy (Business Date).
-            •	OTB_business_date  -> df['OTB'].sum(). Suma de reservas totales en €.
-            •	Forecast_business_date -> df['Forecast'].sum(). Suma de predicciones en €.
-            •	Total_business_date -> Actuals_business_date + OTB_business_date  + Forecast_business_date. Suma de ocupaciones activas, reservas y previsiones.
-            •	Perc_expected_revenue -> (actuals_business_date + OTB_business_date) / total_business_date. Porcentaje de € sobre el total.
-
-            
-            A continuación te doy unas columnas y sus posibles valores para ayudarte a filtrar:
-            •	Segment: 
-                •	BUGR -> Business groups (grupos de negocio)
-                •	COMP -> Complementary (complementarios)
-                •	CORP -> Corporative (corporativos)
-                •	CREW -> para hoteles cerca de aeropuertos, tripulación 
-                •	LEGR -> Grupos de ocio (Leisure Groups)
-                •	MECO -> Meetings & Conferences (reuniones y conferencias)
-                •	OTHE -> Others (otros)
-            •	Metric:
-                •	FPB -> BKF + F&B 
-                •	BKF -> Breakfast (desayuno)
-                •	EVENTS -> Eventos
-                •	RN -> Room Nights  
-                •	RP -> Room Revenue RREV (dinero generado con las habitaciones)
-                •	F&B -> Food & beverage
-            
-            Otras siglas y sus significados:
-                •	ADR -> precio medio de la habitación
-                •	TREV -> Total Revenue (dinero total generado)
-                •	OREV -> Other Revenue (dinero no generado por las habitaciones)
-                •	TREV -> RREV + OREV
-                •	OTB -> On-the-books / Reservas
-
-                
-            Aquí te muestro algunas métricas calculadas de utilidad.
-            •	Actuals_business_date -> df[df ['Stay_date']<df ['Business_date']]['Actuals'].sum(). La suma de los € de ocupaciones activas a día de hoy (Business Date).
-            •	OTB_business_date  -> df['OTB'].sum(). Suma de reservas totales en €.
-            •	Forecast_business_date -> df['Forecast'].sum(). Suma de predicciones en €.
-            •	Total_business_date -> Actuals_business_date + OTB_business_date  + Forecast_business_date. Suma de ocupaciones activas, reservas y previsiones.
-            •	Perc_expected_revenue -> (actuals_business_date + OTB_business_date) / total_business_date. Porcentaje de euros € obtenidos o reservados sobre el total estimado.
-            
-            Ten en cuenta que TREV = Total_business_date; RREV = Total_business_date filtrado para métrica RP; OREV = Total_business_date para todas las métricas excepto RP.
-            
-            Utiliza el historial para adaptar la consulta SQL. No añadas respuestas en lenguaje natural.
-            
-            RESPONDE ÚNICAMENTE CON CÓDIGO SQL. NO AÑADAS PALABRAS EN LENGUAJE NATURAL.
-            LA CONSULTA DEBE ESTAR PREPARADA PARA SER EJECUTADA EN LA BASE DE DATOS
-            
-            No incluyas introducción, ni introduzcas en una lista la resupuesta
-            
-            """,
-        ),
-        ("placeholder", "{few_shots}"), 
-        ("placeholder", "{chat_history}"),
-        ("user", "{input}"),
-    ]
-)
-
-# First we need a prompt that we can pass into an LLM to generate this search query
 prompt_extraer_campos_foto = ChatPromptTemplate.from_messages(
     [
         (
@@ -246,8 +150,6 @@ prompt_extraer_campos_ficha = ChatPromptTemplate.from_messages(
             - Nota Media
             - Ciudad 
             - Provincia
-            - Primera Opción
-            - Opciones Secundarias
             
             Ten en cuenta que el valor del campo Opciones Secundarias puede tomar varios valores. En la columna de valor pon estos valores dentro de la tabla en bullet points en formato markdown.
             Las tablas y los bullet points deben estar en formato markdown y centrado.
@@ -263,8 +165,70 @@ prompt_extraer_campos_ficha = ChatPromptTemplate.from_messages(
                 }
             ],
         ),
-        ("user", "Los datos de primera opción (marcada con 1) y opciones secundarias (marcada con X) los puedes obtener de las siguientes imagenes. Recuerda añadir solo grados universitarios:"),
+        ("user", "Los datos de primera opción (marcada con 1) y opciones secundarias (marcada con X) los puedes obtener de las siguientes imagenes a la izquierda de cada grado universitario. Recuerda añadir solo grados universitarios:"),
         MessagesPlaceholder("image_data"),
+    ]
+)
+prompt_extraer_campos_ficha_grado = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """
+            En la imagen (compuesta por 3 columnas de grados universitarios) tiene que haber un grado que este marcado con un 1. También debes decirme cuales tienen una X. 
+
+            - Solo puede haber un grado con un 1.
+            - Los grados pueden tener el valor de 1, X o en blanco (solo uno a la vez)
+            Analiza muy bien tu respuesta. 
+
+            Podrias decirme cuales son?
+            """,
+        ),
+        ("user", "Extrae la información de forma rigurosa"),
+        (
+            "human",
+            [
+                {
+                    "type": "image_url",
+                    "image_url": {"url": "{image_grado}"},
+                }
+            ],
+        ),
+    ]
+)
+
+prompt_extraer_campos_ficha_unificar = ChatPromptTemplate.from_messages(
+    [
+        (
+            "system",
+            """
+            Dadas las siguientes respuestas: 
+            
+            {respuestas}
+            
+            Te paso el documento oficial de referencia en una imagen
+            
+            Necesito que ofrezcas una respuesta unificada en la que solo haya un grado con 1 y el resto con x. Con este me refiero a que debes decidir cual es la primera opción y cuales son las opciones ecundarias. 
+            SOLO PUEDE HABER UNA PRIMERA OPCIÓN.
+            
+            Tu formato de respuesta debe ser una tabla con los siguientes campos:
+            
+            - Primera Opción
+            - Opciones Secundarias
+            
+            Ten en cuenta que el valor del campo Opciones Secundarias puede tomar varios valores. En la columna de valor pon estos valores dentro de la tabla en bullet points en formato markdown.
+            Las tablas y los bullet points deben estar en formato markdown y centrado.
+            """,
+        ),
+        ("user", "Ofrece tu respuesta de forma rigurosa"),
+        (
+            "human",
+            [
+                {
+                    "type": "image_url",
+                    "image_url": {"url": "{original_doc}"},
+                }
+            ],
+        ),
     ]
 )
 
@@ -287,6 +251,49 @@ def create_history(messages):
             history.add_ai_message(message["content"])
     return history
 
+def invoke_extraer_campos_ficha_mobile(model_name="gemini-1.5-flash-002", temperature=0.2, max_tokens=8192, doc_pdf="", image_data=[]):
+    llm = get_model(model_name, temperature, max_tokens)
+    chain = prompt_extraer_campos_ficha | llm | StrOutputParser()
+    response = ""
+    list_images = []
+    print("type(image_data)", type(image_data), len(image_data))
+    for image in image_data:
+        #format_image = base64.b64encode(image).decode("utf-8")
+        list_images.append(
+        (
+            "human",
+            [
+                {
+                    "type": "image_url",
+                    "image_url": {"url": image},
+                }
+            ],
+        )
+        )
+
+    config = {
+        "doc_pdf": doc_pdf,
+    #    "image_data": list_images
+        }
+    
+    response += chain.invoke(config)
+    
+    respuestas_grado = []
+    chain_imagen = prompt_extraer_campos_ficha_grado | llm | StrOutputParser()
+    for image in image_data:
+        config = {
+        "image_grado": image
+        }
+        respuestas_grado.append(chain_imagen.invoke(config))
+        
+    chain_unificar = prompt_extraer_campos_ficha_unificar | llm | StrOutputParser()
+    config = {
+        "respuestas": respuestas_grado,
+        "original_doc": doc_pdf
+    }
+    response += chain_unificar.invoke(config)
+    return response
+
 def invoke_extraer_campos_ficha(model_name="gemini-1.5-pro-002", temperature=0.2, max_tokens=8192, doc_pdf="", image_data=[]):
     llm = get_model(model_name, temperature, max_tokens)
     chain = prompt_extraer_campos_ficha | llm | StrOutputParser()
@@ -306,10 +313,7 @@ def invoke_extraer_campos_ficha(model_name="gemini-1.5-pro-002", temperature=0.2
             ],
         )
         )
-    print("ANTES DE LLAMAAAAAAAAAAAAAAAAR")
-    print(doc_pdf)   
-    print(list_images)
-    
+            
     config = {
         "doc_pdf": doc_pdf,
         "image_data": list_images

@@ -5,6 +5,7 @@ import streamlit as st
 
 #nlp2sql = st.Page("./app_pages/nlp2sql.py", title="NH Hoteles", icon="🤖")
 extract = st.Page("./app_pages/extract.py", title="Extracción de campos", icon="🤖")
+extract_mobile = st.Page("./app_pages/extract mobile.py", title="Extracción de campos móvil", icon="🤖")
 #rag = st.Page("./app_pages/rag.py", title="RAG", icon="📄")
 #ppt = st.Page("./app_pages/ppt_gen.py", title="PPT Generator", icon="📊")
 
