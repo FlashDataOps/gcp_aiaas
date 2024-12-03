@@ -235,22 +235,22 @@ prompt_extraer_campos_ficha = ChatPromptTemplate.from_messages(
             #### FORMATO DE RESPUESTA ####
             
             Escribe los nombres de los campos en lenguaje natural.
-            Ofrece varias tablas. La primera de ella para los siguientes campos:
+            Ofrece una tabla con los siguientes campos:
+            
             - Nombre
             - Apellidos
             - Mail
             - Movil
             - Colegio
-            - Curso_Actual
-            - Nota_Media
+            - Curso Actual
+            - Nota Media
             - Ciudad 
             - Provincia
-            
-            La segunda tabla con los siguientes campos los valores de opciones deben ser bullet points en formato MARKDOWN bien organizados:
             - Primera Opción
             - Opciones Secundarias
             
-            Las tablas y los bullet points deben estar en formato markdown
+            Ten en cuenta que el valor del campo Opciones Secundarias puede tomar varios valores. En la columna de valor pon estos valores dentro de la tabla en bullet points en formato markdown.
+            Las tablas y los bullet points deben estar en formato markdown y centrado.
             """,
         ),
         ("user", "No hagas referencia a las instruciones que te he dado, únicamente debes extraer la información de los siguientes 7 documentos que te voy a enviar y colocala en tablas con columna de campo y valor:"),
