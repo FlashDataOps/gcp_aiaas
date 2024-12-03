@@ -69,12 +69,11 @@ prompt_create_sql = ChatPromptTemplate.from_messages(
         ("placeholder", "{chat_history}"),
         (
             "system",
-            """Basándote en la tabla esquema:
-            {schema}
-            
-            Escribe una consulta SQL para SQLLite que pueda responder a la pregunta del usuario.            
-            No incluyas introducción, ni introduzcas en una lista la resupuesta, solo incluye la consulta SQL.
-            
+            """Based on the schema table:
+                {schema}
+
+                Write an SQL query for SQLite that can answer the user's question.
+                Do not include an introduction or format the response in a list; only provide the SQL query.
             """,
         ),
         ("user", "{input}")
@@ -85,17 +84,15 @@ prompt_create_sql_response = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            """Basándote en los siguientes datos, responde en lenguaje natural. 
-            Debes utilizar los siguientes datos para responder a la pregunta del usuario:
-            {schema}
-            
-            - Pregunta: {input}
-            - Query SQL: {query}
-            - Respuesta: {response}
-            
-            
-            Utiliza formato markdown y emplea elementos visuales para hacer la respuesta más atractiva, como tablas en caso necesario. 
-            Usa siempre inglés como idioma de texto.
+            """Based on the following data, respond in natural language.
+                You must use the following data to answer the user's question:
+                {schema}
+
+                Question: {input}
+                SQL Query: {query}
+                Answer: {response}
+                Use markdown formatting and include visual elements to make the response more engaging, such as tables when necessary.
+                Always use English as the text language.
             """,
         ),
         ("placeholder", "{chat_history}"),
@@ -108,17 +105,15 @@ prompt_custom_chart = ChatPromptTemplate.from_messages(
         (
             "system",
             """
-            Responde únicamente con código python
-            Debes utilizar los siguientes datos para escribir el código en plotly en python que represente la respuesta realizada con la siguiente query:
-            - Query SQL: {query}
-            - Respuesta: {response}
-            
-            SOLO DEBES INCLUIR CÓDIGO PYTHON EN TU RESPUESTA. NO INCLUYAS LENGUAJE NATURAL INTRODUCIENDO TU RESPUESTA.
-            HAZ EL GRÁFICO BONITO Y VISUAL. QUIERO QUE ESTÉ PREPARADO PARA SER MOSTRADO ANTE UN CLIENTE MUY IMPORTANTE.
-            
-            ASEGURATE DE QUE LA RESPUESTA TIENE ÚNICAMENTE CÓDIGO PYTHON
-            
-            RESPONDE EN ESPAÑOL
+            Respond only with Python code
+            You must use the following data to write Python Plotly code that represents the answer obtained with the following query:
+
+            SQL Query: {query}
+            Answer: {response}
+            ONLY INCLUDE PYTHON CODE IN YOUR RESPONSE. DO NOT INCLUDE NATURAL LANGUAGE TO INTRODUCE YOUR ANSWER.
+            MAKE THE CHART BEAUTIFUL AND VISUALLY APPEALING. IT SHOULD BE READY TO PRESENT TO A VERY IMPORTANT CLIENT.
+
+            ENSURE THAT THE RESPONSE CONTAINS ONLY PYTHON CODE.
             """,
         ),
         ("user", "{input}"),
@@ -130,11 +125,11 @@ prompt_intent = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            """Tu tarea es decidir cuál es la intención del usuario a partir del mensaje del usuario. Las posibilidades son:
-            - Consulta: Si el usuario realiza una consulta sobre un dataset de hoteles con el siguiente schema: {schema}
-            - Otro: Cualquier cosa que no tenga nada que ver con realizar una consulta a los datos de NH
-            
-            Responde únicamente con las palabras [Consulta, Otro]. En caso de no saber a que se refiere responde Otro
+            """Your task is to determine the user's intent based on their message. The possibilities are:
+
+                Query: If the user is making a query about contractual data with the following schema: {schema}
+                Other: Anything not related to querying contractual data, but text itself
+                Respond only with the words [Query, Other]. If you are unsure, respond with Other.
             """,
         ),
         ("placeholder", "{chat_history}"),
@@ -146,9 +141,12 @@ prompt_general = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            """Eres un asistente que trabaja en NH Hoteles. Tu tarea es ayudar al usuario a entender la información del modelo de datos de NH.
-            Puedes realizar la siguiente tarea:
-            - Consulta: Si el usuario realiza una consulta sobre un dataset, se puede generar un gráfico y una respuesta en formato de audio para poder escucharla. El esquema del dataset es el siguiente {schema}
+            """You are an assistant working at FCC constructions. Your task is to help the user understand the information in the database.
+                You can perform the following task:
+
+                Query: If the user makes a query about a dataset, you can generate a chart and text. The dataset schema is as follows: {schema}
+                
+                #! Meter una buena descripcion
             """,
         ),
         ("placeholder", "{chat_history}"),
@@ -215,7 +213,7 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
     res_intent = intent_chain.invoke(config).strip().lower()
     print(f"La intención del usuario es -> {res_intent}")
     
-    if "consulta" in res_intent:
+    if "uery" in res_intent:
         sql_chain = (
             RunnablePassthrough.assign(schema=get_schema)
             | prompt_create_sql
@@ -237,8 +235,7 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         
         config = {
         "input": question, 
-        "chat_history": sql_history.messages,
-        "few_shots": af.create_few_shots() 
+        "chat_history": sql_history.messages        
         }
         
         query = sql_chain.invoke(config)
@@ -246,12 +243,11 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         print(query)
         sql_history.add_user_message(question)
         #sql_history.add_ai_message(query)
-        print("Ejecutando consulta...")
+        print("Executing query...")
         flag_correct_query = False
         try:   
             result = db.run(query)
             #print("RESULTADO ANTES", result)
-            result, _ = af.dividir_en_bloques_por_grupo(resultados_sql=eval(result), max_filas=50)
             flag_correct_query = True
             print("Consulta ejecutada correctamente")
         except:
@@ -277,7 +273,7 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
     history.add_user_message(question)
     history.add_ai_message(response)
     
-    if "consulta" in res_intent and flag_correct_query == True:
+    if "uery" in res_intent and flag_correct_query == True:
         try:
             print(result, type(result))
             list_result = result
