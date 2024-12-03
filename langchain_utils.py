@@ -79,7 +79,6 @@ prompt_create_sql = ChatPromptTemplate.from_messages(
             
             """,
         ),
-        ("placeholder", "{few_shots}"), 
         ("placeholder", "{chat_history}"),
         ("user", "{input}"),
     ]
