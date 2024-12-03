@@ -11,3 +11,6 @@
 # https://docs.python.org/3/library/logging.html#formatter-objects
 # Default: "%(asctime)s %(message)s"
 messageFormat = "%(asctime)s %(levelname) -7s %(name)s: %(message)s"
+
+[theme]
+base="light"
