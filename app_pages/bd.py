@@ -8,7 +8,8 @@ import pandas as pd
 import numpy as np
 import langchain_utils as lu
 import base64
-
+from datetime import datetime
+import os
 with open("./design/photo/styles.css", encoding="utf-8") as f:
     css = f.read()
     st.markdown('<style>{}</style>'.format(css), unsafe_allow_html=True)
@@ -39,6 +40,37 @@ if uploaded_file:
             unsafe_allow_html=True,
         )
         st.markdown("")
+    if uploaded_file.type == "image/jpeg":
+        # Leer la imagen como binario
+        image = uploaded_file.read()
+        # Convertir la imagen a Base64
+        encoded_image = base64.b64encode(image).decode('utf-8')
+        # Usar HTML para centrar la imagen
+        st.markdown(
+            f"""
+            <div style="text-align: center;">
+                <img src="data:image/jpeg;base64,{encoded_image}" alt="Imagen Subida" width="220">
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.markdown("")
+    
+    if uploaded_file.type == "image/jpg":
+        # Leer la imagen como binario
+        image = uploaded_file.read()
+        # Convertir la imagen a Base64
+        encoded_image = base64.b64encode(image).decode('utf-8')
+        # Usar HTML para centrar la imagen
+        st.markdown(
+            f"""
+            <div style="text-align: center;">
+                <img src="data:image/jpg;base64,{encoded_image}" alt="Imagen Subida" width="220">
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        st.markdown("")
 
 
     
@@ -49,6 +81,19 @@ if st.button("📤 Analizar imagen", type="primary", use_container_width=True):
     if uploaded_file is not None:
         with st.spinner('Analizando imagen...'):
             try:
+                
+                # Obtener el tiempo actual
+                ahora = datetime.now()
+
+                # Formatear como día_mes_hora_minuto_segundo
+                formato_personalizado = ahora.strftime("%d_%m_%H_%M_%S")
+                # Separar el nombre del archivo de su extensión
+                nombre_base, extension = os.path.splitext(uploaded_file.name)
+
+                # Crear el nuevo nombre con la extensión al final
+                nuevo_nombre = f"{nombre_base}_{formato_personalizado}{extension}"
+
+                uploaded_file.name = nuevo_nombre
                 path_carnet_gcp = "ufv-demo/foto-carnet"
                 print("Buscando si existe fichero en blob")
                 lista_blobs = af.list_blobs(folder_name=path_carnet_gcp)
