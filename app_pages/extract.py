@@ -9,8 +9,15 @@ import numpy as np
 import langchain_utils as lu
 import base64
 import traceback
-# Título de la aplicación
-st.title("Extracción de campos")
+
+with open("./design/extract/styles.css", encoding="utf-8") as f:
+    css = f.read()
+    st.markdown('<style>{}</style>'.format(css), unsafe_allow_html=True)
+
+    with open("./design/extract/content.html", encoding="utf-8") as f:
+        html = f.read()
+    st.markdown(html, unsafe_allow_html=True)
+
 # Texto descriptivo
 st.write("Puedes subir una ficha de admisión de la UFV y obtener toda la información del docuemnto.")
 

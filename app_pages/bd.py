@@ -9,8 +9,14 @@ import numpy as np
 import langchain_utils as lu
 import base64
 
-# Título de la aplicación
-st.title("Check Foto de Carnet")
+with open("./design/photo/styles.css", encoding="utf-8") as f:
+    css = f.read()
+    st.markdown('<style>{}</style>'.format(css), unsafe_allow_html=True)
+
+    with open("./design/photo/content.html", encoding="utf-8") as f:
+        html = f.read()
+    st.markdown(html, unsafe_allow_html=True)
+
 # Texto descriptivo
 st.write("Puedes subir una foto y comprobar si es correcta para un carnet de estudiante.")
 
