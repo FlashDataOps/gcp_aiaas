@@ -69,3 +69,21 @@ class DB_Connection:
 
 db_connection = DB_Connection()
 
+def format_text_for_audio(texto):
+    texto = re.sub(r'[^a-zA-Z0-9áéíóúüñÁÉÍÓÚÜÑ,.?!:\n ]+', '', texto)
+    
+    # Formatear títulos para que tengan doble salto de línea al final
+    texto = re.sub(r'(\n)([^\s]+.*?):\n', r'\1\2:\n\n', texto)
+    
+    # Añadir viñetas con tabulación para cada línea de lista detectada y espacio adicional entre apartados
+    texto = re.sub(r'(\n)([^\n]+)(\n|$)', r'\1    - \2.\n', texto)
+    texto = re.sub(r'\n\n\s*- ', '\n\n\n- ', texto)  # Triple salto de línea entre apartados
+    
+    # Limpiar puntos y espacios redundantes
+    texto = re.sub(r'\.{2,}', '.', texto)
+    texto = re.sub(r'\s+', ' ', texto).strip()
+    
+    if texto and texto[-1] not in '.!?':
+        texto += '.'
+    
+    return texto
