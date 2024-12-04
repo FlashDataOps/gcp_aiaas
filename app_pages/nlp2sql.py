@@ -15,18 +15,22 @@ import traceback
 from gtts import gTTS
 import base64
 import datetime
-      
+import pyperclip
+
+def add_copy_button(text, key_suffix=""):
+    """Adds a copy button for the full text with a unique key."""
+    col1, col2 = st.columns([9, 1])
     
+    with col1:
+        st.empty()  # Remove this line to prevent duplicate text
+    
+    with col2:
+        if st.button("📋", key=f"copy_full_text_{key_suffix}"):
+            pyperclip.copy(text)
+            st.toast('Text copied to clipboard!', icon='📋')
+
 def render_or_update_model_info(model_name):
-    """
-    Renders or updates the model information on the webpage.
-
-    Args:
-        model_name (str): The name of the model.
-
-    Returns:
-        None
-    """
+    """Renders or updates the model information on the webpage."""
     with open("./design/styles.css") as f:
         css = f.read()
     st.markdown('<style>{}</style>'.format(css), unsafe_allow_html=True)
@@ -35,12 +39,8 @@ def render_or_update_model_info(model_name):
         html = f.read().format(model_name)
     st.markdown(html, unsafe_allow_html=True)
 
-
-# Reset chat history
 def reset_chat_history():
-    """
-    Resets the chat history by clearing the 'messages' list in the session state.
-    """
+    """Resets the chat history by clearing the 'messages' list in the session state."""
     if "messages" in st.session_state:
         st.session_state.messages = []
 
@@ -63,14 +63,12 @@ if "model" not in st.session_state:
     st.session_state.input_audio = 1
 
 if "messages" not in st.session_state:
-
     st.session_state.messages = []
     st.session_state.initial_message_displayed = False
-
     st.session_state.sql_messages = []
     st.session_state.show_success_audio = False
 
-# Continue with sidebar settings...
+# Sidebar configuration
 with st.sidebar:
     st.title("Model Configuration")    
   
@@ -98,12 +96,9 @@ with st.sidebar:
     st.session_state.temperature = st.slider('Select a level of creativity:', min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
 
     # Select max tokens
-    if st.session_state.max_tokens > max_tokens[st.session_state.model]:
-        max_value = max_tokens[st.session_state.model]
+    st.session_state.max_tokens = 8000
 
-    st.session_state.max_tokens = 8000#st.number_input('Select max tokens:', min_value=1, max_value=max_tokens[st.session_state.model], value=max_tokens[st.session_state.model], step=100)
-    
-    clear_chat_column, record_audio_column= st.columns([1, 1])
+    clear_chat_column, record_audio_column = st.columns([1, 1])
     # Reset chat history button
     if st.button(":broom: Clear chat", use_container_width=True):
         reset_chat_history()
@@ -111,17 +106,20 @@ with st.sidebar:
 # Render or update model information
 render_or_update_model_info(st.session_state.model)
 
-
 # Display chat messages from history on app rerun
 for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])            
+        if message["role"] == "assistant":
+            # Use st.write instead of st.markdown to avoid duplicate display
+            st.write(message["content"])
+            add_copy_button(message["content"], key_suffix=str(idx))
+        else:
+            st.markdown(message["content"])            
         
         if "figure_p" in message["aux"].keys():
             for figure in message["aux"]["figure_p"]:
                 st.plotly_chart(figure)
                       
-
 # Accept user input
 prompt = st.chat_input("How can I help you?", key="user_input")
 
@@ -141,8 +139,18 @@ if prompt:
             max_tokens=st.session_state.max_tokens
         )
         
-        # Stream the response
-        full_response = st.write_stream(response)
+        # Stream the response with a single copy button
+        full_response = st.empty()
+        streamed_response = ""
+        for chunk in response:
+            streamed_response += chunk
+            full_response.markdown(streamed_response)
+        
+        # Clear the empty placeholder and display the full response
+        full_response.markdown(streamed_response)
+        
+        # Add copy button to the final response
+        add_copy_button(streamed_response, key_suffix=str(len(st.session_state.messages)))
         
         # Prepare auxiliary data
         aux_v2 = lu.invoke_chain.aux
@@ -158,7 +166,7 @@ if prompt:
             {"role": "user", "content": prompt, "aux": {}},
             {
                 "role": "assistant", 
-                "content": full_response, 
+                "content": streamed_response, 
                 "aux": aux_v2
             }
         ])

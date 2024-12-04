@@ -3,7 +3,9 @@ import streamlit as st
 #welcome = st.Page("./app_pages/welcome.py", title="Bienvenido", icon="👋")
 #doc = st.Page("./app_pages/doc.py", title="Documentación", icon="📚")
 
-nlp2sql = st.Page("./app_pages/nlp2sql.py", title="FCC", icon="🤖")
+nlp2sql = st.Page("./app_pages/nlp2sql.py", title="FCC Chatbot", icon="🤖")
+data_ext = st.Page("./app_pages/data_extraction.py", title="Data Extraction")
+
 #rag = st.Page("./app_pages/rag.py", title="RAG", icon="📄")
 #ppt = st.Page("./app_pages/ppt_gen.py", title="PPT Generator", icon="📊")
 
@@ -13,7 +15,7 @@ pg = st.navigation(
     {
        #"Información": [welcome, doc],
        "Bots": [nlp2sql],
-       "Settings": [bd] 
+       "Settings": [bd, data_ext] 
     }
     )
 
