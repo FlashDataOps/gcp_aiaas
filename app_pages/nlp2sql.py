@@ -166,7 +166,7 @@ if "messages" not in st.session_state:
 
 # Continue with sidebar settings...
 with st.sidebar:
-    st.title("Model Configuration")
+    st.sidebar.header("Model Configuration")
     
     audio_toggle = st.toggle("Responses with audio", value=True)
     
@@ -210,13 +210,16 @@ with st.sidebar:
     
     clear_chat_column, record_audio_column= st.columns([1, 1])
     # Reset chat history button
-    if st.button(":broom: Clear chat", use_container_width=True):
-        reset_chat_history()
+    
+    with clear_chat_column:
+        if st.button(":broom: Clear chat", use_container_width=True):
+            reset_chat_history()
 
-    if st.button("🎙️ Record", use_container_width=True):
-        st.session_state.show_success_audio = True
-        with st.spinner("Listening... 👂"):
-            result = asyncio.run(speech_to_text())
+    with record_audio_column:
+        if st.button("🎙️ Record", use_container_width=True):
+            st.session_state.show_success_audio = True
+            with st.spinner("Listening... 👂"):
+                result = asyncio.run(speech_to_text())
 
     # Display recognized text if available
     if "recognized_text" in st.session_state and st.session_state.recognized_text:

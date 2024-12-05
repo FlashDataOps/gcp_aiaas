@@ -163,7 +163,7 @@ if uploaded_file:
 
         # Invocar el modelo con el texto del PDF
         try:
-            with st.spinner("Extracting fields with ChatGroq..."):
+            with st.spinner("Extracting fields from contract..."):
                 csv_content = chain.invoke({"pdf_text": pdf_text})
 
             # Convertir el CSV a DataFrame y transponerlo
