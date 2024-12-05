@@ -184,16 +184,18 @@ with st.sidebar:
         archivos_db = []
         st.error(f"The folder '{carpeta_db}' does not exist.")
     
-    if archivos_db:
-        archivo_db_seleccionado = st.selectbox("Select a database:", archivos_db)
-        af.db_connection.db_name = archivo_db_seleccionado
+    # if archivos_db:
+    #     archivo_db_seleccionado = st.selectbox("Select a database:", archivos_db)
+    af.db_connection.db_name = archivos_db[0]
         
     # Select model
-    st.session_state.model = st.selectbox(
-        "Choose a model:",
-        model_options,
-        index=1
-    )
+    # st.session_state.model = st.selectbox(
+    #     "Choose a model:",
+    #     model_options,
+    #     index=1
+    # )
+    
+    st.session_state.model = model_options[1]
 
     # Select temperature
     st.session_state.temperature = st.slider('Select the level of creativity:', min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
