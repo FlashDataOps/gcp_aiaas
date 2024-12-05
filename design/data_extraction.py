@@ -9,6 +9,38 @@ import pdfplumber
 
 load_dotenv()
 
+# Inicializar la sesión para el control de borrado
+if "folder_cleared" not in st.session_state:
+    st.session_state["folder_cleared"] = False
+
+# Ruta de la carpeta PDF
+PDF_FOLDER = "pdfs"
+uploaded_file = st.file_uploader("Upload PDF", type=["pdf"])
+# Crear la carpeta si no existe
+os.makedirs(PDF_FOLDER, exist_ok=True)
+
+# Limpiar la carpeta al iniciar si aún no se ha hecho
+if not st.session_state["folder_cleared"]:
+    for file in os.listdir(PDF_FOLDER):
+        os.remove(os.path.join(PDF_FOLDER, file))
+    st.session_state["folder_cleared"] = True
+
+# st.title("Contract Field Extractor")
+st.write("Upload a PDF contract to extract predefined fields.")
+
+# Mostrar los archivos PDF disponibles en la barra lateral
+st.sidebar.header("Uploaded PDFs")
+uploaded_pdfs = [file for file in os.listdir(PDF_FOLDER) if file.endswith(".pdf")]
+
+if uploaded_pdfs:
+    for pdf_file in uploaded_pdfs:
+        pdf_name = pdf_file[:-4]  # Eliminar extensión .pdf
+        st.sidebar.markdown(
+            f"📄 **{pdf_name}**"
+        )
+else:
+    st.sidebar.write("No PDFs uploaded yet.")
+
 
 def render_or_update_model_info():
     """
@@ -28,65 +60,6 @@ def render_or_update_model_info():
         html = f.read()
     st.markdown(html, unsafe_allow_html=True)
 
-# Inicializar la sesión para el control de borrado
-if "folder_cleared" not in st.session_state:
-    st.session_state["folder_cleared"] = False
-
-render_or_update_model_info()
-
-# Ruta de la carpeta PDF
-PDF_FOLDER = "pdfs"
-uploaded_file = st.file_uploader("Upload PDF", type=["pdf"])
-# Crear la carpeta si no existe
-os.makedirs(PDF_FOLDER, exist_ok=True)
-
-# Limpiar la carpeta al iniciar si aún no se ha hecho
-if not st.session_state["folder_cleared"]:
-    for file in os.listdir(PDF_FOLDER):
-        os.remove(os.path.join(PDF_FOLDER, file))
-    st.session_state["folder_cleared"] = True
-
-# st.title("Contract Field Extractor")
-# st.write("Upload a PDF contract to extract predefined fields.")
-
-# Mostrar los archivos PDF disponibles en la barra lateral
-st.sidebar.header("Uploaded PDFs")
-uploaded_pdfs = [file for file in os.listdir(PDF_FOLDER) if file.endswith(".pdf")]
-
-if uploaded_pdfs:
-    for pdf_file in uploaded_pdfs:
-        pdf_name = pdf_file[:-4]  # Eliminar extensión .pdf
-        st.sidebar.markdown(
-            f"📄 **{pdf_name}**"
-        )
-else:
-    st.sidebar.write("No PDFs uploaded yet.")
-
-st.sidebar.write("")
-st.sidebar.write("\n\n\n\n")
-st.sidebar.write("")
-st.sidebar.write("")
-st.sidebar.write("\n\n\n\n")
-st.sidebar.write("")
-st.sidebar.write("")
-st.sidebar.write("\n\n\n\n")
-st.sidebar.write("")
-st.sidebar.write("")
-st.sidebar.write("\n\n\n\n")
-st.sidebar.write("")
-st.sidebar.write("")
-st.sidebar.write("\n\n\n\n")
-st.sidebar.write("")
-st.sidebar.write("")
-st.sidebar.write("\n\n\n\n")
-st.sidebar.write("")
-st.sidebar.write("")
-st.sidebar.write("\n\n\n\n")
-st.sidebar.write("")
-st.sidebar.write("")
-st.sidebar.image("Logo-pwc.png", width=60)
-
-
 # Función para extraer texto usando pdfplumber
 def extract_text_with_pdfplumber(file):
     """
@@ -101,6 +74,10 @@ def extract_text_with_pdfplumber(file):
         return f"Error extracting text: {e}"
     return extracted_text.strip()
 
+# Subir el archivo PDF
+
+
+render_or_update_model_info()
 
 if uploaded_file:
     # Guardar el archivo en la carpeta 'pdfs' (sobrescribir si ya existe)

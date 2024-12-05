@@ -18,6 +18,9 @@ import base64
 import datetime
 
 
+PDF_FOLDER = "pdfs"
+
+
 try:
     list_input_audio = [input for input in enumerate(sr.Microphone.list_microphone_names())]
 except:
@@ -227,6 +230,23 @@ with st.sidebar:
             st.session_state.recognized_text = ""  # Clear after use
     else:
         st.info("No text recognized yet. Click 'Record' to capture audio.")
+        
+    st.sidebar.header("Uploaded PDFs")
+    uploaded_pdfs = [file for file in os.listdir(PDF_FOLDER) if file.endswith(".pdf")]
+
+    if uploaded_pdfs:
+        for pdf_file in uploaded_pdfs:
+            pdf_name = pdf_file[:-4]  # Eliminar extensión .pdf
+            st.sidebar.markdown(
+                f"📄 **{pdf_name}**"
+            )
+    else:
+        st.sidebar.write("No PDFs uploaded yet.")
+        
+    st.write("")
+    st.write("")
+    st.write("")
+    st.image("Logo-pwc.png", width=60)
   
 # Render or update model information
 render_or_update_model_info(st.session_state.model)
