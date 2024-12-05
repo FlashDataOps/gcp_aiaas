@@ -8,7 +8,6 @@ import time
 import os
 import aux_functions as af
 import speech_recognition as sr
-import azure.cognitiveservices.speech as speechsdk
 from io import BytesIO
 from dotenv import load_dotenv
 load_dotenv()
