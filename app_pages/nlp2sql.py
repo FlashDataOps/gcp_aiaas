@@ -202,7 +202,7 @@ with st.sidebar:
     if st.session_state.max_tokens > max_tokens[st.session_state.model]:
         max_value = max_tokens[st.session_state.model]
 
-    st.session_state.max_tokens = st.number_input('Select max tokens:', min_value=1, max_value=max_tokens[st.session_state.model], value=max_tokens[st.session_state.model], step=100)
+    # st.session_state.max_tokens = st.number_input('Select max tokens:', min_value=1, max_value=max_tokens[st.session_state.model], value=max_tokens[st.session_state.model], step=100)
     
     clear_chat_column, record_audio_column= st.columns([1, 1])
     # Reset chat history button
