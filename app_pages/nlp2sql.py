@@ -16,9 +16,7 @@ from gtts import gTTS
 import base64
 import datetime
 
-
 PDF_FOLDER = "pdfs"
-
 
 try:
     list_input_audio = [input for input in enumerate(sr.Microphone.list_microphone_names())]
@@ -29,10 +27,6 @@ except:
 default_mic_name = "Microphone Array (IntelÂ® Smart "
 default_mic_index = next((index for index, name in list_input_audio if default_mic_name in name), 0)
 default_mic_name_selected = list_input_audio[default_mic_index][0]
-
-if "input_audio" not in st.session_state:
-   st.session_state.input_audio = default_mic_name_selected
-    
 
 def update_chat_input(new_input):
     js = f"""
@@ -60,15 +54,19 @@ async def speech_to_text():
         device_index = 0
 
     with sr.Microphone(device_index=device_index) as source:
+        recognizer.adjust_for_ambient_noise(source, duration=1)
         audio = recognizer.listen(source)
         try:
             text = recognizer.recognize_google(audio, language='en-UK')
             st.session_state.recognized_text = text  # Store recognized text in session state
+            st.session_state.show_send_text_button = True  # Show send button
             st.success(f"Recognized text: {text}")
+            return text
         except sr.UnknownValueError:
             st.error("Unable to understand the audio.")
         except sr.RequestError:
             st.error("Error with Google Speech Recognition service.")
+        return None
 
 def text_to_speech(input_text):
     try:
@@ -77,52 +75,23 @@ def text_to_speech(input_text):
         mp3_fp = BytesIO()
         tts.write_to_fp(mp3_fp)
         mp3_fp.seek(0)  # Reiniciar el puntero al inicio del archivo para reproducirlo
-        
-        #return mp3_fp
-        # Reproducir solo si el archivo se generó exitosamente
-        #st.audio(mp3_fp, format='audio/mp3', autoplay=True)
         return mp3_fp
     except Exception as e:
-        st.error(f"Error al generar el audio: {e}")
-        
-
+        st.error(f"Error generating audio: {e}")
 
 def update_playback_rate(mp3_file, rate, autoplay=""):
     audio_data = mp3_file.read()
     b64_audio = base64.b64encode(audio_data).decode("utf-8")
-    # Crear HTML para el reproductor con JavaScript para la velocidad
-    html_code = f""" <div data-stale="false" width: 100% class="element-container st-emotion-cache-a1dagx e1f1d6gn4" data-test="element-container"> 
+    html_code = f""" 
+    <div data-stale="false" width: 100% class="element-container st-emotion-cache-a1dagx e1f1d6gn4" data-test="element-container"> 
     <audio id="audio" controls {autoplay} style="width: 100%;"> 
     <source src="data:audio/mp3;base64,{b64_audio}" type="audio/mp3">
     </audio> 
-    <script> document.getElementById("audio").playbackRate = {rate}; </script> </div> """
-
-    # Incrustar el reproductor y el botón de descarga
+    <script> document.getElementById("audio").playbackRate = {rate}; </script> 
+    </div> """
     st.components.v1.html(html_code, height=100)
-    
-    
-def autoplay_audio(file_path: str):
-    with open(file_path, "rb") as f:
-        data = f.read()
-    b64 = base64.b64encode(data).decode("utf-8")
-    md = f"""
-    <audio autoplay>
-    <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-    </audio>
-    """
-    st.markdown(md, unsafe_allow_html=True)
-    
-    
+
 def render_or_update_model_info(model_name):
-    """
-    Renders or updates the model information on the webpage.
-
-    Args:
-        model_name (str): The name of the model.
-
-    Returns:
-        None
-    """
     with open("./design/styles.css") as f:
         css = f.read()
     st.markdown('<style>{}</style>'.format(css), unsafe_allow_html=True)
@@ -131,14 +100,11 @@ def render_or_update_model_info(model_name):
         html = f.read().format(model_name)
     st.markdown(html, unsafe_allow_html=True)
 
-# Reset chat history
 def reset_chat_history():
-    """
-    Resets the chat history by clearing the 'messages' list in the session state.
-    """
     if "messages" in st.session_state:
         st.session_state.messages = []
 
+# Initialize session state variables
 model_options = ["llama-3.1-70b-versatile","llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768", "gemma-7b-it", "gemini-1.5-flash-002", "gemini-1.5-pro-002"]
 max_tokens = {
     "llama3-70b-8192": 8192,
@@ -147,24 +113,27 @@ max_tokens = {
     "gemma-7b-it": 8192,
     "gemini-1.5-flash-002": 128000,
     "gemini-1.5-pro-002": 128000,
-    "llama-3.1-70b-versatile":8_000
+    "llama-3.1-70b-versatile": 8_000
 }
 
-# Initialize model
+# Initialize session state
 if "model" not in st.session_state:
     st.session_state.model = model_options[1]
     st.session_state.temperature = 0
     st.session_state.max_tokens = max_tokens[st.session_state.model]
     st.session_state.input_audio = 1
+    st.session_state.last_prompt = None
+    
 
 if "messages" not in st.session_state:
-
     st.session_state.recognized_text = ""
     st.session_state.messages = []
     st.session_state.sql_messages = []
     st.session_state.show_success_audio = False
+    st.session_state.show_send_text_button = False
+    st.session_state.is_recording = False
 
-# Continue with sidebar settings...
+# Sidebar configuration
 with st.sidebar:
     st.sidebar.header("Model Configuration")
     
@@ -186,62 +155,57 @@ with st.sidebar:
         archivos_db = []
         st.error(f"The folder '{carpeta_db}' does not exist.")
     
-    # if archivos_db:
-    #     archivo_db_seleccionado = st.selectbox("Select a database:", archivos_db)
     af.db_connection.db_name = archivos_db[0]
         
-    # Select model
-    # st.session_state.model = st.selectbox(
-    #     "Choose a model:",
-    #     model_options,
-    #     index=1
-    # )
-    
     st.session_state.model = model_options[1]
 
     # Select temperature
     st.session_state.temperature = st.slider('Select the level of creativity:', min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
 
-    # Select max tokens
-    if st.session_state.max_tokens > max_tokens[st.session_state.model]:
-        max_value = max_tokens[st.session_state.model]
-
-    # st.session_state.max_tokens = st.number_input('Select max tokens:', min_value=1, max_value=max_tokens[st.session_state.model], value=max_tokens[st.session_state.model], step=100)
+    clear_chat_column, record_audio_column = st.columns([1, 1])
     
-    clear_chat_column, record_audio_column= st.columns([1, 1])
-    # Reset chat history button
-    
-    with clear_chat_column:
-        if st.button(":broom: Clear chat", use_container_width=True):
-            reset_chat_history()
+    if st.button(":broom: Clear chat", use_container_width=True):
+        reset_chat_history()
 
-    with record_audio_column:
-        if st.button("🎙️ Record", use_container_width=True):
-            st.session_state.show_success_audio = True
-            with st.spinner("Listening... 👂"):
-                result = asyncio.run(speech_to_text())
+    # Recording Button Logic
+    if st.button("🎙️ Record", use_container_width=True):
+        st.session_state.show_success_audio = True
+        st.session_state.is_recording = True
+        with st.spinner("Listening... 👂"):
+            result = asyncio.run(speech_to_text())
+        st.session_state.is_recording = False
 
-    # Display recognized text if available
-    if "recognized_text" in st.session_state and st.session_state.recognized_text:
-        # st.info(f"Recognized text: {st.session_state.recognized_text}")
+    # Sidebar for handling recognized text
+    if st.session_state.recognized_text:
+        if st.session_state.show_send_text_button:
+            # Render the button conditionally
+            send_button_clicked = st.button("Send Recognized Text", use_container_width=True)
+            if send_button_clicked:
+                # Update the chat input and reset session state
+                update_chat_input(st.session_state.recognized_text)
+                st.session_state.last_prompt = st.session_state.recognized_text
+                st.session_state.recognized_text = ""
+                st.session_state.show_send_text_button = False
 
-        # Button to send recognized text
-        if st.button("Send Recognized Text", use_container_width=True):
-            # Treat recognized text as the user input
-            prompt = st.session_state.recognized_text
-            st.session_state.recognized_text = ""  # Clear after use
+                # Clear the sidebar content immediately
+                st.empty()
+        else:
+            st.info("Text recognized. Ready to send.")
     else:
-        st.info("No text recognized yet. Click 'Record' to capture audio.")
+        if st.session_state.is_recording:
+            st.info("Recording... Please wait.")
+        else:
+            st.info("Click 'Record' to capture audio.")
+
+
         
     st.sidebar.header("Uploaded PDFs")
     uploaded_pdfs = [file for file in os.listdir(PDF_FOLDER) if file.endswith(".pdf")]
 
     if uploaded_pdfs:
         for pdf_file in uploaded_pdfs:
-            pdf_name = pdf_file[:-4]  # Eliminar extensión .pdf
-            st.sidebar.markdown(
-                f"📄 **{pdf_name}**"
-            )
+            pdf_name = pdf_file[:-4]
+            st.sidebar.markdown(f"📄 **{pdf_name}**")
     else:
         st.sidebar.write("No PDFs uploaded yet.")
         
@@ -262,18 +226,18 @@ for idx, message in enumerate(st.session_state.messages):
             update_playback_rate(mp3_file=message["aux"]['audio'], rate=1.55)
             message["aux"]['audio'].seek(0)
         
-        
         if "figure_p" in message["aux"].keys():
             for figure in message["aux"]["figure_p"]:
                 st.plotly_chart(figure)
-                      
 
+# Get the prompt
+prompt = st.chat_input("How can I help you?")
 
-if "prompt" not in locals():  # Check if the prompt hasn't been set in the sidebar
-    prompt = st.chat_input("How can I help you?")
-
-
+# Process the prompt
 if prompt:
+    # Store the prompt in session state
+    st.session_state.last_prompt = prompt
+
     # Display user message
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -302,7 +266,6 @@ if prompt:
                 update_playback_rate(mp3_file=mp3_file, rate=1.55, autoplay="autoplay")
                 mp3_file.seek(0)
                 aux_v2["audio"] = mp3_file
-                # st.audio(mp3_file, format="audio/mp3", autoplay=F)
                 
         # Handle figures
         if "figure_p" in aux_v2.keys():
@@ -319,3 +282,8 @@ if prompt:
                 "aux": aux_v2
             }
         ])
+
+# Ensure the chat input remains available
+if st.session_state.last_prompt:
+    # Clear the last_prompt after processing
+    st.session_state.last_prompt = None
