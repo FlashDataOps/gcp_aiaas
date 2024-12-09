@@ -6,9 +6,9 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_groq import ChatGroq
 from dotenv import load_dotenv
 import pdfplumber
+import json
 
 load_dotenv()
-
 
 def render_or_update_model_info():
     """
@@ -28,157 +28,157 @@ def render_or_update_model_info():
         html = f.read()
     st.markdown(html, unsafe_allow_html=True)
 
-# Inicializar la sesión para el control de borrado
-if "folder_cleared" not in st.session_state:
-    st.session_state["folder_cleared"] = False
 
 render_or_update_model_info()
 
-# Ruta de la carpeta PDF
+# Initialize session for folder clearing
+if "folder_cleared" not in st.session_state:
+    st.session_state["folder_cleared"] = False
+
 PDF_FOLDER = "pdfs"
-uploaded_file = st.file_uploader("Upload PDF", type=["pdf"])
-# Crear la carpeta si no existe
 os.makedirs(PDF_FOLDER, exist_ok=True)
 
-# Limpiar la carpeta al iniciar si aún no se ha hecho
+# Clear PDF folder on start if not done yet
 if not st.session_state["folder_cleared"]:
     for file in os.listdir(PDF_FOLDER):
         os.remove(os.path.join(PDF_FOLDER, file))
     st.session_state["folder_cleared"] = True
 
-# st.title("Contract Field Extractor")
-# st.write("Upload a PDF contract to extract predefined fields.")
-
-# Mostrar los archivos PDF disponibles en la barra lateral
+# Sidebar PDF list
+st.sidebar.image("Logo-pwc.png", width=60)
 st.sidebar.header("Uploaded PDFs")
 uploaded_pdfs = [file for file in os.listdir(PDF_FOLDER) if file.endswith(".pdf")]
-
 if uploaded_pdfs:
     for pdf_file in uploaded_pdfs:
-        pdf_name = pdf_file[:-4]  # Eliminar extensión .pdf
-        st.sidebar.markdown(
-            f"📄 **{pdf_name}**"
-        )
+        pdf_name = pdf_file[:-4]
+        st.sidebar.markdown(f"📄 **{pdf_name}**")
 else:
     st.sidebar.write("No PDFs uploaded yet.")
 
-st.sidebar.write("")
-st.sidebar.write("\n\n\n\n")
-st.sidebar.write("")
-st.sidebar.write("")
-st.sidebar.write("\n\n\n\n")
-st.sidebar.write("")
-st.sidebar.write("")
-st.sidebar.write("\n\n\n\n")
-st.sidebar.write("")
-st.sidebar.write("")
-st.sidebar.write("\n\n\n\n")
-st.sidebar.write("")
-st.sidebar.write("")
-st.sidebar.write("\n\n\n\n")
-st.sidebar.write("")
-st.sidebar.write("")
-st.sidebar.write("\n\n\n\n")
-st.sidebar.write("")
-st.sidebar.write("")
-st.sidebar.write("\n\n\n\n")
-st.sidebar.write("")
-st.sidebar.write("")
-st.sidebar.image("Logo-pwc.png", width=60)
-
-
-# Función para extraer texto usando pdfplumber
 def extract_text_with_pdfplumber(file):
-    """
-    Extrae texto de un archivo PDF utilizando pdfplumber.
-    """
+    """Extract text from PDF using pdfplumber."""
     extracted_text = ""
     try:
         with pdfplumber.open(file) as pdf:
             for page in pdf.pages:
-                extracted_text += page.extract_text() + "\n"  # Concatenar texto de cada página
+                extracted_text += page.extract_text() + "\n"
     except Exception as e:
         return f"Error extracting text: {e}"
     return extracted_text.strip()
 
+uploaded_file = st.file_uploader("Upload PDF", type=["pdf"])
 
 if uploaded_file:
-    # Guardar el archivo en la carpeta 'pdfs' (sobrescribir si ya existe)
     file_path = os.path.join(PDF_FOLDER, uploaded_file.name)
     with open(file_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
     st.success(f"File saved: {uploaded_file.name}")
 
-    # Extraer texto usando pdfplumber
     pdf_text = extract_text_with_pdfplumber(file_path)
 
-    # Mostrar texto extraído
     if pdf_text:
-        # Crear el prompt con los campos específicos que quieres extraer
+        # English prompt
         prompt = ChatPromptTemplate.from_messages([
             ('system', """
-                You are an advanced AI trained to process and extract structured data from legal contracts. 
-                Your task is to extract the specified fields with high accuracy and consistency. 
-                Always return the output in CSV format, with fields separated by semicolons (;). 
-                Do not include any additional text or commentary outside the CSV.
+            You are an advanced AI model specialized in processing and extracting structured data from lease contracts.
+            Your task is to extract the following fields from the contract and return the result as a JSON object.
+            Do not include any additional text outside the JSON. If a field is not found in the text, return "NaN".
 
-                The fields to extract are:
-                - contract_number: The unique identifier for the contract.
-                - start_date: The date the contract begins.
-                - estimated_completion_date: The projected end date for the contract.
-                - client_name: The name of the client or contracting entity.
-                - client_tax_id: The official tax identification number of the client.
-                - contractor_name: The name of the contractor or company executing the project.
-                - contractor_tax_id: The official tax identification number of the contractor.
-                - type_of_construction: The type or category of the construction project (e.g., Roadway, Building, etc.).
-                - location: The geographic location of the project (e.g., city, region, country).
-                - approved_budget: The total approved budget for the project, including currency.
-                - total_duration_days: The total number of days allocated for the project.
-                - project_status: The current status of the project (e.g., Planned, In Progress, Completed).
-                - payment_terms: A description of how payments are structured (e.g., advance payments, installments, final settlement).
-                - delay_penalties: The penalties outlined for project delays, including the amount and frequency (if applicable).
-                - milestones: A list of project milestones, each formatted as:
-                milestone_1_start_date; milestone_1_estimated_completion_date; milestone_1_description;
-                milestone_2_start_date; milestone_2_estimated_completion_date; milestone_2_description;
+            The JSON structure should be as follows:
 
-                Formatting Guidelines:
-                - Use semicolons (;) to separate fields.
-                - Ensure all field names are consistent and in snake_case (e.g., "contract_number").
-                - Use ISO 8601 format for all dates (e.g., "YYYY-MM-DD").
-                - If a field is missing in the contract, use "NaN".
-                - Always include the column names in the output.
-                - Maintain the order of the fields exactly as listed above.
+            \{{
+            "General Information": \{{
+                "Introduction": "...",
+                "Contract Number": "...",
+                "Date": "...",
+                "Place": "..."
+            \}},
+            "Involved Parties": \{{
+                "Landlord": \{{
+                "Name": "...",
+                "Address": "...",
+                "Representative": "...",
+                "Contact": "..."
+                \}},
+                "Tenant": \{{
+                "Name": "...",
+                "Address": "...",
+                "Representative": "...",
+                "Contact": "..."
+                \}}
+            \}},
+            "Property Details": \{{
+                "Local 1 (surface area)": "...",
+                "Local 2 (surface area)": "...",
+                "Total Surface Area": "..."
+            \}},
+            "Rents": \{{
+                "Fixed Monthly Rent": "...",
+                "Variable Rent": "..."
+            \}},
+            "Common Expenses": \{{
+                "Maintenance of Common Areas": "...",
+                "Utilities (water, electricity)": "...",
+                "Other Services": "..."
+            \}},
+            "Termination Options": \{{
+                "First Option (conditions)": "...",
+                "Second Option (conditions)": "..."
+            \}},
+            "Renewals": \{{
+                "Initial Duration": "...",
+                "Automatic Renewals": "..."
+            \}},
+            "Other Conditions": \{{
+                "Tenant Obligations": "...",
+                "Guarantee": "..."
+            \}},
+            "Signatures": \{{
+                "Landlord (name and title)": "...",
+                "Tenant (name and title)": "...",
+                "Signature Date": "..."
+            \}}
+            \}}
 
-                Example output:
-                contract_number;start_date;estimated_completion_date;client_name;client_tax_id;contractor_name;...
-                12345;2024-01-01;2024-12-31;Client ABC;ABC123;Contractor XYZ;...
-            
+            If a field cannot be found, return "NaN".
+            It is very important that it comes out in json format
             """),
-            ('user', f"Here is the content of the PDF you need to process: {pdf_text}")
+            ('user', "Here is the PDF content to process:\n\n{pdf_text}")
         ])
 
-        # Cargar el modelo LLM de ChatGroq
         llm = ChatGroq(model="llama-3.1-70b-versatile")
         chain = (prompt | llm | StrOutputParser())
 
-        # Invocar el modelo con el texto del PDF
         try:
-            with st.spinner("Extracting fields from contract..."):
-                csv_content = chain.invoke({"pdf_text": pdf_text})
+            with st.spinner("Extracting fields with ChatGroq..."):
+                json_content = chain.invoke({"pdf_text": pdf_text})
+                
+                # Parse the JSON string returned by the model
+                try:
+                    data = json.loads(json_content)
+                except json.JSONDecodeError:
+                    st.error("The model did not return valid JSON.")
+                    st.write(json_content)
+                    st.stop()
 
-            # Convertir el CSV a DataFrame y transponerlo
-            csv_lines = csv_content.split("\n")
+                # Function to flatten JSON
+                def flatten_json(y):
+                    out = {}
+                    def flatten(x, name=''):
+                        if isinstance(x, dict):
+                            for a in x:
+                                flatten(x[a], name + a + ' - ')
+                        else:
+                            out[name[:-3]] = x
+                    flatten(y)
+                    return out
 
-            if len(csv_lines) > 1:
-                headers = csv_lines[0].split(";")
-                values = csv_lines[1].split(";")
-                df = pd.DataFrame([values], columns=headers).transpose()
-                df.columns = ["Value"] 
-                df.index.name = "Field"
+                flat_data = flatten_json(data)
+
+                # Convert dict to DataFrame
+                df = pd.DataFrame.from_dict(flat_data, orient='index', columns=['Value'])
+                df.index.name = 'Field'
                 st.dataframe(df)
-            else:
-                st.warning("The extracted CSV appears to be empty or malformed.")
-
         except Exception as e:
             st.error(f"Error extracting fields with ChatGroq: {e}")
     else:

@@ -135,6 +135,7 @@ if "messages" not in st.session_state:
 
 # Sidebar configuration
 with st.sidebar:
+    st.image("Logo-pwc.png", width=60)
     st.sidebar.header("Model Configuration")
     
     audio_toggle = st.toggle("Responses with audio", value=True)
@@ -209,10 +210,6 @@ with st.sidebar:
     else:
         st.sidebar.write("No PDFs uploaded yet.")
         
-    st.write("")
-    st.write("")
-    st.write("")
-    st.image("Logo-pwc.png", width=60)
   
 # Render or update model information
 render_or_update_model_info(st.session_state.model)
