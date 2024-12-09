@@ -47,6 +47,11 @@ if uploaded_pdfs:
         st.sidebar.markdown(f"📄 **{pdf_name}**")
 else:
     st.sidebar.write("No PDFs uploaded yet.")
+    
+st.sidebar.write("")
+st.sidebar.write("")
+st.sidebar.write("")
+st.sidebar.image("Logo-pwc.png", width=60)
 
 def extract_text_with_pdfplumber(file):
     """Extract text from PDF using pdfplumber."""
