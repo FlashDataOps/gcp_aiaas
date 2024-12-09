@@ -44,8 +44,8 @@ if not st.session_state["folder_cleared"]:
         os.remove(os.path.join(PDF_FOLDER, file))
     st.session_state["folder_cleared"] = True
 
-st.title("Contract Field Extractor")
-st.write("Upload a PDF contract to extract predefined fields.")
+#st.title("Contract Field Extractor")
+#st.write("Upload a PDF contract to extract predefined fields.")
 
 # Sidebar PDF list
 st.sidebar.image("Logo-pwc.png", width=60)
