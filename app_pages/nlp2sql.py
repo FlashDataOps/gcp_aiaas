@@ -18,16 +18,6 @@ import datetime
 
 PDF_FOLDER = "pdfs"
 
-try:
-    list_input_audio = [input for input in enumerate(sr.Microphone.list_microphone_names())]
-except:
-    traceback.print_exc()
-    list_input_audio = [(0, "No Mic Detected")]
-
-default_mic_name = "Microphone Array (IntelÂ® Smart "
-default_mic_index = next((index for index, name in list_input_audio if default_mic_name in name), 0)
-default_mic_name_selected = list_input_audio[default_mic_index][0]
-
 def update_chat_input(new_input):
     js = f"""
     <script>
@@ -105,20 +95,14 @@ def reset_chat_history():
         st.session_state.messages = []
 
 # Initialize session state variables
-model_options = ["llama-3.1-70b-versatile","llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768", "gemma-7b-it", "gemini-1.5-flash-002", "gemini-1.5-pro-002"]
+model_options = ["gemini-1.5-flash-002"]
 max_tokens = {
-    "llama3-70b-8192": 8192,
-    "llama3-8b-8192": 8192,
-    "mixtral-8x7b-32768": 32768,
-    "gemma-7b-it": 8192,
     "gemini-1.5-flash-002": 128000,
-    "gemini-1.5-pro-002": 128000,
-    "llama-3.1-70b-versatile": 8_000
 }
 
 # Initialize session state
 if "model" not in st.session_state:
-    st.session_state.model = model_options[1]
+    st.session_state.model = model_options[0]
     st.session_state.temperature = 0
     st.session_state.max_tokens = max_tokens[st.session_state.model]
     st.session_state.input_audio = 1
@@ -139,13 +123,6 @@ with st.sidebar:
     
     audio_toggle = st.toggle("Responses with audio", value=True)
     
-    # Select mic input
-    st.session_state.input_audio = st.selectbox(
-       "Choose an audio input:",
-       [elem[1] for elem in list_input_audio],
-       index=default_mic_index,
-    )
-    
     # List files in the 'db' folder
     carpeta_db = 'db' 
     try:
@@ -157,7 +134,7 @@ with st.sidebar:
     
     af.db_connection.db_name = archivos_db[0]
         
-    st.session_state.model = model_options[1]
+    st.session_state.model = model_options[0]
 
     # Select temperature
     st.session_state.temperature = st.slider('Select the level of creativity:', min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
@@ -166,38 +143,6 @@ with st.sidebar:
     
     if st.button(":broom: Clear chat", use_container_width=True):
         reset_chat_history()
-
-    # Recording Button Logic
-    if st.button("🎙️ Record", use_container_width=True):
-        st.session_state.show_success_audio = True
-        st.session_state.is_recording = True
-        with st.spinner("Listening... 👂"):
-            result = asyncio.run(speech_to_text())
-        st.session_state.is_recording = False
-
-    # Sidebar for handling recognized text
-    if st.session_state.recognized_text:
-        if st.session_state.show_send_text_button:
-            # Render the button conditionally
-            send_button_clicked = st.button("Send Recognized Text", use_container_width=True)
-            if send_button_clicked:
-                # Update the chat input and reset session state
-                update_chat_input(st.session_state.recognized_text)
-                st.session_state.last_prompt = st.session_state.recognized_text
-                st.session_state.recognized_text = ""
-                st.session_state.show_send_text_button = False
-
-                # Clear the sidebar content immediately
-                st.empty()
-        else:
-            st.info("Text recognized. Ready to send.")
-    else:
-        if st.session_state.is_recording:
-            st.info("Recording... Please wait.")
-        else:
-            st.info("Click 'Record' to capture audio.")
-
-
         
     st.sidebar.header("Uploaded PDFs")
     uploaded_pdfs = [file for file in os.listdir(PDF_FOLDER) if file.endswith(".pdf")]
@@ -223,7 +168,7 @@ for idx, message in enumerate(st.session_state.messages):
         st.markdown(message["content"])            
         
         if "audio" in message["aux"].keys():
-            update_playback_rate(mp3_file=message["aux"]['audio'], rate=1.55)
+            update_playback_rate(mp3_file=message["aux"]['audio'], rate=1.35)
             message["aux"]['audio'].seek(0)
         
         if "figure_p" in message["aux"].keys():
@@ -263,7 +208,7 @@ if prompt:
         if audio_toggle:
             with st.spinner("Generating audio ..."):
                 mp3_file = text_to_speech(full_response)
-                update_playback_rate(mp3_file=mp3_file, rate=1.55, autoplay="autoplay")
+                update_playback_rate(mp3_file=mp3_file, rate=1.35, autoplay="autoplay")
                 mp3_file.seek(0)
                 aux_v2["audio"] = mp3_file
                 
