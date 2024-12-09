@@ -66,7 +66,6 @@ def get_model(model_name, temperature, max_tokens):
 # First we need a prompt that we can pass into an LLM to generate this search query
 prompt_create_sql = ChatPromptTemplate.from_messages(
     [
-        ("placeholder", "{chat_history}"),
         (
             "system",
             """Based on the schema table:
@@ -76,13 +75,13 @@ prompt_create_sql = ChatPromptTemplate.from_messages(
                 Do not include an introduction or format the response in a list; only provide the SQL query.
             """,
         ),
+        ("placeholder", "{chat_history}"),
         ("user", "{input}")
     ]
 )
 
 prompt_create_sql_response = ChatPromptTemplate.from_messages(
     [
-        ("placeholder", "{chat_history}"),
         (
             "system",
             """Based on the following data, respond in natural language.
@@ -96,6 +95,7 @@ prompt_create_sql_response = ChatPromptTemplate.from_messages(
                 Always use English as the text language.
             """,
         ),
+        ("placeholder", "{chat_history}"),
         ("user", "{input}"),
     ]
 )
@@ -123,7 +123,7 @@ prompt_custom_chart = ChatPromptTemplate.from_messages(
 
 prompt_intent = ChatPromptTemplate.from_messages(
     [
-        ("placeholder", "{chat_history}"),
+        
         (
             "system",
             """Your task is to determine the user's intent based on their message. The possibilities are:
@@ -134,13 +134,14 @@ prompt_intent = ChatPromptTemplate.from_messages(
                 Respond only with the words [Query, Other]. Unless really clear, respond with Other.
             """,
         ),
+        ("placeholder", "{chat_history}"),
         ("user", "{input}"),
     ]
 )
 
 prompt_general = ChatPromptTemplate.from_messages(
     [
-        ("placeholder", "{chat_history}"),
+        
         (
             "system",
             """You are an assistant working at FCC constructions. Your task is to help the user understand the information in the database.
@@ -241,7 +242,7 @@ prompt_general = ChatPromptTemplate.from_messages(
                 Use Markdown to format the answer and include tables if necessary.
             """,
         ),
-        
+        ("placeholder", "{chat_history}"),
         ("human", "{input}")        
     ]
 )
@@ -267,7 +268,7 @@ def create_history(messages):
     return history
 
 
-def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192", temperature=0, max_tokens=8192):
+def invoke_chain(question, messages, sql_messages, model_name="gemini-1.5-flash-002", temperature=0, max_tokens=8192):
     """
     Invokes the language chain model to generate a response based on the given question and chat history.
 

@@ -162,3 +162,4 @@ SpeechRecognition
 azure-cognitiveservices-speech
 pyaudio
 gtts
+pdfplumber
