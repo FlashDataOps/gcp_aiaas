@@ -20,14 +20,23 @@ if "folder_cleared" not in st.session_state:
 PDF_FOLDER = "pdfs"
 os.makedirs(PDF_FOLDER, exist_ok=True)
 
+def render_or_update_model_info(model_name):
+    with open("./design/styles2.css") as f:
+        css = f.read()
+    st.markdown('<style>{}</style>'.format(css), unsafe_allow_html=True)
+
+    with open("./design/content2.html") as f:
+        html = f.read().format(model_name)
+    st.markdown(html, unsafe_allow_html=True)
+    
 # Clear PDF folder on start if not done yet
 if not st.session_state["folder_cleared"]:
     for file in os.listdir(PDF_FOLDER):
         os.remove(os.path.join(PDF_FOLDER, file))
     st.session_state["folder_cleared"] = True
 
-st.title("Contract Field Extractor")
-st.write("Upload a PDF contract to extract predefined fields.")
+# Render or update model information
+render_or_update_model_info("gemini-1.5-flash-002")
 
 # Sidebar PDF list
 st.sidebar.header("Uploaded PDFs")
