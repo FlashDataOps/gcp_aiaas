@@ -9,7 +9,7 @@ import streamlit as st
 #rag = st.Page("./app_pages/rag.py", title="RAG", icon="📄")
 #ppt = st.Page("./app_pages/ppt_gen.py", title="PPT Generator", icon="📊")
 
-#bd = st.Page("./app_pages/bd.py", title="Add database", icon="🔧")
+# bd = st.Page("./app_pages/bd.py", title="Add database", icon="🔧")
 
 
 st.set_page_config(
