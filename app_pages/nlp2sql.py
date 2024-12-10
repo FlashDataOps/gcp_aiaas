@@ -138,22 +138,22 @@ with st.sidebar:
     st.session_state.model = model_options[0]
 
     # Select temperature
-    st.session_state.temperature = st.slider('Select the level of creativity:', min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
+    # st.session_state.temperature = st.slider('Select the level of creativity:', min_value=0.0, max_value=1.0, step=0.01, format="%.2f")
 
     clear_chat_column, record_audio_column = st.columns([1, 1])
     
     if st.button(":broom: Clear chat", use_container_width=True):
         reset_chat_history()
         
-    st.sidebar.header("Uploaded PDFs")
-    uploaded_pdfs = [file for file in os.listdir(PDF_FOLDER) if file.endswith(".pdf")] #! TODO METER LOS DEL CSV
+    # st.sidebar.header("Uploaded PDFs")
+    # uploaded_pdfs = [file for file in os.listdir(PDF_FOLDER) if file.endswith(".pdf")] #! TODO METER LOS DEL CSV
 
-    if uploaded_pdfs:
-        for pdf_file in uploaded_pdfs:
-            pdf_name = pdf_file[:-4]
-            st.sidebar.markdown(f"📄 **{pdf_name}**")
-    else:
-        st.sidebar.write("No PDFs uploaded yet.")
+    # if uploaded_pdfs:
+    #     for pdf_file in uploaded_pdfs:
+    #         pdf_name = pdf_file[:-4]
+    #         st.sidebar.markdown(f"📄 **{pdf_name}**")
+    # else:
+    #     st.sidebar.write("No PDFs uploaded yet.")
         
   
 # Render or update model information
