@@ -50,7 +50,8 @@ if not st.session_state["folder_cleared"]:
 # Sidebar PDF list
 st.sidebar.image("Logo-pwc.png", width=60)
 st.sidebar.header("Uploaded PDFs")
-uploaded_pdfs = [file for file in os.listdir(PDF_FOLDER) if file.endswith(".pdf")] #+ #! TODO METER LA LISTA DE LOS CONTRATOS DEL CSV[]
+uploaded_pdfs = [file for file in os.listdir(PDF_FOLDER) if file.endswith(".pdf")] 
+#+ #! TODO METER LA LISTA DE LOS CONTRATOS DEL CSV[]
 if uploaded_pdfs:
     for pdf_file in uploaded_pdfs:
         pdf_name = pdf_file[:-4]
