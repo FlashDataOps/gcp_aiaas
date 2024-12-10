@@ -50,7 +50,7 @@ if not st.session_state["folder_cleared"]:
 # Sidebar PDF list
 st.sidebar.image("Logo-pwc.png", width=60)
 st.sidebar.header("Uploaded PDFs")
-uploaded_pdfs = [file for file in os.listdir(PDF_FOLDER) if file.endswith(".pdf")]
+uploaded_pdfs = [file for file in os.listdir(PDF_FOLDER) if file.endswith(".pdf")] + #! TODO METER LA LISTA DE LOS CONTRATOS DEL CSV[]
 if uploaded_pdfs:
     for pdf_file in uploaded_pdfs:
         pdf_name = pdf_file[:-4]
@@ -153,7 +153,7 @@ if uploaded_file:
         chain = (prompt | llm | StrOutputParser())
 
         try:
-            with st.spinner("Extracting fields with ChatGroq..."):
+            with st.spinner("Extracting fields from contract..."):
                 json_content = chain.invoke({"pdf_text": pdf_text})
                 
                 # Parse the JSON string returned by the model
