@@ -23,7 +23,7 @@ with st.sidebar:
         {
             "Data extraction": [st.Page("./app_pages/data_extraction.py", title="Data extraction", icon="🔍")],
             "Bots": [st.Page("./app_pages/nlp2sql.py", title="FCC Chat with data", icon="🤖")],
-            
+            # "bd": [st.Page("./app_pages/bd.py", title="Add database", icon="🔧")],
         }
     )
 

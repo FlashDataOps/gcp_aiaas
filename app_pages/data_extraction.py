@@ -83,69 +83,84 @@ if uploaded_file:
     if pdf_text:
         # English prompt
         prompt = ChatPromptTemplate.from_messages([
-            ('system', """
-            You are an advanced AI model specialized in processing and extracting structured data from lease contracts.
-            Your task is to extract the following fields from the contract and return the result as a JSON object.
-            Do not include any additional text outside the JSON. If a field is not found in the text, return "NaN".
+                    ('system', """
+                    You are an advanced AI model specialized in processing and extracting structured data from contracts.
+                    Your task is to extract the following fields from the contract and return the result as a JSON object.
+                    Do not include any additional text outside the JSON. If a field is not found in the text, return "NaN".
 
-            The JSON structure should be as follows:
+                    The JSON structure should be as follows:
 
-            \{{
-            "General Information": \{{
-                "Introduction": "...",
-                "Date": "...",
-                "Place": "..."
-            \}},
-            "Involved Parties": \{{
-                "Landlord": \{{
-                "Name": "...",
-                "Address": "...",
-                "Representative": "...",
-                \}},
-                "Tenant": \{{
-                "Name": "...",
-                "Address": "...",
-                "Representative": "...",
-                \}}
-            \}},
-            "Property Details": \{{
-                "Local 1 (surface area)": "...",
-                "Local 2 (surface area)": "...",
-                "Total Surface Area": "..."
-            \}},
-            "Rents": \{{
-                "Fixed Monthly Rent": "...",
-                "Variable Rent": "..."
-            \}},
-            "Common Expenses": \{{
-                "Maintenance of Common Areas": "...",
-                "Utilities (water, electricity)": "...",
-                "Other Services": "..."
-            \}},
-            "Termination Options": \{{
-                "First Option (conditions)": "...",
-                "Second Option (conditions)": "..."
-            \}},
-            "Renewals": \{{
-                "Initial Duration": "...",
-                "Automatic Renewals": "..."
-            \}},
-            "Other Conditions": \{{
-                "Tenant Obligations": "...",
-                "Guarantee": "..."
-            \}},
-            "Signatures": \{{
-                "Landlord (name and title)": "...",
-                "Tenant (name and title)": "...",
-                "Signature Date": "..."
-            \}}
-            \}}
+                    {{
+                        "Account Information": {{
+                            "Account Number": "...",
+                            "Delivery Date": "..."
+                        }},
+                        "Billing Information": {{
+                            "Business Name": "...",
+                            "Address": "...",
+                            "City": "...",
+                            "State": "...",
+                            "Zip": "...",
+                            "Contact": "...",
+                            "Phone": "...",
+                            "Email": "..."
+                        }},
+                        "Service Information": {{
+                            "Site Name": "...",
+                            "Address": "...",
+                            "City": "...",
+                            "State": "...",
+                            "Zip": "...",
+                            "Contact": "...",
+                            "Phone": "...",
+                            "Email": "...",
+                            "PO Number": "..."
+                        }},
+                        "Front End Services": {{
+                            "Quantity/Container Size": "...",
+                            "Frequency": "...",
+                            "Locks/Casters": "...",
+                            "Delivery": "...",
+                            "Swap Out": "...",
+                            "Extra Pickup": "...",
+                            "Overages": "...",
+                            "Monthly Rate": "..."
+                        }},
+                        "Open Top/Compactor": {{
+                            "Quantity/Container Size": "...",
+                            "Compactor": "...",
+                            "Monthly Rental": "...",
+                            "Trip/Relocation Charge": "...",
+                            "Frequency": "...",
+                            "Delivery": "...",
+                            "Haul Rate": "...",
+                            "Disposal (2-ton min)": "..."
+                        }},
+                        "Additional Information": {{
+                            "Tax Exempt": "...",
+                            "Wait Time": "...",
+                            "Special Instructions": "..."
+                        }},
+                        "Signatures": {{
+                            "Representative Signature": "...",
+                            "Date": "...",
+                            "Name Print": "...",
+                            "Customer Signature": "...",
+                            "Date": "...",
+                            "Name Print": "...",
+                            "Company Name": "...",
+                            "Signature": "...",
+                            "Date": "...",
+                            "Printed Name": "..."
+                        }}
+                    }}
 
-            If a field cannot be found, return "NaN".
-            It is very important that it comes out in json format
-            """),
-            ('user', "Here is the PDF content to process:\n\n{pdf_text}")
-        ])
+                    If a field cannot be found, return "NaN".
+                    It is very important that it comes out in json format.
+                    """),
+                    ('user', "Here is the PDF content to process:\n\n{pdf_text}")
+                ])
+
 
         llm = ChatGroq(model="llama-3.1-70b-versatile")
         chain = (prompt | llm | StrOutputParser())
