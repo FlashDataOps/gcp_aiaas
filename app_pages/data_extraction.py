@@ -93,7 +93,6 @@ if uploaded_file:
             \{{
             "General Information": \{{
                 "Introduction": "...",
-                "Contract Number": "...",
                 "Date": "...",
                 "Place": "..."
             \}},
@@ -102,13 +101,11 @@ if uploaded_file:
                 "Name": "...",
                 "Address": "...",
                 "Representative": "...",
-                "Contact": "..."
                 \}},
                 "Tenant": \{{
                 "Name": "...",
                 "Address": "...",
                 "Representative": "...",
-                "Contact": "..."
                 \}}
             \}},
             "Property Details": \{{
