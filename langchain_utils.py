@@ -110,6 +110,7 @@ prompt_custom_chart = ChatPromptTemplate.from_messages(
 
             SQL Query: {query}
             Answer: {response}
+            Create the most appropriate plot for the data provided (Answer).
             ONLY INCLUDE PYTHON CODE IN YOUR RESPONSE. DO NOT INCLUDE NATURAL LANGUAGE TO INTRODUCE YOUR ANSWER.
             MAKE THE CHART BEAUTIFUL AND VISUALLY APPEALING. IT SHOULD BE READY TO PRESENT TO A VERY IMPORTANT CLIENT.
 
@@ -151,93 +152,140 @@ prompt_general = ChatPromptTemplate.from_messages(
                 
                 These are the documents available for now:
                 
-                ### First
-                CONSTRUCTION CONTRACT
-                This Construction Contract ("Contract") is entered into on the date specified below between the Ministry of Infrastructure and Transport ("Client") and Global Construction Inc. ("Contractor"). The purpose of this Contract is to formalize the agreement between the parties for the construction of a roadway project located in Zaragoza, Aragón, Spain. Both parties agree to the terms and conditions outlined herein, which define their rights, responsibilities, and obligations to ensure the successful completion of the project.
-                Contract Number: CON-2024-001 Start Date: 2024-12-10 Estimated Completion Date: 2026-03-15
-                Contracting Parties
-                Client Name: Ministry of Infrastructure and Transport Client Tax ID: A12345678
-                Contractor Name: Global Construction Inc. Contractor Tax ID: B98765432
-                Project Information
-                Type of Construction: Roadway Location: Zaragoza, Aragón, Spain Approved Budget: €45,000,000 Total Duration (days): 460 Project Status: Planned
-                Technical Details
-                Project Dimensions:
-                •
-                Length: 25 km
-                •
-                Width: 15 m
-                •
-                Height/Depth: 3 m
-                Main Materials Used: Concrete, asphalt, reinforced steel, aluminum signage
-                Project Description: The project entails the construction of a new expressway connecting Zaragoza with nearby towns to reduce travel time and improve regional connectivity. It will include four lanes (two in each direction), safety shoulders, rest areas, and a bridge over the Ebro River.
-                Financial Clauses
-                Payment Terms:
-                •
-                20% advance payment at the start of the project.
-                •
-                60% in monthly installments based on progress certified by technical supervision.
-                •
-                20% upon final delivery and approval by the client.
-                Delay Penalties:
-                •
-                Penalty of €25,000 for each week of unjustified delay.
-                Schedule and Milestones
-                MILESTONE
-                START DATE
-                ESTIMATED COMPLETION DATE
-                MILESTONE DESCRIPTION TOPOGRAPHIC STUDIES 2024-12-15 2025-02-01 Terrain evaluation and design adjustments.
-                EARTHWORKS
-                2025-02-15
-                2025-07-30
-                Initial land preparation. FOUNDATION PLACEMENT 2025-08-01 2025-12-31 Structural base for the roadway.
-                PAVING
-                2026-01-15
-                2026-02-28
-                Asphalt laying along the route. SIGNAGE INSTALLATION 2026-03-01 2026-03-10 Installation of safety signs and signals.
+                ## FIRST
+                LEASING AGREEMENT
+                This leasing agreement is entered into on December 10, 2024, in Madrid, Spain, by and
+                between the following parties:
+                Inmobiliaria Madrid Centro S.L., hereinafter referred to as the “Lessor,” with its registered
+                office at Calle Gran Vía 45, Madrid, 28013, represented by Laura Martínez López in her capacity
+                as Commercial Director, and Boutique Style S.L., hereinafter referred to as the “Lessee,” with
+                its registered office at Calle Serrano 22, Madrid, 28001, represented by Carlos Fernández Díaz,
+                acting as General Manager.
+                Both parties, recognizing their full legal capacity to enter into this agreement, agree to the terms
+                outlined below regarding the leasing of certain properties for commercial use.
+                1. Description of the Premises
+                The properties subject to this agreement consist of two units located in central Madrid. The first
+                unit, with a total area of 120 square meters, is situated at Plaza Mayor 5, Madrid, 28012. The
+                second unit, measuring 80 square meters, is located at Calle Arenal 8, Madrid, 28013.
+                Together, the premises provide a combined area of 200 square meters. The Lessee agrees to
+                use these properties exclusively for the purposes defined in this agreement and in compliance
+                with all relevant regulations.
+                2. Rent and Payment Terms
+                The Lessee shall pay the Lessor a fixed monthly rent of €4,000, which must be paid no later than
+                the fifth calendar day of each month via bank transfer to the account designated by the Lessor.
+                In addition to the fixed rent, the Lessee agrees to pay a variable rent equivalent to 5% of net
+                monthly sales generated within the premises. This variable rent shall be calculated based on
+                gross income, excluding applicable taxes, and settled monthly in arrears.
+                3. Common Expenses
+                The Lessee is responsible for contributing to the maintenance and operational costs associated
+                with the leased premises. This includes a monthly fee of €200 to cover the maintenance of
+                common areas within the building, as well as all utility expenses, such as water and electricity,
+                based on actual consumption recorded by individual meters. Furthermore, the Lessee shall pay
+                €100 per month for additional cleaning services provided by the Lessor to ensure the upkeep of
+                the premises.
+                4. Term and Renewal
+                The initial term of this agreement is established as three (3) years, commencing on January 1,
+                2025, and ending on December 31, 2027. Upon the expiration of the initial term, the agreement
+                will be automatically renewed for successive periods of one (1) year, unless either party notifies
+                the other of their intention not to renew, with at least two months’ written notice prior to the
+                expiration of the current term.
+                5. Termination
+                This agreement may be terminated under the following conditions:
+                • Either party may terminate the agreement by providing three months’ prior written
+                notice. In such a case, the Lessee shall pay a penalty equivalent to one month of fixed
+                rent.
+                • The Lessor reserves the right to terminate the agreement immediately if the Lessee fails
+                to pay rent for two consecutive months. Notice of such termination shall be provided in
+                writing.
+                6. Obligations of the Lessee
+                The Lessee agrees to maintain the premises in good condition throughout the lease term and to
+                promptly address any damage caused during their occupancy. The Lessee shall comply with all
+                building rules and regulations and ensure that the premises are used exclusively for lawful
+                purposes.
+                Additionally, the Lessee shall provide a security deposit equivalent to two months’ fixed rent.
+                This deposit will be retained by the Lessor as a guarantee and will be refunded to the Lessee at
+                the end of the lease term, subject to any necessary deductions for damages or unpaid amounts.
+                7. Final Provisions
+                Both parties agree that any amendments or modifications to this agreement must be made in
+                writing and signed by both the Lessor and the Lessee. This agreement is governed by the laws of
+                Spain, and any disputes arising from its interpretation or execution shall be resolved by the
+                courts of Madrid.
+                In witness whereof, both parties affix their signatures below to confirm their understanding and
+                acceptance of the terms outlined in this agreement.
+                Lessor:
+                Name: Laura Martínez López
+                Title: Commercial Director
+                Signature: ____________________________
+                Lessee:
+                Name: Carlos Fernández Díaz
+                Title: General Manager
+                Signature: ____________________________
+                Date: December 10, 2024
+                
                 
                 ### SECOND
-                CONSTRUCTION CONTRACT
-                Contract Number: CON-2024-002 Start Date: 2024-11-01 Estimated Completion Date: 2025-12-20
-                This Construction Contract ("Contract") is entered into on the date specified below between the City of Valencia Public Works Department ("Client") and Apex Infrastructure Ltd. ("Contractor"). The purpose of this Contract is to formalize the agreement between the parties for the construction of a pedestrian suspension bridge located in Valencia, Spain. Both parties agree to the terms and conditions outlined herein, which define their rights, responsibilities, and obligations to ensure the successful completion of the project.
-                Contracting Parties
-                Client Name: City of Valencia Public Works Department Client Tax ID: C12398765
-                Contractor Name: Apex Infrastructure Ltd. Contractor Tax ID: D45612389
-                Project Information
-                Type of Construction: Pedestrian Bridge Location: Valencia, Spain Approved Budget: €18,500,000 Total Duration (days): 415 Project Status: Planned
-                Technical Details
-                Project Dimensions:
-                •
-                Length: 180 m
-                •
-                Width: 6 m
-                •
-                Height/Depth: 25 m
-                Main Materials Used: Reinforced concrete, structural steel, tempered glass for railings
-                Project Description: The project involves the construction of a modern pedestrian suspension bridge crossing the Turia River in Valencia. The bridge will feature a sleek, contemporary design, incorporating energy-efficient lighting and eco-friendly materials. It will connect key recreational areas on both sides of the river, promoting accessibility and enhancing the urban landscape.
-                Financial Clauses
-                Payment Terms:
-                •
-                25% advance payment upon contract signing.
-                •
-                50% in monthly installments based on progress verified by independent inspectors.
-                •
-                25% upon final inspection and project approval.
-                Delay Penalties:
-                •
-                Penalty of €20,000 for every week of unjustified delay.
-                Schedule and Milestones
-                MILESTONE
-                START DATE
-                ESTIMATED COMPLETION DATE
-                MILESTONE DESCRIPTION SITE PREPARATION 2024-11-05 2025-01-15 Clearing, surveying, and foundation preparation.
-                FOUNDATION WORK
-                2025-01-20
-                2025-04-30
-                Laying and securing the bridge foundation. SUSPENSION SYSTEM SETUP 2025-05-10 2025-09-20 Installation of cables and main structure.
-                DECK CONSTRUCTION
-                2025-10-01
-                2025-11-30
-                Building the pedestrian walkway and railings. FINAL TOUCHES AND INSPECTION 2025-12-01 2025-12-15 Adding lighting, testing, and inspection.
+                LEASING AGREEMENT
+                This leasing agreement is entered into on December 10, 2024, in Barcelona, Spain, by and
+                between the following parties:
+                Catalonia Properties S.L., hereinafter referred to as the “Lessor,” with its registered office at
+                Avenida Diagonal 100, Barcelona, 08019, represented by Marta Sánchez Rovira in her capacity
+                as Property Manager, and Mediterranean Retail S.A., hereinafter referred to as the “Lessee,”
+                with its registered office at Passeig de Gràcia 20, Barcelona, 08007, represented by Javier Ortiz
+                Pérez, acting as Chief Operating Officer.
+                Both parties acknowledge their legal capacity to enter into this agreement and agree to the
+                terms outlined below regarding the leasing of certain premises for commercial purposes.
+                1. Description of the Premises
+                The properties covered by this agreement include two retail spaces located in Barcelona. The
+                first unit, with a total area of 150 square meters, is situated at Plaça Catalunya 2, Barcelona,
+                08002. The second unit, measuring 100 square meters, is located at Carrer de Mallorca 50,
+                Barcelona, 08008. Together, the leased spaces provide a combined area of 250 square meters.
+                The Lessee agrees to utilize these spaces exclusively for commercial retail purposes.
+                2. Rent and Payment Terms
+                The Lessee agrees to pay the Lessor a fixed monthly rent of €7,500, which must be paid on or
+                before the tenth calendar day of each month via bank transfer to the Lessor's designated
+                account. In addition to the fixed rent, the Lessee shall pay a variable rent equal to 8% of
+                monthly net sales generated within the leased premises. This variable rent shall be calculated
+                and settled on a quarterly basis.
+                3. Common Expenses
+                The Lessee is responsible for the following additional expenses related to the operation and
+                maintenance of the premises:
+                • A contribution of €300 per month for common area maintenance.
+                • Payment for utilities, including water, electricity, and waste management, as invoiced
+                based on actual consumption.
+                • An additional charge of €150 per month for security services provided by the Lessor.
+                4. Term and Renewal
+                The initial term of this agreement is established as five (5) years, commencing on February 1,
+                2025, and ending on January 31, 2030. At the conclusion of the initial term, the agreement shall
+                automatically renew for additional two-year periods unless either party provides written notice
+                of termination at least three months prior to the expiration of the current term.
+                5. Termination
+                This agreement may be terminated under the following conditions:
+                • By either party, with a minimum of six months’ written notice, without penalties.
+                • Immediately by the Lessor, in the event that the Lessee defaults on three consecutive
+                monthly payments, breaches the terms of use, or causes significant damage to the
+                premises.
+                6. Obligations of the Lessee
+                The Lessee agrees to:
+                • Maintain the premises in good and tenantable condition.
+                • Adhere to all municipal and building regulations related to the use of the property.
+                • Provide a security deposit equal to three months’ fixed rent, refundable at the end of
+                the agreement, minus any deductions for damages or unpaid charges.
+                7. Dispute Resolution
+                Any disputes arising from the interpretation or execution of this agreement shall be governed by
+                Spanish law and submitted to the jurisdiction of the courts of Barcelona.
+                8. Miscellaneous
+                This agreement represents the entire understanding between the Lessor and Lessee. Any
+                modifications must be in writing and signed by both parties.
+                Signatures
+                Lessor:
+                Name: Marta Sánchez Rovira
+                Title: Property Manager
+                Signature: ____________________________
+                Lessee:
+                Name: Javier Ortiz Pérez
+                Title: Chief Operating Officer
+                Signature: ____________________________
+                Date: December 10, 2024
                 
                 Use Markdown to format the answer and include tables if necessary.
             """,
