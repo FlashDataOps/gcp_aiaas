@@ -146,7 +146,7 @@ with st.sidebar:
         reset_chat_history()
         
     st.sidebar.header("Uploaded PDFs")
-    uploaded_pdfs = [file for file in os.listdir(PDF_FOLDER) if file.endswith(".pdf")]
+    uploaded_pdfs = [file for file in os.listdir(PDF_FOLDER) if file.endswith(".pdf")] #! TODO METER LOS DEL CSV
 
     if uploaded_pdfs:
         for pdf_file in uploaded_pdfs:
