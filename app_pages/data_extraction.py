@@ -226,6 +226,18 @@ if uploaded_file:
                 # Convert dict to DataFrame
                 df = pd.DataFrame.from_dict(flat_data, orient='index', columns=['Value'])
                 df.index.name = 'Field'
+                
+                st.markdown(
+                    f"""
+                    <style>
+                    .stDataFrame {{
+                        width: {500}px !important;
+                    }}
+                    </style>
+                    """,
+                    unsafe_allow_html=True
+                )
+
                 st.dataframe(df)
         except Exception as e:
             st.error(f"Error extracting fields with ChatGroq: {e}")
