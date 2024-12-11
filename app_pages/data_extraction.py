@@ -93,7 +93,8 @@ if uploaded_file:
                     {{
                         "Account Information": {{
                             "Account Number": "...",
-                            "Delivery Date": "..."
+                            "Delivery Date": "...",
+                            "Permanent/Temporary": "..."
                         }},
                         "Billing Information": {{
                             "Business Name": "...",
@@ -103,7 +104,8 @@ if uploaded_file:
                             "Zip": "...",
                             "Contact": "...",
                             "Phone": "...",
-                            "Email": "..."
+                            "Email": "...",
+                            "Invoice Delivery Preference": "..."
                         }},
                         "Service Information": {{
                             "Site Name": "...",
@@ -117,46 +119,76 @@ if uploaded_file:
                             "PO Number": "..."
                         }},
                         "Front End Services": {{
-                            "Quantity/Container Size": "...",
-                            "Frequency": "...",
-                            "Locks/Casters": "...",
-                            "Delivery": "...",
-                            "Swap Out": "...",
-                            "Extra Pickup": "...",
-                            "Overages": "...",
-                            "Monthly Rate": "..."
+                            "Qty_container_size_item1": "...",
+                            "Frequency_item1": "...",
+                            "Locks_casters_item1": "...",
+                            "Delivery_item1": "...",
+                            "ExtraPickup_item1": "...",
+                            "MonthlyRate_item1": "...",
+                            "Qty_container_size_item2": "...",
+                            "Frequency_item2": "...",
+                            "Locks_casters_item2": "...",
+                            "Delivery_item2": "...",
+                            "ExtraPickup_item2": "...",
+                            "MonthlyRate_item2": "...",
+                            "Qty_container_size_item3": "...",
+                            "Frequency_item3": "...",
+                            "Locks_casters_item3": "...",
+                            "Delivery_item3": "...",
+                            "ExtraPickup_item3": "...",
+                            "MonthlyRate_item3": "...",
                         }},
-                        "Open Top/Compactor": {{
-                            "Quantity/Container Size": "...",
-                            "Compactor": "...",
-                            "Monthly Rental": "...",
-                            "Trip/Relocation Charge": "...",
-                            "Frequency": "...",
-                            "Delivery": "...",
-                            "Haul Rate": "...",
-                            "Disposal (2-ton min)": "..."
+                        "Open Top/Compactor Services": {{
+                            "Quantity_container_size_item1": "...",
+                            "Compactor_item1": "...",
+                            "MonthlyRental_item1": "...",
+                            "TripRelocationCharge_item1": "...",
+                            "Frequency_item1": "...",
+                            "Delivery_item1": "...",
+                            "HaulRate_item1": "...",
+                            "Disposal_item1": "...",
+                            "Quantity_container_size_item2": "...",
+                            "Compactor_item2": "...",
+                            "MonthlyRental_item2": "...",
+                            "TripRelocationCharge_item2": "...",
+                            "Frequency_item2": "...",
+                            "Delivery_item2": "...",
+                            "HaulRate_item2": "...",
+                            "Disposal_item2": "...",
+                            "Quantity_container_size_item3": "...",
+                            "Compactor_item3": "...",
+                            "MonthlyRental_item3": "...",
+                            "TripRelocationCharge_item3": "...",
+                            "Frequency_item3": "...",
+                            "Delivery_item3": "...",
+                            "HaulRate_item3": "...",
+                            "Disposal_item3": "..."
                         }},
                         "Additional Information": {{
                             "Tax Exempt": "...",
-                            "Wait Time": "...",
+                            "Wait Time Rate": "...",
+                            "Inactivity Fee": "...",
                             "Special Instructions": "..."
                         }},
                         "Signatures": {{
+                            "Contractor Name": "...",
                             "Representative Signature": "...",
-                            "Date": "...",
-                            "Name Print": "...",
+                            "Representative Name": "...",
+                            "Representative Date": "...",
+                            "Customer Name": "...",
                             "Customer Signature": "...",
-                            "Date": "...",
-                            "Name Print": "...",
-                            "Company Name": "...",
-                            "Signature": "...",
-                            "Date": "...",
-                            "Printed Name": "..."
+                            "Customer Date": "..."
                         }}
                     }}
 
-                    If a field cannot be found, return "NaN".
-                    It is very important that it comes out in json format.
+                    Important extraction guidelines:
+                    1. Extract all table entries for Front End Services and Open Top/Compactor Services as individual fields
+                    2. Use _itemX naming convention for each row's fields
+                    3. Extract all available information precisely as it appears in the document
+                    4. Ensure each field is extracted as a separate, distinct value
+                    5. If a field is not found, use "NaN"
+                    6. Preserve exact formatting of numbers, dates, and text
+                    7. Always extract all columns mentioned above, and if the field is not found set it to NaN
                     """),
                     ('user', "Here is the PDF content to process:\n\n{pdf_text}")
                 ])
