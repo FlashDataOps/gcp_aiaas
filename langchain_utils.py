@@ -96,7 +96,6 @@ prompt_create_sql_response = ChatPromptTemplate.from_messages(
                 Always use English as the text language. Show the query in the answer in SQL format.
             """,
         ),
-        ("placeholder", "{chat_history}"),
         ("user", "{input}"),
     ]
 )
@@ -133,7 +132,6 @@ prompt_intent = ChatPromptTemplate.from_messages(
                 Respond only with the words [Query, Other]. Unless really clear, respond with Other.
             """,
         ),
-        ("placeholder", "{chat_history}"),
         ("user", "{input}"),
     ]
 )
@@ -276,7 +274,6 @@ prompt_general = ChatPromptTemplate.from_messages(
                 Use Markdown to format the answer and include tables if necessary.
             """,
         ),
-        ("placeholder", "{chat_history}"),
         ("human", "{input}")        
     ]
 )
