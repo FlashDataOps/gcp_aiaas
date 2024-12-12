@@ -53,6 +53,7 @@ def get_model(model_name, temperature, max_tokens):
     """
     print(f"Parámetros de modelo {model_name, temperature, max_tokens}")
     llm = {
+        "llama-3.3-70b-versatile": ChatGroq(temperature=temperature,model_name="llama-3.3-70b-versatile", max_tokens=max_tokens),
         "llama3-70b-8192": ChatGroq(temperature=temperature,model_name="llama3-70b-8192", max_tokens=max_tokens),
         "llama3-8b-8192": ChatGroq(temperature=temperature,model_name="llama3-8b-8192", max_tokens=max_tokens),
         "mixtral-8x7b-32768": ChatGroq(temperature=temperature,model_name="mixtral-8x7b-32768", max_tokens=max_tokens),
@@ -271,76 +272,6 @@ prompt_general = ChatPromptTemplate.from_messages(
                 for  all  Charges  and  other  amounts  due  or payable  hereunder  through  the  termination  date  shall  survive  the  termination  of  this Agreement.  The  term  “Affiliate(s)”  shall mean  an  entity  that  is  
                 controlling, controlled by, or is under control with Company, where control may be either management authority, contract, or equity interest.  
                 
-                #### Account Information - Account Number 01236
-                Customers INT Sales Rep INT   Revised HWS 11/20  
- 
-                1) TERM: The term of this agreement shall be for 60 months from the effective date of service and shall be automatically renewed for 60 months Thereafter unless either 
-                party shall give written notice of termination (Certified Mail) to other party at least sixty (60) days but no more than one hundred eighty (180) days prior to the 
-                termination of the initial term or any renewal term. 
-                2) SERVICES RENDERED: Customer grants the contractor the exclusive right to collect and dispose of all customer’s waste (as defined below), which includes 
-                recyclable materials and agrees to make the payments as provided for herein and contractor agrees to furnish such services and equipment specified above, all in 
-                accordance with the terms of this agreement. Nothing contained herein shall convey on contractor the status of “generator” of the waste. 
-                3) PAYMENTS: Customer shall pay Houston Waste Services monthly for the services and/or equipment furnished by Houston Waste Services in accordance with the 
-                charges and rates provided herein. Payments shall be made by Customer to Houston Waste Services within thirty (30) days or receipt of any invoice from Houston Waste 
-                Services, Houston Waste Services may impose, and customer agrees to pay a late fee for all past due payments, such as a late fee may not exceed the maximum rate for 
-                same allowed by applicable state law. 
-                4) RATE ADJUSTMENTS: Because disposal and fuel costs constitute a significant portion of the cost of contractor's services provided hereunder, customer agrees that 
-                contractor may increase the rates hereunder proportionately to adjust for any increase in such costs or any increases in transportation costs due to changes in location of 
-                the disposal facility. Customer agrees that contractor may also increase the rates from time to time to adjust for increases in the customer price index, and customer 
-                agrees that contractor may also proportionately pass through to customer increases in the average weight per container yard of the customer’s waste material, increase in 
-                customer's costs due to changes in local, state or federal rules, ordinances or regulations applicable to contractor’s operations or the services provided hereunder, and 
-                increase in taxes fees, or other governmental charges assessed against or passes through to contractor (other than income or real property taxes), and shall not be 
-                withheld by the customer, contractor may only increase rates for reasons other than set forth with consent of the customer. Customer/contractor agree to maintain the 
-                pricing listed on the reverse side, for the first 12 months of the term of contract. A price increase of no more than 5% will be allowed. No more than one price increase 
-                will be allowed during any 12-month period. 
-                5) SERVICE  CHANGES:  Except as set forth in (4) above, the parties may change the type, size or amount of equipment, the frequency of service and corresponding 
-                the rates by agreement of the parties, which may be evidenced verbally, in writing or by the parties’ actions and practices. The agreement shall apply to any changes of 
-                location of Co-customer within the area in which Company provides collection and disposal services. 
-                6) EQUIPMENT: (a) Responsibility. The equipment furnished hereunder by contractor shall remain the property of contractor, however, customer acknowledges that it 
-                has care, custody and control of the equipment while at the customer’s location and accepts responsibility for all loss or damage to the equipment (except for normal 
-                wear and tear or loss or damage resulting from contractor’s handling of the equipment) and for its contents. Customer agrees not to overload (by weight or volume), 
-                move, or alter the equipment, and shall use the equipment only for its proper and intended purpose. Customer agrees, defend and hold harmless contractor against all 
-                claims, damages, suits, penalties, fines & liabilities, for Injury or death to persons or loss or damage to property arising out of customers use, operation or possession 
-                of the equipment. (b) Access. Customer agrees to provide unobstructed access to the equipment on the scheduled collection day. If the equipment is inaccessible so that 
-                the regular scheduled pick up cannot be made. Contractor will promptly notify the customer and afford the customer a reasonable opportunity to provide the required 
-                access; however, contractor reserves the right to charge an additional fee for an additional collection service required by customer’s failure to provide such access. (c) 
-                Definition. The word “equipment” as used in these terms shall mean all containers used for the storage of waste including stationary compaction units, stationary baling 
-                units, waste material loading devices, tanks, tankers, and such other on-site devices as may be specified on the face of this agreement. 
-                7) WASTE: Customer presents and warrants the materials placed in the equipment shall be “waste” as defined herein and shall contain no other substances. “Waste” is 
-                defined as follows: “C&D Waste” shall mean construction and demolition waste that is not Nonconforming waste. “MSW” shall mean all non-hazardous waste that is  
-                not Nonconforming Waste. “Special Waste” shall exclude the approved wastes identified above but shall include a non-hazardous waste that requires special handling, 
-                management or disposal methods under any Environment Law, over and above those requirements set forth for Municipal Solid Waste. “Nonconforming Waste” shall 
-                mean all industrial solid waste (unless this is an Industrial Waste Agreement). MSW (unless this is an MSW agreement), special waste (unless this is a special waste 
-                agreement), radioactive. volatile, highly flammable, explosive, toxic or hazardous waste certain pathological and biological wastes, and other material deemed by law or      
-                in Contractor’s reasonable discretion to be a danger or threat to the environment. Regarding Special Waste, Nonconforming Waste shall also include waste in quantities 
-                exceeding the quantitates identified by customer to contractor. The term “hazardous waste”, as used herein, shall include, but not be limited to, any amount of waste 
-                listed or characterized as hazardous in any environmental law. “Environmental Law” means any applicable law, rule, regulations or ordinance concerning environmental 
-                protection including all requirements pertaining  to reporting, licensing, permitting, investigation, removal or remediation of emissions, discharges, release of chemical 
-                substances, pollutants or contaminants or relating to the manufacturer, generations, processing, distribution, use,  recycling, treatment, storage, transport or handing of 
-                regulated materials, chemical substances, pollutants, or contaminants, including, without limitation, the Comprehensive Environmental Response, Compensation & 
-                Liability Act of 1980 (“CERCLA”), the toxic substance control act (“TSCA”), the resource conservation and recovery act (“RCRA”), the clean air act (“CAA”), the   
-                clean water act (“CWA”), the endangered species act (“ESA”), the occupational safety and health act (“OSHA”), the safe drinking water act (“DSWA”), the hazardous 
-                materials transportation act (“HTMA”), the emergency planning right to know act (“EPCRA”) and THE Federal Insecticide, Fungicide, Rodenticide act (“FIFRA”), and 
-                their state law counterparts, all as may have been amended. Title to and liability for all Nonconforming Waste shall remain with customer. 
-                8) DAMAGE TO PAVEMENT: Customer acknowledges that Houston Waste Services shall not be liable for any damage to pavement, curbing, or driving surface 
-                resulting from trucks servicing an agrees open area. 
-                9) EXCUSED PERFORMANCE: Neither party hereto shall be liable for its failure to preform or delay in performance hereunder due to contingencies beyond its 
-                reasonable control including, but not limited to, strikes riots, compliance with laws or governmental orders, inability to get container, fires and acts of God such failure 
-                shall not constitute a default under this agreement. 
-                10) LIQUIDATED DAMAGES. If customer defaults or attempts to cancel contractor’s services or this agreement, customer agrees that the contractor’s actual damages would be 
-                difficult, if not impossible, to calculate. Therefore, customer agrees that in such event it shall pay all past due sums &, in addition, shall pay as liquidated damages & not as a 
-                penalty an amount equal to 30% of the product of the average monthly charge for the six (6) months immediately preceding the time of default or cancellation multiplied by the 
-                number of months then remaining in the current term of the agreement: plus all attorney's fees contractor needs to enforce the rights against customer for cancellation of said 
-                contract. 
-                11) RIGHT OF FIRST REFUSAL: Customer grants to Company a right of first refusal to match any offer relating to services like those provided hereunder which 
-                Customer receives (or intends to make) upon termination of this Agreement for any reason and Customer shall give Company prompt written notice of any such offer 
-                and a reasonable opportunity to respond to it. 
-                12) SEVERABILITY: If any one or more of the provisions of this agreement shall be declared invalid, or unenforceable, the same shall not affect the validity or 
-                enforceability of any other provision of this agreement. 
-                13) BINDING EFFECT: This agreement is a legally binding contract on the part of Houston Waste Services and Customer and their respective heirs, successors and 
-                assigns in accordance with the conditions set herein. 
-                14) ENTIRE AGREEMENT: This agreement, including any schedule and exhibits hereto constitutes the entire agreement of contractor and customer with respect to the 
-                subject matter hereof, and supersedes any previous agreement or understanding, written or oral
                 
                 Use Markdown to format the answer and include tables if necessary.
             """,
