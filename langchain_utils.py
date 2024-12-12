@@ -105,16 +105,13 @@ prompt_custom_chart = ChatPromptTemplate.from_messages(
         (
             "system",
             """
-            Respond only with Python code
             You must use the following data to write Python Plotly code that represents the answer obtained with the following query:
 
             SQL Query: {query}
             Answer: {response}
-            Create the most appropriate plot for the data provided (Answer).
+            Create the most appropriate plot for the data provided (Answer), make sure the code is correct and complete.
             ONLY INCLUDE PYTHON CODE IN YOUR RESPONSE. DO NOT INCLUDE NATURAL LANGUAGE TO INTRODUCE YOUR ANSWER.
-            MAKE THE CHART BEAUTIFUL AND VISUALLY APPEALING. IT SHOULD BE READY TO PRESENT TO A VERY IMPORTANT CLIENT.
-
-            ENSURE THAT THE RESPONSE CONTAINS ONLY PYTHON CODE.
+            MAKE THE CHART BEAUTIFUL AND VISUALLY APPEALING. IT SHOULD BE READY TO PRESENT TO A VERY IMPORTANT CLIENT, WHOSE INFLUENCE IS HUGE IN OUR REVENUE.
             """,
         ),
         ("user", "{input}"),
@@ -150,7 +147,200 @@ prompt_general = ChatPromptTemplate.from_messages(
 
                 Query: If the user makes a query about a dataset, you can generate a chart and text. The dataset schema is as follows: {schema}
                 
-                These are the documents available for now: (no documents for the moment)
+                These are the documents available for now: 
+                
+                #### Account Information - Account Number 01234
+                Dear Customer,  Houston Waste Solutions an FCC Environmental of Texas Company appreciates your recent order for an open top container.  We are confident you will find our 
+                services both accommodating and efficient. As with any type of disposal system, there are certain types of restrictions and guidelines that must be observed to 
+                eliminate safety hazards and equipment damage. These are outlined as follows:   
+                LOADING RESTRICTIONS: 
+                • 20yd ONLY brick, concrete, dirt, and metal material may only fill half the container and must be evenly distributed in container. 
+                • Debris must not exceed the top of the container so that the drivers can properly tarp the container before hauling. 
+                • Do not drop heavy items into the containers from extreme heights, as this will damage the floor and structure of the container. 
+                • The customer is expected to pay for repairs resulting from unnecessary and negligent damage to the container while in possession of the container. 
+                • The backdoor must be closed before the driver can lift the container. 
+                • The customer is responsible for fines and penalties resulting from overweight containers.  The maximum weight is 10 tons. 
+                • No tires or hazardous waste is acceptable in the landfill/transfer station. 
+                • No white goods (appliances) are acceptable in the landfill/transfer station. 
+                • Mattresses or other bulky items may result in additional fees from the landfill/transfer station.   
+                SERVICE GUIDELINES: 
+                • Please call our office at (281) 999-0030 for any service needs.  All service requests should be honored by the next business day if called in by 2 pm. 
+                Emergency pulls may result in additional fees. 
+                • Please make sure that there are no obstacles blocking the approach to the container when our driver arrives to service.  A blocked container may result in a 
+                trip  charge. 
+                • HWS/FCC reserves the right to delay or postpone service due to hazardous conditions caused by inclement weather. 
+                • HWS/FCC reserves the right to place container in a safe location if the specified location is deemed hazardous or unsafe by the driver. 
+                • HWS/FCC cannot be held responsible for damage to asphalt, concrete or landscaping that is caused due to the weight of the container, weather 
+                conditions or normal truck movements, especially residential.          
+                Customer INT  766
+                
+                
+                TERMS: 
+                • Due to the investment in equipment and hiring employees as undertaken by HWS/FCC to fulfill our commitment to its customers, in turn the customer 
+                acknowledges this agreement is for the entire length of the project. 
+                • Once again, we appreciate your business and look forward to a mutually beneficial relationship on all your projects. 
+                • The customer assumes full responsibility for the care and custody of HWS/FCC Environmental’s equipment while it is located on their construction site. In the 
+                event the equipment is damaged, including but not limited to damage caused by fire, contact with other equipment, or theft, the customer will be liable for the 
+                cost of repair or replacement. This responsibility remains in effect from the time the equipment is delivered to the site until it is picked up by FCC 
+                Environmental. 
+                HARD TO HANDLE RATES: 
+                • Tree stumps and root balls - $150.00 each 
+                • Tires - $100 per car tire, $250 per Tractor or 18-wheeler tire 
+                • Refrigerator – Will be reloaded and returned to customer and Customer will be charged an additional haul fee. 
+                • Paint/Cleaning Products/Hazardous Material – Will be reloaded and returned to customer and Customer will be charged an additional haul fee. 
+                • Prescriptions/Needles/Medical Waste – Will be reloaded and returned to customer and Customer will be charged an additional haul fee.
+                
+                
+                #### Account Information - Account Number 01235
+                1. SERVICES. Customer grants to Company the exclusive right, and Company through itself and its Affiliates, subsidiaries and related entities shall furnish Equipment and Services, 
+                as set forth on page 1 (the “Service Summary”), to collect and dispose of and/or recycle all of Customer’s Waste Materials (collectively, the “Services”) at Customer’s Service Location(s), subject 
+                to the terms and conditions contained herein (collectively, the “Agreement”). This Agreement shall remain valid and enforceable with respect to the Services in the event Customer changes its 
+                Service  Location(s),  and  Company  shall  maintain  the  right  to  collect  Waste  Materials  at  Customer’s  new  service  location(s)  if  such  location(s)  is  within  Company’s  service  area.  Customer  
+                represents and warrants that the materials to be collected under this Agreement shall be only “Waste Materials” as defined herein. For purposes of this Agreement, “Waste Materials” shall mean 
+                all non-hazardous solid waste, organic waste, and if applicable, recyclable materials generated by Customer or at Customer’s Service Location(s). Waste Materials excludes, and Customer agrees 
+                not  to  deposit  or  permit  the  deposit  for  collection  of  (i)  any  waste  tires,  (ii)  bio-hazardous,  biomedical,  corrosive,  flammable,  explosive,  infectious,  radioactive,  volatile,  regulated  medical  or  
+                hazardous  waste,  toxic  substance  or  material,  as  defined  by,  characterized  or  listed  under  applicable  federal,  state,  or  local  laws  or  regulations,  (iii)  any  other  items  or  material  prohibited  by  
+                federal,  state  or  local  laws  or  regulations,  or  that  could  adversely  affect  the  operation  or  useful  life  of  Company’s  equipment  or  facilities,  or  (iv)  waste  reasonably  deemed  unacceptable  by 
+                Company (collectively, “Excluded Materials”). Title to Customer’s Waste Materials is transferred to Company at the time of Company’s receipt or collection. Title to and liability for Excluded 
+                Materials shall always remain with Customer at all times.  2. TERM. The Initial Term, commencing on the Start Date, and any subsequent Renewal Term of this Agreement (collectively, the “Term”) is set forth in the Service Summary.  If no
+                Term is listed on the Service Summary, the Term shall be thirty-six (36) months.  Unless otherwise specified on the Service Summary, at the end of the Initial Term and any subsequent Renewal 
+                Term, the Term shall automatically renew for an additional twelve (12) months (a “Renewal Term”) at the then current Service levels and applicable Charges, unless either party gives written 
+                notice to the other party of its intent to terminate at least ninety (90) days, but no more than one hundred twenty (120) days, prior to the termination of the then-existing term. Company may, in 
+                its sole discretion, terminate this Agreement (i) if as a result of Customer’s breach of this Agreement, or (ii) for any reason upon thirty (30) days prior written notice to the Customer. 3. CHARGES; CHANGES. The initial charges, fees and other amounts for Services rendered and/or equipment furnished by Company and payable by Customer (“Charges”) are set 
+                forth on the Service Summary. Company also reserves the right to charge Customer for Additional Services (defined below) provided by Company to Customer, whether or not requested by 
+                Customer, including, but not limited to: extra pickup charges, container overages and overflows, container relocation or removal, account reactivation services, equipment repair and maintenance, 
+                and/or any other necessary expenses incurred by Company (“Additional Services”), all at such standard prices or rates that Company is charging its customers in the service area at such time. 
+                Changes in the frequency of collection, collection schedule, number, capacity and/or type of equipment, and any changes to the Charges payable under this Agreement, may be agreed to orally, 
+                in writing or by other actions and practices of the parties, including, without limitation, electronic or online acceptance or payment of the invoice reflecting such changes, and written notice to 
+                Customer of any such changes and Customer’s failure to object to such changes, which shall be deemed to be Customer’s affirmative consent to such changes.  Company reserves the right, and 
+                Customer  acknowledges  that  it  should  expect  Company  to  increase  or  add  Charges  payable  by  Customer  hereunder  during  the  Term  for:  (i)  any  increase  in  or  other  modification  made  by  
+                Company to the Fuel Surcharge, Environmental Charge, and/or any other charges included or referenced in the Service Summary; (iv) any increases in disposal, transportation, and/or disposal 
+                costs,  including  fuel  surcharges;  (v)  any  increased  costs  due  to  uncontrollable  circumstances,  including,  without  limitation,  changes  in  applicable  local,  state,  or  federal  laws  or  regulations,  
+                including the imposition of or increase in taxes, fees or surcharges, or acts of God such as floods, fires, hurricanes and/or natural disasters; and (vi) for increases in the Consumer Price Index 
+                (“CPI”) for Water, Sewer and Trash Collection Services published by U.S. Bureau of Labor Statistics, or with written notice to Customer, any other national, regional or local CPI, with such 
+                increases in CPI being measured from the Start Date, or as applicable, Customer’s last CPI based price increase date. 4. INVOICES; PAYMENT TERMS. Company shall send all invoices for Charges and any required notices to Customer under this Agreement to Customer’s billing address and/or 
+                email address specified in the Service Summary. Customer shall pay all invoiced Charges within thirty (30) days of the invoice date, by check mailed to Company’s payment address on Customer’s 
+                invoice, through Company’s online payment portal, or through Company’s autopay option. Online payments may by subject to applicable convenience fees and other costs charged by Company, 
+                from  time to  time. Any Customer invoice  balance not paid within thirty  (30) days of the date of invoice is subject to a late charge, and any Customer check  returned for  insufficient funds is 
+                subject to a non-sufficient funds charge, both to the maximum extent allowed by applicable law. Customer acknowledges that a late charge is not to be considered as interest on debt or a finance 
+                charge, and is a reasonable charge for the anticipated loss and cost to Company for late payment. If payment is not made when due, Company retains the right to suspend Services until the past 
+                due balance is paid in full. In addition to full payment of outstanding balances, Customer shall be required to pay a reactivation charge to resume suspended Services. If Services are suspended 
+                for more than fifteen (15) days, Company may, in its sole discretion, immediately terminate this Agreement for default and recover any equipment and all amounts owed hereunder, including 
+                liquidated damages under Section 6.   5. EQUIPMENT, ACCESS. All equipment furnished by Company shall at all times remain the property of the Company; however, Customer shall have care, custody and control of
+                the  equipment  and  shall  bear  responsibility  and  liability  for  all  loss  or  damage  to  the  equipment  and  for  its  contents  while  at  Customer’s  location.  If  equipment  is  damaged  or  lost  while  in  
+                Customer’s care, custody and control, Customer shall pay the new replacement cost of such equipment.  Customer shall not overload, move or alter the equipment or allow a third party to do so, 
+                and shall use such equipment only for its intended purpose. During the Term, all equipment shall be maintained in the condition in which it was provided, normal wear and tear excepted. Customer 
+                shall provide safe and unobstructed access to the equipment on the scheduled collection day. Customer shall pay, if charged by Company, any additional charges, determined by Company in its 
+                sole discretion, for overloading, moving or altering the equipment or allowing a third party to do so, and for any service modifications caused by or resulting from Customer’s failure to provide 
+                access.  Company  may  suspend  Services  or  terminate  this  Agreement  in  the  event  Customer  violates  any  of  the  requirements  of  this  provision.    Customer  agrees  that  Company  shall  not  be  
+                responsible for any damage to Customer’s pavement, curbing or any other surface resulting from the equipment or Services and further warrants that Customer’s property is sufficient to bear the 
+                weight of Company’s equipment and vehicles.   6. LIQUIDATED  DAMAGES.  Customer  acknowledges  that  the  actual  damages  to  Company  in  the  event  of  Customer’s  early  termination  or  breach  of  contract  is  impractical  or
+                extremely  difficult  to  determine  or  prove.    As  such,  the  parties agree  that  the  following  liquidated  damages  are  reasonable  and commensurate  with  the  anticipated  loss  to Company  resulting  
+                therefrom, and such payment of liquidated damages is not a penalty, but rather an agreed upon charge for Customer’s early termination or breach of contract. In the event Customer terminates 
+                this Agreement prior to the expiration of the Initial Term or any Renewal Term, or in the event Company terminates this Agreement for Customer’s default pursuant to Section 4, Customer shall 
+                pay, in addition to Company’s attorneys’ fees if any, the following liquidated damages,: (a) if the remaining Term (including any applicable Renewal Term) under this Agreement is six (6) or 
+                more months, Customer shall pay the average of its six (6) monthly Charges immediately prior to default or termination (or, if the Start Date is within six (6) months of Company’s last invoice 
+                date, the average of all monthly Charges) multiplied by six (6); or (b) if the remaining Term is less than six (6) months, Customer shall pay the average of its six (6) most recent monthly Charges 
+                multiplied by the number of months remaining in the Term.  In addition to and not in any way limiting the foregoing, Company shall be entitled to recover all losses, damages and costs, including 
+                attorneys’ fees and costs, resulting from Customer’s breach of any other provision of this Agreement in addition to all other remedies available at law or in equity. 7. INDEMNITY. CUSTOMER AGREES TO INDEMNIFY, DEFEND AND HOLD HARMLESS COMPANY AND ITS AFFILIATES FROM AND AGAINST ANY AND ALL
+                CLAIMS, ACTIONS, DEMANDS, LIABILITY AND EXPENSE OF EVERY KIND (INCLUDING, BUT NOT LIMITED TO, COURT COSTS, ATTORNEYS’ AND OTHER 
+                PROFESSIONAL  FEES)  IN  ANY  WAY  ARISING  FROM  OR  RELATED  TO  (i)  ANY  BODILY  INJURY  (INCLUDING  DEATH),  PROPERTY  DAMAGE  OR  VIOLATION  OF  LAW  
+                CAUSED BY CUSTOMER’S BREACH OF THIS AGREEMENT OR BY ANY NEGLIGENT ACT OR OMISSION OR WILLFUL MISCONDUCT OF CUSTOMER OR ITS EMPLOYEES, 
+                AGENTS  OR  CONTRACTORS;  OR  (ii)  CUSTOMER’S  USE,  OPERATION  OR  POSSESSION  OF  ANY  EQUIPMENT  FURNISHED  BY  COMPANY.    COMPANY  SHALL  NOT  BE 
+                LIABLE TO CUSTOMER FOR CONSEQUENTIAL, INCIDENTAL OR PUNITIVE DAMAGES ARISING OUT OF THE PERFORMANCE OR BREACH OF THIS AGREEMENT.   8. RIGHT OF FIRST REFUSAL. Customer grants to Company a right of first refusal to match any offer relating to services similar to those provided hereunder which Customer
+                receives,  or  intends  to  make,  upon  termination  of  this  Agreement  for  any  reason  and  Customer  shall  give  Company  prompt  written  notice  of  any  such  offer  and  a  reasonable  opportunity  to  
+                respond to it. 9. FORCE MAJEURE.  Except for the obligation to make payments hereunder, neither party shall be in default or have any liability for its failure to perform or delay in performance
+                caused by events beyond its reasonable control, including, but not limited to, strikes, riots, imposition of laws or governmental orders, fires, acts of God, pandemics, natural disasters, and the 
+                inability to obtain equipment, and the affected party shall be excused from performance during the occurrence of such events. 10. MISCELLANEOUS. This Agreement shall be binding on and shall inure to the benefit of the parties hereto and their respective successors and assigns. In addition to, and not in 
+                limitation of, the foregoing, the terms and provisions of this Agreement may be amended and modified as agreed to by the parties as provided in Section 3. Subject to the foregoing, this Agreement 
+                represents  the  entire  agreement  between  the  parties  and  supersedes  any  and  all  other  agreements  for  the  same  Services  at  the  same  Customer  Service  Locations  covered  by  this  Agreement,  
+                whether written or oral, that may exist between the parties. If Customer moves its place of business to another location within Company’s collection areas, Company has the right and may elect 
+                to continue to provide services at the new location in accordance with this Agreement. The Customer hereby expressly consents to the assignment of this Agreement by Company to any Affiliate, 
+                subsidiary, successor, assign, or purchaser of any part of its business and expressly consents to be bound by all the terms herein to any such successors, assigns or purchasers.  This Agreement 
+                shall be construed in accordance with the law of the state in which the Services are provided. Should any litigation be commenced between the parties or their respective successors, affiliates, 
+                agents or assigns, relating to or concerning the Services or this Agreement, or the rights and obligations of the parties hereunder, such litigation shall be commenced, and each party submits to 
+                the jurisdiction of the state and federal courts of the state where the Services are performed. In the event Company successfully enforces its rights against Customer hereunder, Customer shall be 
+                required to pay Company’s attorneys’ fees and court costs. BOTH CUSTOMER AND COMPANY HEREBY IRREVOCABLY WAIVE ANY AND ALL RIGHT TO TRIAL BY JURY IN 
+                ANY  LEGAL  PROCEEDING  ARISING  OUT  OF  OR  RELATED  TO  THE  SERVICES  OR  THIS  AGREEMENT.  All  written  notification  to  Company  required  by  this  Agreement  shall  be  
+                effective upon receipt and delivered by Certified Mail, Return Receipt Requested, courier or by hand to Company’s address on the first page of the Service Summary, provided that Company 
+                may provide written notice to Customer of a different address for written notice to Company. If any provision of this Agreement is held to be illegal, invalid or unenforceable under present or 
+                future  laws,  such  provision  shall  be  fully  severable;  the  Agreement  shall  be  construed  and  enforced  as  if  such  illegal,  invalid  or  unenforceable  provision  had  never  comprised  a  part  of  the  
+                Agreement; and the remaining provisions of the Agreement shall remain in full force and effect and shall not be affected by the illegal, invalid or unenforceable provision or by its severance.  
+                Furthermore, in lieu of such illegal, invalid or unenforceable provisions, there shall be added automatically as a part of the Agreement, a provision as similar in terms to such illegal, invalid or 
+                unenforceable provision as may be possible and be legal, valid or enforceable. Notwithstanding the termination of this Agreement, Sections 5, 6, 7, 10 and Customer’s obligation to make payments 
+                for  all  Charges  and  other  amounts  due  or payable  hereunder  through  the  termination  date  shall  survive  the  termination  of  this Agreement.  The  term  “Affiliate(s)”  shall mean  an  entity  that  is  
+                controlling, controlled by, or is under control with Company, where control may be either management authority, contract, or equity interest.  
+                
+                #### Account Information - Account Number 01236
+                Customers INT Sales Rep INT   Revised HWS 11/20  
+ 
+                1) TERM: The term of this agreement shall be for 60 months from the effective date of service and shall be automatically renewed for 60 months Thereafter unless either 
+                party shall give written notice of termination (Certified Mail) to other party at least sixty (60) days but no more than one hundred eighty (180) days prior to the 
+                termination of the initial term or any renewal term. 
+                2) SERVICES RENDERED: Customer grants the contractor the exclusive right to collect and dispose of all customer’s waste (as defined below), which includes 
+                recyclable materials and agrees to make the payments as provided for herein and contractor agrees to furnish such services and equipment specified above, all in 
+                accordance with the terms of this agreement. Nothing contained herein shall convey on contractor the status of “generator” of the waste. 
+                3) PAYMENTS: Customer shall pay Houston Waste Services monthly for the services and/or equipment furnished by Houston Waste Services in accordance with the 
+                charges and rates provided herein. Payments shall be made by Customer to Houston Waste Services within thirty (30) days or receipt of any invoice from Houston Waste 
+                Services, Houston Waste Services may impose, and customer agrees to pay a late fee for all past due payments, such as a late fee may not exceed the maximum rate for 
+                same allowed by applicable state law. 
+                4) RATE ADJUSTMENTS: Because disposal and fuel costs constitute a significant portion of the cost of contractor's services provided hereunder, customer agrees that 
+                contractor may increase the rates hereunder proportionately to adjust for any increase in such costs or any increases in transportation costs due to changes in location of 
+                the disposal facility. Customer agrees that contractor may also increase the rates from time to time to adjust for increases in the customer price index, and customer 
+                agrees that contractor may also proportionately pass through to customer increases in the average weight per container yard of the customer’s waste material, increase in 
+                customer's costs due to changes in local, state or federal rules, ordinances or regulations applicable to contractor’s operations or the services provided hereunder, and 
+                increase in taxes fees, or other governmental charges assessed against or passes through to contractor (other than income or real property taxes), and shall not be 
+                withheld by the customer, contractor may only increase rates for reasons other than set forth with consent of the customer. Customer/contractor agree to maintain the 
+                pricing listed on the reverse side, for the first 12 months of the term of contract. A price increase of no more than 5% will be allowed. No more than one price increase 
+                will be allowed during any 12-month period. 
+                5) SERVICE  CHANGES:  Except as set forth in (4) above, the parties may change the type, size or amount of equipment, the frequency of service and corresponding 
+                the rates by agreement of the parties, which may be evidenced verbally, in writing or by the parties’ actions and practices. The agreement shall apply to any changes of 
+                location of Co-customer within the area in which Company provides collection and disposal services. 
+                6) EQUIPMENT: (a) Responsibility. The equipment furnished hereunder by contractor shall remain the property of contractor, however, customer acknowledges that it 
+                has care, custody and control of the equipment while at the customer’s location and accepts responsibility for all loss or damage to the equipment (except for normal 
+                wear and tear or loss or damage resulting from contractor’s handling of the equipment) and for its contents. Customer agrees not to overload (by weight or volume), 
+                move, or alter the equipment, and shall use the equipment only for its proper and intended purpose. Customer agrees, defend and hold harmless contractor against all 
+                claims, damages, suits, penalties, fines & liabilities, for Injury or death to persons or loss or damage to property arising out of customers use, operation or possession 
+                of the equipment. (b) Access. Customer agrees to provide unobstructed access to the equipment on the scheduled collection day. If the equipment is inaccessible so that 
+                the regular scheduled pick up cannot be made. Contractor will promptly notify the customer and afford the customer a reasonable opportunity to provide the required 
+                access; however, contractor reserves the right to charge an additional fee for an additional collection service required by customer’s failure to provide such access. (c) 
+                Definition. The word “equipment” as used in these terms shall mean all containers used for the storage of waste including stationary compaction units, stationary baling 
+                units, waste material loading devices, tanks, tankers, and such other on-site devices as may be specified on the face of this agreement. 
+                7) WASTE: Customer presents and warrants the materials placed in the equipment shall be “waste” as defined herein and shall contain no other substances. “Waste” is 
+                defined as follows: “C&D Waste” shall mean construction and demolition waste that is not Nonconforming waste. “MSW” shall mean all non-hazardous waste that is  
+                not Nonconforming Waste. “Special Waste” shall exclude the approved wastes identified above but shall include a non-hazardous waste that requires special handling, 
+                management or disposal methods under any Environment Law, over and above those requirements set forth for Municipal Solid Waste. “Nonconforming Waste” shall 
+                mean all industrial solid waste (unless this is an Industrial Waste Agreement). MSW (unless this is an MSW agreement), special waste (unless this is a special waste 
+                agreement), radioactive. volatile, highly flammable, explosive, toxic or hazardous waste certain pathological and biological wastes, and other material deemed by law or      
+                in Contractor’s reasonable discretion to be a danger or threat to the environment. Regarding Special Waste, Nonconforming Waste shall also include waste in quantities 
+                exceeding the quantitates identified by customer to contractor. The term “hazardous waste”, as used herein, shall include, but not be limited to, any amount of waste 
+                listed or characterized as hazardous in any environmental law. “Environmental Law” means any applicable law, rule, regulations or ordinance concerning environmental 
+                protection including all requirements pertaining  to reporting, licensing, permitting, investigation, removal or remediation of emissions, discharges, release of chemical 
+                substances, pollutants or contaminants or relating to the manufacturer, generations, processing, distribution, use,  recycling, treatment, storage, transport or handing of 
+                regulated materials, chemical substances, pollutants, or contaminants, including, without limitation, the Comprehensive Environmental Response, Compensation & 
+                Liability Act of 1980 (“CERCLA”), the toxic substance control act (“TSCA”), the resource conservation and recovery act (“RCRA”), the clean air act (“CAA”), the   
+                clean water act (“CWA”), the endangered species act (“ESA”), the occupational safety and health act (“OSHA”), the safe drinking water act (“DSWA”), the hazardous 
+                materials transportation act (“HTMA”), the emergency planning right to know act (“EPCRA”) and THE Federal Insecticide, Fungicide, Rodenticide act (“FIFRA”), and 
+                their state law counterparts, all as may have been amended. Title to and liability for all Nonconforming Waste shall remain with customer. 
+                8) DAMAGE TO PAVEMENT: Customer acknowledges that Houston Waste Services shall not be liable for any damage to pavement, curbing, or driving surface 
+                resulting from trucks servicing an agrees open area. 
+                9) EXCUSED PERFORMANCE: Neither party hereto shall be liable for its failure to preform or delay in performance hereunder due to contingencies beyond its 
+                reasonable control including, but not limited to, strikes riots, compliance with laws or governmental orders, inability to get container, fires and acts of God such failure 
+                shall not constitute a default under this agreement. 
+                10) LIQUIDATED DAMAGES. If customer defaults or attempts to cancel contractor’s services or this agreement, customer agrees that the contractor’s actual damages would be 
+                difficult, if not impossible, to calculate. Therefore, customer agrees that in such event it shall pay all past due sums &, in addition, shall pay as liquidated damages & not as a 
+                penalty an amount equal to 30% of the product of the average monthly charge for the six (6) months immediately preceding the time of default or cancellation multiplied by the 
+                number of months then remaining in the current term of the agreement: plus all attorney's fees contractor needs to enforce the rights against customer for cancellation of said 
+                contract. 
+                11) RIGHT OF FIRST REFUSAL: Customer grants to Company a right of first refusal to match any offer relating to services like those provided hereunder which 
+                Customer receives (or intends to make) upon termination of this Agreement for any reason and Customer shall give Company prompt written notice of any such offer 
+                and a reasonable opportunity to respond to it. 
+                12) SEVERABILITY: If any one or more of the provisions of this agreement shall be declared invalid, or unenforceable, the same shall not affect the validity or 
+                enforceability of any other provision of this agreement. 
+                13) BINDING EFFECT: This agreement is a legally binding contract on the part of Houston Waste Services and Customer and their respective heirs, successors and 
+                assigns in accordance with the conditions set herein. 
+                14) ENTIRE AGREEMENT: This agreement, including any schedule and exhibits hereto constitutes the entire agreement of contractor and customer with respect to the 
+                subject matter hereof, and supersedes any previous agreement or understanding, written or oral
                 
                 Use Markdown to format the answer and include tables if necessary.
             """,
