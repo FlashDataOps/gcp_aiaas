@@ -92,7 +92,7 @@ prompt_create_sql_response = ChatPromptTemplate.from_messages(
                 SQL Query: {query}
                 Answer: {response}
                 Use markdown formatting and include visual elements to make the response more engaging, such as tables when necessary.
-                Always use English as the text language.
+                Always use English as the text language. Show the query in the answer in SQL format.
             """,
         ),
         ("placeholder", "{chat_history}"),
@@ -150,142 +150,7 @@ prompt_general = ChatPromptTemplate.from_messages(
 
                 Query: If the user makes a query about a dataset, you can generate a chart and text. The dataset schema is as follows: {schema}
                 
-                These are the documents available for now:
-                
-                ## FIRST
-                LEASING AGREEMENT
-                This leasing agreement is entered into on December 10, 2024, in Madrid, Spain, by and
-                between the following parties:
-                Inmobiliaria Madrid Centro S.L., hereinafter referred to as the “Lessor,” with its registered
-                office at Calle Gran Vía 45, Madrid, 28013, represented by Laura Martínez López in her capacity
-                as Commercial Director, and Boutique Style S.L., hereinafter referred to as the “Lessee,” with
-                its registered office at Calle Serrano 22, Madrid, 28001, represented by Carlos Fernández Díaz,
-                acting as General Manager.
-                Both parties, recognizing their full legal capacity to enter into this agreement, agree to the terms
-                outlined below regarding the leasing of certain properties for commercial use.
-                1. Description of the Premises
-                The properties subject to this agreement consist of two units located in central Madrid. The first
-                unit, with a total area of 120 square meters, is situated at Plaza Mayor 5, Madrid, 28012. The
-                second unit, measuring 80 square meters, is located at Calle Arenal 8, Madrid, 28013.
-                Together, the premises provide a combined area of 200 square meters. The Lessee agrees to
-                use these properties exclusively for the purposes defined in this agreement and in compliance
-                with all relevant regulations.
-                2. Rent and Payment Terms
-                The Lessee shall pay the Lessor a fixed monthly rent of €4,000, which must be paid no later than
-                the fifth calendar day of each month via bank transfer to the account designated by the Lessor.
-                In addition to the fixed rent, the Lessee agrees to pay a variable rent equivalent to 5% of net
-                monthly sales generated within the premises. This variable rent shall be calculated based on
-                gross income, excluding applicable taxes, and settled monthly in arrears.
-                3. Common Expenses
-                The Lessee is responsible for contributing to the maintenance and operational costs associated
-                with the leased premises. This includes a monthly fee of €200 to cover the maintenance of
-                common areas within the building, as well as all utility expenses, such as water and electricity,
-                based on actual consumption recorded by individual meters. Furthermore, the Lessee shall pay
-                €100 per month for additional cleaning services provided by the Lessor to ensure the upkeep of
-                the premises.
-                4. Term and Renewal
-                The initial term of this agreement is established as three (3) years, commencing on January 1,
-                2025, and ending on December 31, 2027. Upon the expiration of the initial term, the agreement
-                will be automatically renewed for successive periods of one (1) year, unless either party notifies
-                the other of their intention not to renew, with at least two months’ written notice prior to the
-                expiration of the current term.
-                5. Termination
-                This agreement may be terminated under the following conditions:
-                • Either party may terminate the agreement by providing three months’ prior written
-                notice. In such a case, the Lessee shall pay a penalty equivalent to one month of fixed
-                rent.
-                • The Lessor reserves the right to terminate the agreement immediately if the Lessee fails
-                to pay rent for two consecutive months. Notice of such termination shall be provided in
-                writing.
-                6. Obligations of the Lessee
-                The Lessee agrees to maintain the premises in good condition throughout the lease term and to
-                promptly address any damage caused during their occupancy. The Lessee shall comply with all
-                building rules and regulations and ensure that the premises are used exclusively for lawful
-                purposes.
-                Additionally, the Lessee shall provide a security deposit equivalent to two months’ fixed rent.
-                This deposit will be retained by the Lessor as a guarantee and will be refunded to the Lessee at
-                the end of the lease term, subject to any necessary deductions for damages or unpaid amounts.
-                7. Final Provisions
-                Both parties agree that any amendments or modifications to this agreement must be made in
-                writing and signed by both the Lessor and the Lessee. This agreement is governed by the laws of
-                Spain, and any disputes arising from its interpretation or execution shall be resolved by the
-                courts of Madrid.
-                In witness whereof, both parties affix their signatures below to confirm their understanding and
-                acceptance of the terms outlined in this agreement.
-                Lessor:
-                Name: Laura Martínez López
-                Title: Commercial Director
-                Signature: ____________________________
-                Lessee:
-                Name: Carlos Fernández Díaz
-                Title: General Manager
-                Signature: ____________________________
-                Date: December 10, 2024
-                
-                
-                ### SECOND
-                LEASING AGREEMENT
-                This leasing agreement is entered into on December 10, 2024, in Barcelona, Spain, by and
-                between the following parties:
-                Catalonia Properties S.L., hereinafter referred to as the “Lessor,” with its registered office at
-                Avenida Diagonal 100, Barcelona, 08019, represented by Marta Sánchez Rovira in her capacity
-                as Property Manager, and Mediterranean Retail S.A., hereinafter referred to as the “Lessee,”
-                with its registered office at Passeig de Gràcia 20, Barcelona, 08007, represented by Javier Ortiz
-                Pérez, acting as Chief Operating Officer.
-                Both parties acknowledge their legal capacity to enter into this agreement and agree to the
-                terms outlined below regarding the leasing of certain premises for commercial purposes.
-                1. Description of the Premises
-                The properties covered by this agreement include two retail spaces located in Barcelona. The
-                first unit, with a total area of 150 square meters, is situated at Plaça Catalunya 2, Barcelona,
-                08002. The second unit, measuring 100 square meters, is located at Carrer de Mallorca 50,
-                Barcelona, 08008. Together, the leased spaces provide a combined area of 250 square meters.
-                The Lessee agrees to utilize these spaces exclusively for commercial retail purposes.
-                2. Rent and Payment Terms
-                The Lessee agrees to pay the Lessor a fixed monthly rent of €7,500, which must be paid on or
-                before the tenth calendar day of each month via bank transfer to the Lessor's designated
-                account. In addition to the fixed rent, the Lessee shall pay a variable rent equal to 8% of
-                monthly net sales generated within the leased premises. This variable rent shall be calculated
-                and settled on a quarterly basis.
-                3. Common Expenses
-                The Lessee is responsible for the following additional expenses related to the operation and
-                maintenance of the premises:
-                • A contribution of €300 per month for common area maintenance.
-                • Payment for utilities, including water, electricity, and waste management, as invoiced
-                based on actual consumption.
-                • An additional charge of €150 per month for security services provided by the Lessor.
-                4. Term and Renewal
-                The initial term of this agreement is established as five (5) years, commencing on February 1,
-                2025, and ending on January 31, 2030. At the conclusion of the initial term, the agreement shall
-                automatically renew for additional two-year periods unless either party provides written notice
-                of termination at least three months prior to the expiration of the current term.
-                5. Termination
-                This agreement may be terminated under the following conditions:
-                • By either party, with a minimum of six months’ written notice, without penalties.
-                • Immediately by the Lessor, in the event that the Lessee defaults on three consecutive
-                monthly payments, breaches the terms of use, or causes significant damage to the
-                premises.
-                6. Obligations of the Lessee
-                The Lessee agrees to:
-                • Maintain the premises in good and tenantable condition.
-                • Adhere to all municipal and building regulations related to the use of the property.
-                • Provide a security deposit equal to three months’ fixed rent, refundable at the end of
-                the agreement, minus any deductions for damages or unpaid charges.
-                7. Dispute Resolution
-                Any disputes arising from the interpretation or execution of this agreement shall be governed by
-                Spanish law and submitted to the jurisdiction of the courts of Barcelona.
-                8. Miscellaneous
-                This agreement represents the entire understanding between the Lessor and Lessee. Any
-                modifications must be in writing and signed by both parties.
-                Signatures
-                Lessor:
-                Name: Marta Sánchez Rovira
-                Title: Property Manager
-                Signature: ____________________________
-                Lessee:
-                Name: Javier Ortiz Pérez
-                Title: Chief Operating Officer
-                Signature: ____________________________
-                Date: December 10, 2024
+                These are the documents available for now: (no documents for the moment)
                 
                 Use Markdown to format the answer and include tables if necessary.
             """,
@@ -381,7 +246,6 @@ def invoke_chain(question, messages, sql_messages, model_name="gemini-1.5-flash-
         
         query = sql_chain.invoke(config)
         query = clean_query(query)
-        print(query)
         sql_history.add_user_message(question)
         #sql_history.add_ai_message(query)
         print("Executing query...")
