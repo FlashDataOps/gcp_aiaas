@@ -17,19 +17,6 @@ from gtts import gTTS
 import base64
 import datetime
 
-try:
-    list_input_audio = [input for input in enumerate(sr.Microphone.list_microphone_names())]
-except:
-    traceback.print_exc()
-    list_input_audio = [(0, "No Mic Detected")]
-
-default_mic_name = "Microphone Array (IntelÂ® Smart "
-default_mic_index = next((index for index, name in list_input_audio if default_mic_name in name), 0)
-default_mic_name_selected = list_input_audio[default_mic_index][1]
-
-if "input_audio" not in st.session_state:
-   st.session_state.input_audio = default_mic_name_selected
-    
 
 def update_chat_input(new_input):
     js = f"""
@@ -45,32 +32,6 @@ def update_chat_input(new_input):
     </script>
     """
     st.components.v1.html(js)
-
-# Función para reconocimiento de voz a texto
-async def speech_to_text():
-    recognizer = sr.Recognizer()
-    list_input_audio_names = [name for _, name in list_input_audio]
-    
-    try:
-        pass
-        #device_index = list_input_audio_names.index(st.session_state.input_audio)
-    except ValueError:
-        device_index = 0 # por defecto si no se ecuentra el micro de PwC
-        
-    with sr.Microphone(device_index=device_index) as source:
-       audio = recognizer.listen(source)
-       
-       try:
-           text = recognizer.recognize_google(audio, language='es-ES')
-           update_chat_input(text)
-           #st.success(f"Texto reconocido: {text}")
-           st.session_state.user_input = text  # Actualizar el valor del input con el texto transcrito
-       except sr.UnknownValueError:
-           traceback.print_exc()
-           #st.error("No se pudo entender el audio.")
-       except sr.RequestError:
-           traceback.print_exc()
-           #st.error("Error al intentar usar el servicio de Google Speech Recognition.")
 
 def text_to_speech(input_text):
     try:
@@ -172,14 +133,7 @@ with st.sidebar:
     st.title("Model Configuration")
     
     audio_toggle = st.toggle("Responses with audio", value=True)
-    
-    # Select mic input
-    st.session_state.input_audio = st.selectbox(
-       "Choose an audio input:",
-       [elem[1] for elem in list_input_audio],
-       index=default_mic_index,
-    )
-    
+        
     # List files in the 'db' folder
     carpeta_db = 'db' 
     try:
@@ -206,48 +160,14 @@ with st.sidebar:
     # Select max tokens
     if st.session_state.max_tokens > max_tokens[st.session_state.model]:
         max_value = max_tokens[st.session_state.model]
-
-    st.session_state.max_tokens = st.number_input('Select max tokens:', min_value=1, max_value=max_tokens[st.session_state.model], value=max_tokens[st.session_state.model], step=100)
     
     clear_chat_column, record_audio_column= st.columns([1, 1])
     # Reset chat history button
     if st.button(":broom: Clear chat", use_container_width=True):
         reset_chat_history()
-
-    if st.button("🎙️ Record", use_container_width=True):
-        st.session_state.show_success_audio = True
-        with st.spinner("Listening... 👂"):
-            result = asyncio.run(speech_to_text())
   
 # Render or update model information
 render_or_update_model_info(st.session_state.model)
-
-if st.session_state.initial_message_displayed == False:
-    model_name = st.session_state.model
-    temperature = st.session_state.temperature
-    max_tokens_value = st.session_state.max_tokens
-    with st.spinner("Generando reporte diario..."):
-        # Generate initial message with content and auxiliary data
-        initial_message_content = lu.summary_of_the_date_generation(
-            model_name, temperature, max_tokens_value
-        )
-        st.write_stream(initial_message_content)
-        
-        # Generate audio for the initial message
-        mp3_file = text_to_speech(lu.summary_of_the_date_generation.initial_message)
-        lu.summary_of_the_date_generation.aux["aux"]["audio"] = mp3_file
-        
-        # Update the initial message in the session state
-        st.session_state.messages = [
-            {
-                "role": "assistant",
-                "content": lu.summary_of_the_date_generation.initial_message,
-                "aux": {
-                    "figure": lu.summary_of_the_date_generation.aux["aux"]['figure'],
-                    "audio": lu.summary_of_the_date_generation.aux["aux"]['audio']
-                }
-            }
-        ]
 
 # Display chat messages from history on app rerun
 for idx, message in enumerate(st.session_state.messages):

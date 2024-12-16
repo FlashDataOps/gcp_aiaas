@@ -99,11 +99,7 @@ class DB_Connection:
         self.db_name = None
 
     def get_db(self):
-        db = SQLDatabase.from_uri(f"sqlite:///db/{self.db_name}")
-        return db
-    
-    def get_db_summary_of_the_day(self):
-        db = SQLDatabase.from_uri(f"sqlite:///db/df_nh_demo.db")
+        db = SQLDatabase.from_uri(f"sqlite:///db/nestle_db.db")
         return db
     
     def upload_db_from_settings(self, file, table_name, sep, encoding):

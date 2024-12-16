@@ -6,6 +6,7 @@ from stqdm import stqdm
 import aux_functions as af
 import pandas as pd
 import numpy as np
+import traceback
 # Título de la aplicación
 st.title("Interacción con la Base de Datos")
 # Texto descriptivo
@@ -44,6 +45,7 @@ if st.button("Subir Archivo"):
                 df = af.db_connection.upload_db_from_settings(file=uploaded_file, table_name=table_name, sep=separador, encoding=encoding)
                 st.success(f"Archivo subido: {uploaded_file.name}. Todo fue bien.")
             except Exception as e:
+                traceback.print_exc()
                 st.error(fr"Error al subir el archivo. Contacta con Monty. -> {e}")
         
         # Aquí puedes añadir lógica para interactuar con la base de datos usando el archivo subido
