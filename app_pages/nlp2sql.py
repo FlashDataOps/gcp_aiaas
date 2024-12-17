@@ -102,20 +102,14 @@ def reset_chat_history():
     if "messages" in st.session_state:
         st.session_state.messages = []
 
-model_options = ["llama-3.1-70b-versatile","llama3-70b-8192", "llama3-8b-8192", "mixtral-8x7b-32768", "gemma-7b-it", "gemini-1.5-flash-002", "gemini-1.5-pro-002"]
+model_options = ["gpt-4o-mini"]
 max_tokens = {
-    "llama3-70b-8192": 8192,
-    "llama3-8b-8192": 8192,
-    "mixtral-8x7b-32768": 32768,
-    "gemma-7b-it": 8192,
-    "gemini-1.5-flash-002": 128000,
-    "gemini-1.5-pro-002": 128000,
-    "llama-3.1-70b-versatile":8_000
+    "gpt-4o-mini": 8192
 }
 
 # Initialize model
 if "model" not in st.session_state:
-    st.session_state.model = model_options[1]
+    st.session_state.model = model_options[0]
     st.session_state.temperature = 0
     st.session_state.max_tokens = max_tokens[st.session_state.model]
     st.session_state.input_audio = 1
@@ -132,7 +126,8 @@ if "messages" not in st.session_state:
 with st.sidebar:
     st.title("Model Configuration")
     
-    audio_toggle = st.toggle("Responses with audio", value=True)
+    #audio_toggle = st.toggle("Responses with audio", value=True)
+    audio_toggle = None
         
     # List files in the 'db' folder
     carpeta_db = 'db' 
@@ -143,15 +138,15 @@ with st.sidebar:
         archivos_db = []
         st.error(f"The folder '{carpeta_db}' does not exist.")
     
-    if archivos_db:
-        archivo_db_seleccionado = st.selectbox("Select a database:", archivos_db)
-        af.db_connection.db_name = archivo_db_seleccionado
-        
+
+    archivo_db_seleccionado = "nestle_db.db"
+    af.db_connection.db_name = archivo_db_seleccionado
+    
     # Select model
     st.session_state.model = st.selectbox(
         "Choose a model:",
         model_options,
-        index=1
+        index=0
     )
 
     # Select temperature
@@ -172,19 +167,8 @@ render_or_update_model_info(st.session_state.model)
 # Display chat messages from history on app rerun
 for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
-        if st.session_state.initial_message_displayed:
-            st.markdown(message["content"])            
-        
-        if "audio" in message["aux"].keys():
-            if not st.session_state.initial_message_displayed:
-                update_playback_rate(mp3_file=message["aux"]['audio'], rate=1.55, autoplay='autoplay')
+        st.markdown(message["content"])            
                 
-                st.session_state.initial_message_displayed = True
-                # st.session_state.messages = []
-            else:
-                update_playback_rate(mp3_file=message["aux"]['audio'], rate=1.55)
-                message["aux"]['audio'].seek(0)
-        
         if "figure" in message["aux"].keys():
             for figure in message["aux"]["figure"]:
                 st.plotly_chart(figure['figure'])
@@ -218,6 +202,12 @@ if prompt:
         
         # Prepare auxiliary data
         aux_v2 = lu.invoke_chain.aux
+                
+        # Handle figures
+        if "figure_p" in aux_v2.keys():
+            with st.spinner("Generando gráficos ..."):
+                for figure in aux_v2["figure_p"]:
+                    st.plotly_chart(figure)
         
         # Generate audio if toggle is on
         if audio_toggle:
@@ -228,12 +218,6 @@ if prompt:
                 aux_v2["audio"] = mp3_file
                 # st.audio(mp3_file, format="audio/mp3", autoplay=F)
                 
-        # Handle figures
-        if "figure_p" in aux_v2.keys():
-            with st.spinner("Generando gráficos ..."):
-                for figure in aux_v2["figure_p"]:
-                    st.plotly_chart(figure)
-        
         # Update session state
         st.session_state.messages.extend([
             {"role": "user", "content": prompt, "aux": {}},

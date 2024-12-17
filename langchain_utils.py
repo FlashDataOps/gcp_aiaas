@@ -24,6 +24,9 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 import traceback
 
+
+from langchain_openai import ChatOpenAI
+
 load_dotenv()
 
 def get_schema(_):
@@ -60,6 +63,7 @@ def get_model(model_name, temperature, max_tokens):
         "gemini-1.5-flash-002":ChatVertexAI(model_name="gemini-1.5-flash-002",project="single-cirrus-435319-f1",verbose=True, temperature=temperature),
         "gemini-1.5-pro-002":ChatVertexAI(model_name="gemini-1.5-pro-002",project="single-cirrus-435319-f1",verbose=True, temperature=temperature),
         "llama-3.1-70b-versatile": ChatGroq(temperature=temperature,model_name="llama-3.1-70b-versatile", max_tokens=max_tokens),
+        "gpt-4o-mini": ChatOpenAI(model="gpt-4o-mini")
     }
     return llm[model_name]
 
@@ -80,70 +84,174 @@ prompt_create_sql = ChatPromptTemplate.from_messages(
             
             A continuación te facilito un resumen de las columnas más importantes en el dataset:
             Campos y variables.
-            •	Segment -> es el tipo de clientes a los que se hace referencia.
-            •	Metric -> tipo de servicio al que se hace referencia.
-            •	Actuals -> ocupaciones activas (en euros).
-            •	OTB -> Reservas activas (en euros).
-            •	Forecast -> Previsión (en euros), ingresos esperados.
-            •	Local_Currency -> Moneda local.
-            •	Exchange_rate_to_EUR -> relación de la moneda local con EUR.
-            •	Hotel_ID -> Identificador del hotel.
-            •	Business_date -> día en el que se observa la situación (actualidad).
-            •	Stay_date -> Día al que hacen referencia los datos.
-            •	Pick_Up -> Forecast - (Actuals + OTB). Lo que falta para llegar al forecast.
-            •	Pts -> Period to stay (diferencia entre stay date y business date).
-            •	Hotel_Type -> Hotel / Restaurante.
-            •	Hotel_Name -> nombre del hotel.
-            •	Hotel_Status -> OPEN / SIGNED.
-            •	Hotel_BU -> Business Unit: BU America / BU Northern Europe / BU Southern Europe.
-            •	Hotel_SubBU -> Sub Business Unit, agrupación de países.
-            •	Hotel_Rooms -> nº de habitaciones del hotel.
-            •	Hotel_Cluster -> Agrupación de hoteles.
-            •	Hotel_Consolidate -> indica si el hotel se considera maduro (lleva años abierto).
-            •	RRM -> Revenue Manager.
+            - Unnamed: 0: El identificador numérico único, podemos llamarle id.
+            - company: Nombre de la empresa que fabrica o distribuye el producto.
+            - diet_type: Tipo de dieta para la cual está diseñado el producto.
+            - diet_subtype: Subtipo más específico de la dieta.
+            - national_code: Código nacional del producto, puede ser un identificador único en el país.
+            - product_name: Nombre comercial del producto.
+            - package_type: Tipo de empaque en el que se presenta el producto.
+            - packages_per_unit: Número de paquetes por unidad de venta.
+            - package_volume: Volumen del paquete, generalmente en mililitros o gramos.
+            - unit_type: Tipo de unidad de medida utilizada.
+            - presentation_flavor: Sabor del producto según se presenta.
+            - has_multiflavor: Indica si el producto viene en múltiples sabores.
+            - osmolarity: Medida de la concentración osmótica del producto.
+            - caloric_density: Densidad calórica del producto, generalmente medida en calorías por mililitro o gramo.
+            - product_status: Estado del producto, puede indicar si está activo, descontinuado, etc.
+            - commercialization_date: Fecha en que el producto comenzó a comercializarse.
+            - status_date: Fecha en que se actualizó el estado del producto.
+            - diet_type_description: Descripción detallada del tipo de dieta.
+            - diet_subtype_description: Descripción detallada del subtipo de dieta.
+            - has_gluten: Indica si el producto contiene gluten.
+            - has_lactose: Indica si el producto contiene lactosa.
+            - protein_source: Fuente de proteína del producto.
+            - carbohydrate_source: Fuente de carbohidratos del producto.
+            - fat_source: Fuente de grasas del producto.
+            - fiber_source: Fuente de fibra del producto.
+            - caloric_distribution: Distribución calórica entre macronutrientes.
+            - ingredients_list: Lista de ingredientes del producto.
+            - calories_per_100: Calorías por cada 100 gramos o mililitros del producto.
+            - fat_per_100: Gramos de grasa por cada 100 gramos o mililitros del producto.
+            - sat_fat_per_100: Gramos de grasa saturada por cada 100 gramos o mililitros del producto.
+            - mct_per_100: Gramos de triglicéridos de cadena media por cada 100 gramos o mililitros del producto.
+            - omega_ratio_w6/w3: Relación entre ácidos grasos omega-6 y omega-3.
+            - mono_fat_per_100: Gramos de grasas monoinsaturadas por cada 100 gramos o mililitros del producto.
+            - poly_fat_per_100: Gramos de grasas poliinsaturadas por cada 100 gramos o mililitros del producto.
+            - carbohydrates_per_100: Gramos de carbohidratos por cada 100 gramos o mililitros del producto.
+            - sugar_per_100: Gramos de azúcares por cada 100 gramos o mililitros del producto.
+            - fiber_per_100: Gramos de fibra por cada 100 gramos o mililitros del producto.
+            - protein_per_100: Gramos de proteína por cada 100 gramos o mililitros del producto.
+            - protein_equiv_per_100: Equivalente en gramos de proteína por cada 100 gramos o mililitros del producto.
+            - calories_per_container: Calorías totales por contenedor.
+            - fat_per_container: Gramos de grasa totales por contenedor.
+            - sat_fat_per_container: Gramos de grasa saturada totales por contenedor.
+            - mct_per_container: Gramos de triglicéridos de cadena media totales por contenedor.
+            - omega_ratio_w6/w3_per_container: Relación de omega-6/omega-3 totales por contenedor.
+            - mono_fat_per_container: Gramos de grasas monoinsaturadas totales por contenedor.
+            - poly_fat_per_container: Gramos de grasas poliinsaturadas totales por contenedor.
+            - carbohydrates_per_container: Gramos de carbohidratos totales por contenedor.
+            - sugar_per_container: Gramos de azúcares totales por contenedor.
+            - fiber_per_container: Gramos de fibra totales por contenedor.
+            - protein_per_container: Gramos de proteína totales por contenedor.
+            - protein_equiv_per_container: Equivalente en gramos de proteína totales por contenedor.
+            - sat_fat_pct_total_calories: Porcentaje de calorías totales provenientes de grasas saturadas.
+            - sat_fat_pct_total_fats: Porcentaje de grasas saturadas del total de grasas.
+            - mct_pct_total_calories: Porcentaje de calorías totales provenientes de triglicéridos de cadena media.
+            - mct_pct_total_fats: Porcentaje de triglicéridos de cadena media del total de grasas.
+            - mono_fat_pct_total_calories: Porcentaje de calorías totales provenientes de grasas monoinsaturadas.
+            - mono_fat_pct_total_fats: Porcentaje de grasas monoinsaturadas del total de grasas.
+            - poly_fat_pct_total_calories: Porcentaje de calorías totales provenientes de grasas poliinsaturadas.
+            - poly_fat_pct_total_fats: Porcentaje de grasas poliinsaturadas del total de grasas.
+            
+            A continuación te paso algunas columnas categóricas y sus posibles valores:
+            - company: 
+                - Aventia Pharma S.L.
+                - Danone Nutricia S.R.L.
+                - Fresenius Kabi España S.A.U.
+                - Nestlé España S.A.
+            
+            - unit_type
+                - ML: mililiter
+                - G: gram
+            
+            - has_multiflavor:
+                - Y: yes
+                - N: no
+            
+            - product_status
+                - ALTA
+                - BAJA
+            
+            - has_gluten:
+                - 0: no
+                - 1: yes
+            
+            - has_lactose:
+                - 0: no
+                - 1: yes
+            
+            A continuación te paso un listado de preguntas tipo y la forma en la que deberías responderlas:
+            
+            1. ¿Qué código nacional tiene el producto xxx?
+            El chat tiene que devolver el valor de la columna national_code para el producto que
+            te pidan. Aquí hay que tener cuidado con los productos que tienen diferentes
+            sabores, ya que el producto_name es el mismo. Por lo que, en los casos que haya
+            más de uno, debería devolverlos todos especificando el sabor para cada uno de
+            ellos. También podemos probar el caso donde pregunte ¿Qué código nacional tiene
+            el producto xxx con sabor xxx? que en ese caso sólo tiene que devolver uno.
+            A partir de aquí, si crees que para la demo del miércoles tenemos que realizar las preguntas
+            por código nacional (identificador único) para que funcione correctamente. No nos importa
+            en la demo pedir primero al chat el código. Si por nombre también lo coge bien, ¡pues ideal!
+            También, dinos si has podido solucionar el tema de la memoria, y una vez tengamos el
+            código y hayamos especificado el código de producto, va a ser necesario volverlo a
+            introducir o será suficiente con hacerle referencia al anterior.
+            
+            2. ¿Dime si el producto xxx tiene lactosa/gluten?
+            Debe comprobar si el campo has_lactose/has_gluten son 0 (y devolver que no tiene)
+            o 1 (y devolver que sí tiene).
+            
+            3. ¿Qué sabores tiene el producto xxx?
+            Este es el ejemplo que hemos probado antes. Tiene que poder devolver todos los
+            sabores (hay uno por fila), que se especifican en la columna presentation_flavor.
+            Preguntas derivadas de esta serían ¿Tiene más de un sabor el producto xxx? ¿El
+            producto xxx tiene sabor Vainilla?
+            
+            4. ¿Dime los productos de la empresa xxx que tengan más de xx g de grasas,
+            calorías…?
+            Aquí hay 3 casuísticas posibles:
+            - Que te lo pidan por 100ml / 100 g: que entonces hay que coger los campos que
+            acaban en _per_100
+            - Que te lo pidan por envase: que entonces hay que coger los campos que acaban
+            en _per_container
+            - Que no te especifiquen: por defecto deberían devolverse ambos en la respuesta,
+            por 100ml / 100 g (que habrá que ir a buscar a la columna unit_type si son G o
+            ML) y por envase (especificando la cantidad del envase package_volume +
+            unit_type).
+            Si es complicado que devuelva ambas, lo hablamos y especificamos uno de los
+            otros dos por defecto. En el caso de que sea demasiado para mañana que se pueda
+            preguntar grasas, grasas saturadas, calorías… podemos coger solo 2 y en la demo
+            probamos con esos.
+            
+            5. Compara la información nutricional del producto xxxx y el producto yyyy en formato
+            tabla.
+            Consideraremos información nutricional a los siguientes campos: protein_per_100
+            (llamarlo proteína) carbohydrates_per_100 (llamarlo carbohidratos), fat_per_100
+            (llamarlo grasas), fiber_per_100 (llamarlo fibra) y sugar_per_100 (llamarlo azúcar).
+            Debe ponerlos en una tabla para ambos productos y que así sea fácilmente
+            comprable, las unidades de todo es gramos (g). Debe especificar en la respuesta
+            que los valores que se proporcionan son valores cada 100 g o cada 100 ml (que
+            habrá que ir a buscar a la columna unit_type si son G o ML).
+            
+            6. Dime el detalle de la fuente de proteínas del producto xxxx.
+            Tiene que devolver la información del campo protein_source (que suele ser una o
+            dos frases).
+            
+            7. ¿Cuál es la distribución calórica del producto xxx?
+            Cuando se pregunte por información nutricional o distribución calórica se debe
+            devolver el campo caloric_distribution. Esta variable puede tener dos formatos
+            “número 1 / número 2 / número 3 / número 4” o “número 1 / número 2 / número 3 /
+            número 4”. Debe devolver:
+            - Proteínas: número 1
+            - Carbohidratos: número 2
+            - Grasas: Número 3
+            - Fibra: Número 4 (que puede no aparecer en ocasiones)           
+            
+            Como nota importante un producto se identifica por los siguientes campos: 
+            - product_name
+            - presentation_flavor
+            - package_type
+            - packages_per_unit
+            
+            Todas las preguntas sobre un producto deben ser respondidas teniendo en cuenta el anterior punto agrupandolo por tipo de envase, tamaño y sabor.
+            Por lo tanto un producto deberia consultarse como  national_code, product_name, package_type, packages_per_unit, presentation_flavor.
+            Por ejemplo:
+            Pregunta: ¿Cuántas calorias por envase tiene FRESUBIN THICKENED?
+            Respuesta: SELECT national_code, product_name, package_type, packages_per_unit, presentation_flavor, calories_per_container
+                       FROM nestle_db
+                       WHERE product_name = 'FRESUBIN THICKENED';
 
-            Algunas métricas útiles son:
-            •	Actuals_business_date -> df[df ['Stay_date']<df ['Business_date']]['Actuals'].sum(). La suma de los € de ocupaciones activas a día de hoy (Business Date).
-            •	OTB_business_date  -> df['OTB'].sum(). Suma de reservas totales en €.
-            •	Forecast_business_date -> df['Forecast'].sum(). Suma de predicciones en €.
-            •	Total_business_date -> Actuals_business_date + OTB_business_date  + Forecast_business_date. Suma de ocupaciones activas, reservas y previsiones.
-            •	Perc_expected_revenue -> (actuals_business_date + OTB_business_date) / total_business_date. Porcentaje de € sobre el total.
-
-            
-            A continuación te doy unas columnas y sus posibles valores para ayudarte a filtrar:
-            •	Segment: 
-                •	BUGR -> Business groups (grupos de negocio)
-                •	COMP -> Complementary (complementarios)
-                •	CORP -> Corporative (corporativos)
-                •	CREW -> para hoteles cerca de aeropuertos, tripulación 
-                •	LEGR -> Grupos de ocio (Leisure Groups)
-                •	MECO -> Meetings & Conferences (reuniones y conferencias)
-                •	OTHE -> Others (otros)
-            •	Metric:
-                •	FPB -> BKF + F&B 
-                •	BKF -> Breakfast (desayuno)
-                •	EVENTS -> Eventos
-                •	RN -> Room Nights  
-                •	RP -> Room Revenue RREV (dinero generado con las habitaciones)
-                •	F&B -> Food & beverage
-            
-            Otras siglas y sus significados:
-                •	ADR -> precio medio de la habitación
-                •	TREV -> Total Revenue (dinero total generado)
-                •	OREV -> Other Revenue (dinero no generado por las habitaciones)
-                •	TREV -> RREV + OREV
-                •	OTB -> On-the-books / Reservas
-
-                
-            Aquí te muestro algunas métricas calculadas de utilidad.
-            •	Actuals_business_date -> df[df ['Stay_date']<df ['Business_date']]['Actuals'].sum(). La suma de los € de ocupaciones activas a día de hoy (Business Date).
-            •	OTB_business_date  -> df['OTB'].sum(). Suma de reservas totales en €.
-            •	Forecast_business_date -> df['Forecast'].sum(). Suma de predicciones en €.
-            •	Total_business_date -> Actuals_business_date + OTB_business_date  + Forecast_business_date. Suma de ocupaciones activas, reservas y previsiones.
-            •	Perc_expected_revenue -> (actuals_business_date + OTB_business_date) / total_business_date. Porcentaje de euros € obtenidos o reservados sobre el total estimado.
-            
-            Ten en cuenta que TREV = Total_business_date; RREV = Total_business_date filtrado para métrica RP; OREV = Total_business_date para todas las métricas excepto RP.
-            
+                   
             Utiliza el historial para adaptar la consulta SQL. No añadas respuestas en lenguaje natural.
             
             RESPONDE ÚNICAMENTE CON CÓDIGO SQL. NO AÑADAS PALABRAS EN LENGUAJE NATURAL.
@@ -153,7 +261,6 @@ prompt_create_sql = ChatPromptTemplate.from_messages(
             
             """,
         ),
-        ("placeholder", "{few_shots}"), 
         ("placeholder", "{chat_history}"),
         ("user", "{input}"),
     ]
@@ -199,6 +306,8 @@ prompt_custom_chart = ChatPromptTemplate.from_messages(
             SOLO DEBES INCLUIR CÓDIGO PYTHON EN TU RESPUESTA. NO INCLUYAS LENGUAJE NATURAL INTRODUCIENDO TU RESPUESTA.
             HAZ EL GRÁFICO BONITO Y VISUAL. QUIERO QUE ESTÉ PREPARADO PARA SER MOSTRADO ANTE UN CLIENTE MUY IMPORTANTE.
             
+            - Evita hacer tablas comparativas. Se original y muestra una visualizacion que acompañe a una tabla.
+            
             ASEGURATE DE QUE LA RESPUESTA TIENE ÚNICAMENTE CÓDIGO PYTHON
             
             RESPONDE EN ESPAÑOL
@@ -214,8 +323,8 @@ prompt_intent = ChatPromptTemplate.from_messages(
         (
             "system",
             """Tu tarea es decidir cuál es la intención del usuario a partir del mensaje del usuario. Las posibilidades son:
-            - Consulta: Si el usuario realiza una consulta sobre un dataset de hoteles con el siguiente schema: {schema}
-            - Otro: Cualquier cosa que no tenga nada que ver con realizar una consulta a los datos de NH
+            - Consulta: Si el usuario realiza una consulta sobre un dataset de productos y sus fichas con valores nutricionales con el siguiente schema: {schema}
+            - Otro: Cualquier cosa que no tenga nada que ver con realizar una consulta a los datos de Nestlé
             
             Responde únicamente con las palabras [Consulta, Otro]. En caso de no saber a que se refiere responde Otro
             """,
@@ -229,7 +338,7 @@ prompt_general = ChatPromptTemplate.from_messages(
     [
         (
             "system",
-            """Eres un asistente que trabaja en NH Hoteles. Tu tarea es ayudar al usuario a entender la información del modelo de datos de NH.
+            """Eres un asistente que trabaja en Nestlé. Tu tarea es ayudar al usuario a entender la información del modelo de datos de Nestlé.
             Puedes realizar la siguiente tarea:
             - Consulta: Si el usuario realiza una consulta sobre un dataset, se puede generar un gráfico y una respuesta en formato de audio para poder escucharla. El esquema del dataset es el siguiente {schema}
             """,
@@ -318,8 +427,7 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         
         config = {
         "input": question, 
-        "chat_history": sql_history.messages,
-        "few_shots": af.create_few_shots() 
+        "chat_history": sql_history.messages
         }
         
         query = sql_chain.invoke(config)
@@ -331,7 +439,7 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
         flag_correct_query = False
         try:   
             result = db.run(query)
-            #print("RESULTADO ANTES", result)
+            print("RESULTADO ANTES", result)
             result, _ = af.dividir_en_bloques_por_grupo(resultados_sql=eval(result), max_filas=50)
             flag_correct_query = True
             print("Consulta ejecutada correctamente")
@@ -366,7 +474,7 @@ def invoke_chain(question, messages, sql_messages, model_name="llama3-70b-8192",
                 
                 del config["schema"]
                 plot_code = plot_chain.invoke(config)
-                #print(plot_code)
+                print(plot_code)
                 plot_code = plot_code.replace("```python", "").replace("```", "").replace("fig.show()", "")
                 exec(plot_code)
                 
