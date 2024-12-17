@@ -1,32 +1,17 @@
-import json
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains import create_history_aware_retriever
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq
-from langchain.chains import create_history_aware_retriever, create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
-from langchain_chroma import Chroma
 from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain.memory import ChatMessageHistory
 from dotenv import load_dotenv
-import os
 from functools import lru_cache
-from langchain.chains import create_sql_query_chain
-from langchain_community.utilities import SQLDatabase
 from langchain_google_vertexai import ChatVertexAI
-
-from sympy import im
 import aux_functions as af
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 import traceback
-
-
 from langchain_openai import ChatOpenAI
-
 load_dotenv()
 
 def get_schema(_):
@@ -63,7 +48,10 @@ def get_model(model_name, temperature, max_tokens):
         "gemini-1.5-flash-002":ChatVertexAI(model_name="gemini-1.5-flash-002",project="single-cirrus-435319-f1",verbose=True, temperature=temperature),
         "gemini-1.5-pro-002":ChatVertexAI(model_name="gemini-1.5-pro-002",project="single-cirrus-435319-f1",verbose=True, temperature=temperature),
         "llama-3.1-70b-versatile": ChatGroq(temperature=temperature,model_name="llama-3.1-70b-versatile", max_tokens=max_tokens),
-        "gpt-4o-mini": ChatOpenAI(model="gpt-4o-mini")
+        "gpt-4o-mini": ChatOpenAI(model="gpt-4o-mini", temperature=temperature),
+        "gpt-4o": ChatOpenAI(model="gpt-4o", temperature=temperature),
+        "o1-preview": ChatOpenAI(model="o1-preview", temperature=temperature),
+        "o1-mini": ChatOpenAI(model="o1-mini", temperature=temperature)
     }
     return llm[model_name]
 
@@ -347,7 +335,6 @@ prompt_general = ChatPromptTemplate.from_messages(
         ("human", "{input}")        
     ]
 )
-
 
 def create_history(messages):
     """

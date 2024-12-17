@@ -1,81 +1,9 @@
-import asyncio
 import streamlit as st
 import langchain_utils as lu
-import pandas as pd
-import json
-from streamlit_navigation_bar import st_navbar
-import time
-import os
 import aux_functions as af
-import speech_recognition as sr
-import azure.cognitiveservices.speech as speechsdk
-from io import BytesIO
 from dotenv import load_dotenv
 load_dotenv()
-import traceback
-from gtts import gTTS
-import base64
-import datetime
-
-
-def update_chat_input(new_input):
-    js = f"""
-    <script>
-        function insertText(dummy_var_to_force_repeat_execution) {{
-            var chatInput = parent.document.querySelector('textarea[data-testid="stChatInputTextArea"]');
-            var nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
-            nativeInputValueSetter.call(chatInput, "{new_input}");
-            var event = new Event('input', {{ bubbles: true}});
-            chatInput.dispatchEvent(event);
-        }}
-        insertText({len(st.session_state.messages)});
-    </script>
-    """
-    st.components.v1.html(js)
-
-def text_to_speech(input_text):
-    try:
-        input_text = af.format_text_for_audio(input_text)
-        tts = gTTS(input_text, lang='es')
-        mp3_fp = BytesIO()
-        tts.write_to_fp(mp3_fp)
-        mp3_fp.seek(0)  # Reiniciar el puntero al inicio del archivo para reproducirlo
-        
-        #return mp3_fp
-        # Reproducir solo si el archivo se generó exitosamente
-        #st.audio(mp3_fp, format='audio/mp3', autoplay=True)
-        return mp3_fp
-    except Exception as e:
-        st.error(f"Error al generar el audio: {e}")
-        
-
-
-def update_playback_rate(mp3_file, rate, autoplay=""):
-    audio_data = mp3_file.read()
-    b64_audio = base64.b64encode(audio_data).decode("utf-8")
-    # Crear HTML para el reproductor con JavaScript para la velocidad
-    html_code = f""" <div data-stale="false" width: 100% class="element-container st-emotion-cache-a1dagx e1f1d6gn4" data-test="element-container"> 
-    <audio id="audio" controls {autoplay} style="width: 100%;"> 
-    <source src="data:audio/mp3;base64,{b64_audio}" type="audio/mp3">
-    </audio> 
-    <script> document.getElementById("audio").playbackRate = {rate}; </script> </div> """
-
-    # Incrustar el reproductor y el botón de descarga
-    st.components.v1.html(html_code, height=100)
-    
-    
-def autoplay_audio(file_path: str):
-    with open(file_path, "rb") as f:
-        data = f.read()
-    b64 = base64.b64encode(data).decode("utf-8")
-    md = f"""
-    <audio autoplay>
-    <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
-    </audio>
-    """
-    st.markdown(md, unsafe_allow_html=True)
-    
-    
+       
 def render_or_update_model_info(model_name):
     """
     Renders or updates the model information on the webpage.
@@ -102,9 +30,12 @@ def reset_chat_history():
     if "messages" in st.session_state:
         st.session_state.messages = []
 
-model_options = ["gpt-4o-mini"]
+model_options = ["gpt-4o-mini", "gpt-4o"]
 max_tokens = {
-    "gpt-4o-mini": 8192
+    "gpt-4o-mini": 8192,
+    "gpt-4o": 8192,
+    "o1-preview": 32768,
+    "o1-mini": 32768,
 }
 
 # Initialize model
@@ -112,33 +43,15 @@ if "model" not in st.session_state:
     st.session_state.model = model_options[0]
     st.session_state.temperature = 0
     st.session_state.max_tokens = max_tokens[st.session_state.model]
-    st.session_state.input_audio = 1
 
 if "messages" not in st.session_state:
-
     st.session_state.messages = []
-    st.session_state.initial_message_displayed = False
-
     st.session_state.sql_messages = []
-    st.session_state.show_success_audio = False
 
 # Continue with sidebar settings...
 with st.sidebar:
     st.title("Model Configuration")
-    
-    #audio_toggle = st.toggle("Responses with audio", value=True)
-    audio_toggle = None
-        
-    # List files in the 'db' folder
-    carpeta_db = 'db' 
-    try:
-        dbs = os.listdir(carpeta_db)
-        archivos_db = [f for f in dbs if os.path.isfile(os.path.join(carpeta_db, f))]
-    except FileNotFoundError:
-        archivos_db = []
-        st.error(f"The folder '{carpeta_db}' does not exist.")
-    
-
+      
     archivo_db_seleccionado = "nestle_db.db"
     af.db_connection.db_name = archivo_db_seleccionado
     
@@ -208,16 +121,7 @@ if prompt:
             with st.spinner("Generando gráficos ..."):
                 for figure in aux_v2["figure_p"]:
                     st.plotly_chart(figure)
-        
-        # Generate audio if toggle is on
-        if audio_toggle:
-            with st.spinner("Generando audio ..."):
-                mp3_file = text_to_speech(full_response)
-                update_playback_rate(mp3_file=mp3_file, rate=1.55, autoplay="autoplay")
-                mp3_file.seek(0)
-                aux_v2["audio"] = mp3_file
-                # st.audio(mp3_file, format="audio/mp3", autoplay=F)
-                
+                        
         # Update session state
         st.session_state.messages.extend([
             {"role": "user", "content": prompt, "aux": {}},
